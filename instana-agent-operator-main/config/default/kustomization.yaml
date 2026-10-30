@@ -1,0 +1,7 @@
+# Adds namespace to all resources.
+namespace: instana-agent
+
+bases:
+- ../crd
+- ../rbac
+- ../manager

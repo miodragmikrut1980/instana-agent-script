@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_okhttp3">
+
+    <fragment
+        android:id="@+id/navigation_okhttp3"
+        android:name="com.instana.mobileeum.ui.okhttp3.OkHttp3Fragment"
+        android:label="@string/title_okhttp3"
+        tools:layout="@layout/fragment_okhttp3" />
+
+    <fragment
+        android:id="@+id/navigation_httpurlconnection"
+        android:name="com.instana.mobileeum.ui.httpurlconnection.HttpURLConnectionFragment"
+        android:label="@string/title_httpurlconnection"
+        tools:layout="@layout/fragment_httpurlconnection" />
+
+    <fragment
+        android:id="@+id/navigation_transitives"
+        android:name="com.instana.mobileeum.ui.transitives.TransitivesFragment"
+        android:label="@string/title_transitives"
+        tools:layout="@layout/fragment_transitives" />
+
+    <fragment
+        android:id="@+id/navigation_custom"
+        android:name="com.instana.mobileeum.ui.custom.CustomEventFragment"
+        android:label="@string/title_custom"
+        tools:layout="@layout/fragment_custom" />
+
+    <fragment
+        android:id="@+id/navigation_performance"
+        android:name="com.instana.mobileeum.ui.performance.PerformanceFragment"
+        android:label="@string/title_performance"
+        tools:layout="@layout/fragment_performance" />
+</navigation>

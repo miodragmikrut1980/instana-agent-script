@@ -1,0 +1,89 @@
+buildscript {
+    ext.kotlin_version = '1.6.10'
+    ext.buildtools_version = '7.2.2'
+    ext.compose_version = '1.1.1'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath ("com.android.tools.build:gradle:$buildtools_version"){
+            // Exclude the vulnerable Bouncy Castle library
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+        }
+        classpath "org.bouncycastle:bcprov-jdk15on:1.70"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        //classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
+        classpath "org.jacoco:org.jacoco.core:0.8.7"
+        classpath "io.github.gradle-nexus:publish-plugin:2.0.0"
+    }
+}
+
+plugins {
+  id "org.sonarqube" version "5.0.0.4638"
+}
+
+apply from: 'publish.gradle'
+apply from: 'version.gradle'
+apply plugin: "io.github.gradle-nexus.publish-plugin"
+allprojects {
+    apply plugin: 'jacoco'
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+
+tasks.register("copyGitHooks", Copy) {
+    description = "Copies the git hooks from /git-hooks to the .git folder."
+    group = "git hooks"
+    from("$rootDir/hooks/pre-commit")
+    into("$rootDir/.git/hooks/")
+}
+tasks.register("installGitHooks", Exec) {
+    description = "Installs the pre-commit git hooks from /git-hooks."
+    group = "git hooks"
+    workingDir = rootDir
+    commandLine "chmod", "-R", "+x", ".git/hooks/"
+    dependsOn("copyGitHooks")
+    doLast {
+        logger.info("Git hook installed successfully.")
+    }
+}
+
+
+afterEvaluate {
+    tasks.getByPath(":runtime:clean").dependsOn(":installGitHooks")
+}
+
+task updateVersionsInReadme {
+    doLast {
+        def agentVersion = project.property('agent_version')
+        def readmeFile = file('README.md')
+
+        def replacements = [
+                /classpath "com.instana:android-agent-plugin:([^"]+)"/: "classpath \"com.instana:android-agent-plugin:$agentVersion\"",
+                /implementation 'com.instana:android-agent-runtime:([^']+)'/: "implementation 'com.instana:android-agent-runtime:$agentVersion'",
+                /classpath\("com.instana:android-agent-plugin:([^"]+)"\)/: "classpath(\"com.instana:android-agent-plugin:$agentVersion\")",
+                /implementation\("com.instana:android-agent-runtime:([^"]+)"\)/: "implementation(\"com.instana:android-agent-runtime:$agentVersion\")"
+        ]
+
+        def readmeContent = readmeFile.text
+        replacements.each { pattern, replacement ->
+            readmeContent = readmeContent.replaceAll(pattern, replacement)
+        }
+
+        readmeFile.text = readmeContent
+    }
+}
+
+
+
+
+
+

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "branchPrefix": "renovate_",
+  "reviewers": [
+    "team:eng-agent"
+  ],
+  "prConcurrentLimit": 2,
+  "rebaseWhen": "behind-base-branch",
+  "dependencyDashboard": true,
+  "baseBranchPatterns": [
+    "main",
+    "/^release-\\d+\\.\\d+$/"
+  ],
+  "packageRules": [
+    {
+      "matchBaseBranches": ["/^release-\\d+\\.\\d+$/"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^Makefile$/"
+      ],
+      "matchStrings": [
+        "(?<currentValue>v\\d+\\.\\d+\\.\\d+)[^\\n]*# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)(?:\\s|$)"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^installGolang\\.sh$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\s*GO_VERSION=\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "datasourceTemplate": "{{datasource}}",
+      "versioningTemplate": "loose"
+    }
+  ]
+}

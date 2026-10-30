@@ -1,0 +1,29 @@
+{
+  "_comment": "IBM MQ monitoring profile — use to replicate MQ sensor issues",
+  "schema": "instana-agent-input",
+  "schema_version": 1,
+  "parameters": {
+    "BACKEND_TYPE": "selfhosted",
+    "HOST": "",
+    "PORT": "443",
+    "UPDATE_MODE": "dynamic",
+    "AGENT_MODE": "APM",
+    "ZONE": "support-lab-mq",
+    "TAG_ENV": "support-lab",
+    "TAG_TEAM": "support"
+  },
+  "secrets": {
+    "AGENT_KEY": ""
+  },
+  "sensors": {
+    "ibmmq": {
+      "queueManagers": [
+        {
+          "name": "QM1",
+          "channel": "SYSTEM.DEF.SVRCONN",
+          "port": "1414"
+        }
+      ]
+    }
+  }
+}

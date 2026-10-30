@@ -1,0 +1,25 @@
+# More info: https://docs.docker.com/engine/reference/builder/#dockerignore-file
+# Ignore all by default
+*
+
+# Don't ignore files which are Go type
+!**/*.go
+!**/*.mod
+!**/*.sum
+!installGolang.sh
+
+# Bug in .dockerignore, have to list wanted directories explicitly (https://github.com/moby/moby/issues/40319)
+!api/
+!controllers/
+!logger/
+!pkg/
+!version/
+!bin/
+
+# Other files not to ignore
+!bundle/
+!LICENSE
+
+# Don't ignore scripts or make
+!*.sh
+!Makefile

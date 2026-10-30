@@ -1,0 +1,30 @@
+{
+  "_comment": "Full Java APM profile — JVM + MySQL + Redis tracing replication",
+  "schema": "instana-agent-input",
+  "schema_version": 1,
+  "parameters": {
+    "BACKEND_TYPE": "selfhosted",
+    "HOST": "",
+    "PORT": "443",
+    "UPDATE_MODE": "dynamic",
+    "AGENT_MODE": "APM",
+    "ZONE": "support-lab-java",
+    "TAG_ENV": "support-lab",
+    "TAG_TEAM": "support"
+  },
+  "secrets": {
+    "AGENT_KEY": ""
+  },
+  "sensors": {
+    "mysql": {
+      "host": "localhost",
+      "port": "3306",
+      "user": "instana",
+      "password": ""
+    },
+    "redis": {
+      "host": "localhost",
+      "port": "6379"
+    }
+  }
+}

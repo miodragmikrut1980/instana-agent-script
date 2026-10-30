@@ -1,0 +1,23 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Safely added overrides to accommodate MIN SDK 16 -->
+    <uses-sdk android:minSdkVersion="16"
+        tools:overrideLibrary="androidx.compose.ui,
+        androidx.compose.ui.text,
+        androidx.compose.runtime.saveable,
+        androidx.compose.ui.graphics,
+        androidx.compose.ui.unit,
+        androidx.compose.ui.geometry,androidx.compose.ui.util"/>
+    <application>
+        <provider
+            android:name="com.instana.android.performance.launchtime.StartupInitializer"
+            android:authorities="com.instana.android.performance.launchtime.${applicationId}"
+            android:initOrder="200"
+            android:exported="false"
+            tools:node="merge"/>
+        <service android:name="com.instana.android.performance.network.AppLifecycleIdentificationService" />
+    </application>
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+</manifest>

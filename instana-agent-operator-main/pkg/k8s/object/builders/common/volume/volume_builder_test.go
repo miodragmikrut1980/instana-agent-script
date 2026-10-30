@@ -1,0 +1,429 @@
+/*
+(c) Copyright IBM Corp. 2024, 2025
+(c) Copyright Instana Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package volume
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
+
+	instanav1 "github.com/instana/instana-agent-operator/api/v1"
+	"github.com/instana/instana-agent-operator/pkg/pointer"
+)
+
+const numDefinedVolumes = 16
+
+func rangeUntil(n int) []Volume {
+	res := make([]Volume, 0, n)
+
+	for i := range n {
+		res = append(res, Volume(i))
+	}
+
+	return res
+}
+
+func assertAllVolumesUnique(assertions *require.Assertions, list []corev1.Volume) {
+	names := make(map[string]bool, len(list))
+
+	for _, element := range list {
+		names[element.Name] = true
+	}
+
+	assertions.Equal(len(list), len(names))
+}
+
+func assertAllVolumeMountsUnique(assertions *require.Assertions, list []corev1.VolumeMount) {
+	names := make(map[string]bool, len(list))
+
+	for _, element := range list {
+		names[element.Name] = true
+	}
+
+	assertions.Equal(len(list), len(names))
+}
+
+func TestVolumeBuilderBuildsAreUnique(t *testing.T) {
+	t.Run(
+		"each returned volume and volume mount is unique", func(t *testing.T) {
+			assertions := require.New(t)
+
+			vb := NewVolumeBuilder(&instanav1.InstanaAgent{}, false)
+			volume, volumeMount := vb.Build(rangeUntil(numDefinedVolumes)...)
+
+			assertions.Len(volume, numDefinedVolumes-2)
+			assertions.Len(volumeMount, numDefinedVolumes-2)
+			assertAllVolumesUnique(assertions, volume)
+			assertAllVolumeMountsUnique(assertions, volumeMount)
+		},
+	)
+
+}
+
+func TestVolumeBuilderPanicsWhenVolumeNumberDoesntExist(t *testing.T) {
+	t.Run(
+		"panics once a volume is introduced that isn't found in the defined volumes",
+		func(t *testing.T) {
+			assert.PanicsWithError(t, "unknown volume requested", func() {
+				_, _ = NewVolumeBuilder(&instanav1.InstanaAgent{}, false).
+					Build([]Volume{Volume(9999)}...)
+			})
+		},
+	)
+}
+
+func TestVolumeBuilderBuild(t *testing.T) {
+	for _, test := range []struct {
+		name               string
+		isOpenShift        bool
+		expectedNumVolumes int
+	}{
+		{
+			name:               "isOpenShift",
+			isOpenShift:        true,
+			expectedNumVolumes: 11,
+		},
+		{
+			name:               "isNotOpenShift",
+			isOpenShift:        false,
+			expectedNumVolumes: 14,
+		},
+	} {
+		t.Run(
+			test.name, func(t *testing.T) {
+				assertions := require.New(t)
+
+				vb := NewVolumeBuilder(&instanav1.InstanaAgent{}, test.isOpenShift)
+
+				volumes, volumeMounts := vb.Build(rangeUntil(numDefinedVolumes)...)
+
+				assertions.Len(volumes, test.expectedNumVolumes)
+				assertions.Len(volumeMounts, test.expectedNumVolumes)
+			},
+		)
+	}
+}
+
+func TestVolumeBuilderBuildFromUserConfig(t *testing.T) {
+	assertions := require.New(t)
+	volumeName := "testVolume"
+	agent := &instanav1.InstanaAgent{
+		Spec: instanav1.InstanaAgentSpec{
+			Agent: instanav1.BaseAgentSpec{
+				Pod: instanav1.AgentPodSpec{
+					Volumes: []corev1.Volume{
+						{
+							Name: volumeName,
+						},
+					},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name: volumeName,
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, test := range []struct {
+		name        string
+		isOpenShift bool
+	}{
+		{
+			name:        "isOpenShift",
+			isOpenShift: true,
+		},
+		{
+			name:        "isNotOpenShift",
+			isOpenShift: false,
+		},
+	} {
+		t.Run(
+			test.name, func(t *testing.T) {
+				vb := NewVolumeBuilder(agent, true)
+				volumes, volumeMounts := vb.BuildFromUserConfig()
+				assertions.Equal(volumeName, volumes[0].Name)
+				assertions.Equal(volumeName, volumeMounts[0].Name)
+			},
+		)
+	}
+}
+
+func TestVolumeBuilderTlsSpec(t *testing.T) {
+	for _, test := range []struct {
+		name               string
+		volume             Volume
+		volumeName         string
+		instanaAgent       instanav1.InstanaAgent
+		expectedNumVolumes int
+	}{
+		{
+			name:       "Should return an TLS volume when Agent configuration has TLS Spec values",
+			volume:     TlsVolume,
+			volumeName: "instana-agent-tls",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					Agent: instanav1.BaseAgentSpec{
+						TlsSpec: instanav1.TlsSpec{
+							SecretName: "very-secret",
+						},
+					},
+				},
+			},
+			expectedNumVolumes: 1,
+		},
+		{
+			name:               "Should not return a TLS volume entry when TLS Spec values are missing from Agent configuration",
+			volume:             TlsVolume,
+			instanaAgent:       instanav1.InstanaAgent{Spec: instanav1.InstanaAgentSpec{Agent: instanav1.BaseAgentSpec{TlsSpec: instanav1.TlsSpec{}}}},
+			expectedNumVolumes: 0,
+		},
+	} {
+		t.Run(
+			test.name, func(t *testing.T) {
+				assertions := require.New(t)
+
+				vb := NewVolumeBuilder(&test.instanaAgent, false)
+
+				actualvolumes, actualVolumeMounts := vb.Build(test.volume)
+				assertions.Len(actualvolumes, test.expectedNumVolumes)
+				assertions.Len(actualVolumeMounts, test.expectedNumVolumes)
+
+				if len(actualvolumes) > 0 && test.volumeName != "" {
+					assertions.Equal(actualvolumes[0].Name, test.volumeName)
+				}
+			},
+		)
+	}
+}
+
+func TestVolumeBuilderRepository(t *testing.T) {
+	t.Run(
+		"Build returns a Repository struct when the Repository exists", func(t *testing.T) {
+			assertions := require.New(t)
+
+			vb := NewVolumeBuilder(
+				&instanav1.InstanaAgent{
+					Spec: instanav1.InstanaAgentSpec{
+						Agent: instanav1.BaseAgentSpec{
+							Host: instanav1.HostSpec{
+								Repository: "very-repository",
+							},
+						},
+					},
+				}, false)
+
+			actualvolumes, actualVolumeMounts := vb.Build(RepoVolume)
+
+			assertions.Len(actualvolumes, 1)
+			assertions.Len(actualVolumeMounts, 1)
+		},
+	)
+}
+
+func TestVolumeBuilderSecretsVolume(t *testing.T) {
+	for _, test := range []struct {
+		name               string
+		volume             Volume
+		volumeName         string
+		instanaAgent       instanav1.InstanaAgent
+		expectedNumVolumes int
+	}{
+		{
+			name:       "Should return a Secrets volume when UseSecretMounts is true",
+			volume:     SecretsVolume,
+			volumeName: "instana-secrets",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					UseSecretMounts: pointer.To(true),
+				},
+			},
+			expectedNumVolumes: 1,
+		},
+		{
+			name:       "Should return a Secrets volume when UseSecretMounts is nil (default to true)",
+			volume:     SecretsVolume,
+			volumeName: "instana-secrets",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{},
+			},
+			expectedNumVolumes: 1,
+		},
+		{
+			name:   "Should not return a Secrets volume when UseSecretMounts is false",
+			volume: SecretsVolume,
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					UseSecretMounts: pointer.To(false),
+				},
+			},
+			expectedNumVolumes: 0,
+		},
+		{
+			name:       "Should use custom KeysSecret name when specified",
+			volume:     SecretsVolume,
+			volumeName: "instana-secrets",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					UseSecretMounts: pointer.To(true),
+					Agent: instanav1.BaseAgentSpec{
+						KeysSecret: "custom-secret",
+					},
+				},
+			},
+			expectedNumVolumes: 1,
+		},
+	} {
+		t.Run(
+			test.name, func(t *testing.T) {
+				assertions := require.New(t)
+
+				vb := NewVolumeBuilder(&test.instanaAgent, false)
+
+				actualVolumes, actualVolumeMounts := vb.Build(test.volume)
+				assertions.Len(actualVolumes, test.expectedNumVolumes)
+				assertions.Len(actualVolumeMounts, test.expectedNumVolumes)
+
+				if len(actualVolumes) > 0 && test.volumeName != "" {
+					assertions.Equal(test.volumeName, actualVolumes[0].Name)
+
+					// Verify secret name is set correctly
+					if test.instanaAgent.Spec.Agent.KeysSecret != "" {
+						assertions.Equal(
+							test.instanaAgent.Spec.Agent.KeysSecret,
+							actualVolumes[0].VolumeSource.Secret.SecretName,
+						)
+					} else if test.instanaAgent.Name != "" {
+						assertions.Equal(test.instanaAgent.Name, actualVolumes[0].VolumeSource.Secret.SecretName)
+					}
+				}
+			},
+		)
+	}
+}
+
+func TestVolumeBuilderK8SensorSecretsVolume(t *testing.T) {
+	for _, test := range []struct {
+		name               string
+		volume             Volume
+		volumeName         string
+		instanaAgent       instanav1.InstanaAgent
+		expectedNumVolumes int
+		expectedItems      int
+	}{
+		{
+			name:       "Should return a K8Sensor Secrets volume when UseSecretMounts is true",
+			volume:     K8SensorSecretsVolume,
+			volumeName: "instana-secrets",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					UseSecretMounts: pointer.To(true),
+				},
+			},
+			expectedNumVolumes: 1,
+			expectedItems:      1, // Only agent key
+		},
+		{
+			name:       "Should return a K8Sensor Secrets volume when UseSecretMounts is nil (default to true)",
+			volume:     K8SensorSecretsVolume,
+			volumeName: "instana-secrets",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{},
+			},
+			expectedNumVolumes: 1,
+			expectedItems:      1, // Only agent key
+		},
+		{
+			name:   "Should not return a K8Sensor Secrets volume when UseSecretMounts is false",
+			volume: K8SensorSecretsVolume,
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					UseSecretMounts: pointer.To(false),
+				},
+			},
+			expectedNumVolumes: 0,
+			expectedItems:      0,
+		},
+		{
+			name:       "Should include HTTPS_PROXY when ProxyHost is set",
+			volume:     K8SensorSecretsVolume,
+			volumeName: "instana-secrets",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					UseSecretMounts: pointer.To(true),
+					Agent: instanav1.BaseAgentSpec{
+						ProxyHost: "proxy.example.com",
+					},
+				},
+			},
+			expectedNumVolumes: 1,
+			expectedItems:      2, // Agent key and HTTPS_PROXY
+		},
+		{
+			name:       "Should use custom KeysSecret name when specified",
+			volume:     K8SensorSecretsVolume,
+			volumeName: "instana-secrets",
+			instanaAgent: instanav1.InstanaAgent{
+				Spec: instanav1.InstanaAgentSpec{
+					UseSecretMounts: pointer.To(true),
+					Agent: instanav1.BaseAgentSpec{
+						KeysSecret: "custom-secret",
+					},
+				},
+			},
+			expectedNumVolumes: 1,
+			expectedItems:      1, // Only agent key
+		},
+	} {
+		t.Run(
+			test.name, func(t *testing.T) {
+				assertions := require.New(t)
+
+				vb := NewVolumeBuilder(&test.instanaAgent, false)
+
+				actualVolumes, actualVolumeMounts := vb.Build(test.volume)
+				assertions.Len(actualVolumes, test.expectedNumVolumes)
+				assertions.Len(actualVolumeMounts, test.expectedNumVolumes)
+
+				if len(actualVolumes) > 0 && test.volumeName != "" {
+					assertions.Equal(test.volumeName, actualVolumes[0].Name)
+
+					// Verify secret name is set correctly
+					if test.instanaAgent.Spec.Agent.KeysSecret != "" {
+						assertions.Equal(
+							test.instanaAgent.Spec.Agent.KeysSecret,
+							actualVolumes[0].VolumeSource.Secret.SecretName,
+						)
+					} else if test.instanaAgent.Name != "" {
+						assertions.Equal(test.instanaAgent.Name, actualVolumes[0].VolumeSource.Secret.SecretName)
+					}
+
+					// Verify items count
+					if test.expectedItems > 0 {
+						assertions.Len(
+							actualVolumes[0].VolumeSource.Secret.Items,
+							test.expectedItems,
+						)
+					}
+				}
+			},
+		)
+	}
+}

@@ -1,0 +1,7 @@
+.DS_Store
+~$*
+.bob/
+agent-install-*.log
+configuration.yaml
+instana-observability-documentation.pdf
+instana-support-bundle-*.zip

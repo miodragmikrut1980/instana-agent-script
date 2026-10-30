@@ -1,0 +1,19 @@
+{
+  "_comment": "Infrastructure-only monitoring — no APM tracing, metrics only",
+  "schema": "instana-agent-input",
+  "schema_version": 1,
+  "parameters": {
+    "BACKEND_TYPE": "selfhosted",
+    "HOST": "",
+    "PORT": "443",
+    "UPDATE_MODE": "dynamic",
+    "AGENT_MODE": "INFRASTRUCTURE",
+    "ZONE": "support-lab-infra",
+    "TAG_ENV": "support-lab",
+    "TAG_TEAM": "support"
+  },
+  "secrets": {
+    "AGENT_KEY": ""
+  },
+  "sensors": {}
+}

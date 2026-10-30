@@ -1,0 +1,58 @@
+apply plugin: 'java-gradle-plugin'
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply from: 'publish.gradle'
+apply plugin: 'jacoco'
+
+compileKotlin {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+task jacocoTestReportPlugin(type: JacocoReport, dependsOn: ['test']) {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+
+    // Define source and class files for coverage
+    def sources = sourceSets.main.allSource
+    def classes = sourceSets.main.output.classesDirs
+    classDirectories.setFrom files(classes)
+    sourceDirectories.setFrom files(sources)
+    executionData.setFrom files("$buildDir/jacoco/test.exec")
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation ("com.android.tools.build:gradle:$buildtools_version"){
+        // Exclude the vulnerable Bouncy Castle library
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    }
+    implementation ("com.android.tools.build:gradle-api:$buildtools_version"){
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+        exclude group: 'org.bouncycastle', module: 'bcpkix-jdk15on'
+    }
+    implementation "org.bouncycastle:bcprov-jdk15on:1.70"
+    implementation "org.bouncycastle:bcpkix-jdk15on:1.70"
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+    testImplementation 'org.mockito:mockito-inline:4.9.0'
+    testImplementation 'org.mockito:mockito-core:3.9.0'
+    testImplementation project(path: ':plugin')
+
+    implementation "commons-io:commons-io:2.8.0"
+    implementation "org.ow2.asm:asm:9.3"
+    implementation "org.ow2.asm:asm-commons:9.3"
+}

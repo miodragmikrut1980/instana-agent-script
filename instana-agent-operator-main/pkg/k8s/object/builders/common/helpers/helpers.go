@@ -1,0 +1,130 @@
+/*
+(c) Copyright IBM Corp. 2025
+(c) Copyright Instana Inc. 2025
+*/
+
+package helpers
+
+import (
+	"sort"
+	"strings"
+
+	corev1 "k8s.io/api/core/v1"
+
+	instanav1 "github.com/instana/instana-agent-operator/api/v1"
+	"github.com/instana/instana-agent-operator/pkg/optional"
+	"github.com/instana/instana-agent-operator/pkg/pointer"
+)
+
+const (
+	ContainersInstanaIORegistry = "containers.instana.io"
+)
+
+type helpers struct {
+	*instanav1.InstanaAgent
+}
+
+type Helpers interface {
+	ServiceAccountName() string
+	// ClusterScopedRBACName returns a cluster-unique name for the agent ClusterRole and ClusterRoleBinding.
+	ClusterScopedRBACName() string
+	// ClusterScopedK8sSensorRBACName returns a cluster-unique name for the k8s-sensor ClusterRole and ClusterRoleBinding.
+	ClusterScopedK8sSensorRBACName() string
+	TLSIsEnabled() bool
+	TLSSecretName() string
+	HeadlessServiceName() string
+	K8sSensorResourcesName() string
+	ContainersSecretName() string
+	UseContainersSecret() bool
+	ImagePullSecrets() []corev1.LocalObjectReference
+	SortEnvVarsByName(envVars []corev1.EnvVar)
+}
+
+func (h *helpers) serviceAccountNameDefault() string {
+	switch pointer.DerefOrEmpty(h.Spec.ServiceAccountSpec.Create.Create) {
+	case true:
+		return h.Name
+	default:
+		return "default"
+	}
+}
+
+func (h *helpers) ServiceAccountName() string {
+	return optional.Of(h.Spec.ServiceAccountSpec.Name.Name).GetOrDefault(h.serviceAccountNameDefault())
+}
+
+// ClusterScopedRBACName returns a cluster-unique name for the agent ClusterRole and ClusterRoleBinding.
+// Namespace is prepended unless it equals the ServiceAccount name (default single-tenant install).
+func (h *helpers) ClusterScopedRBACName() string {
+	saName := h.ServiceAccountName()
+	if h.Namespace == saName {
+		return saName
+	}
+	return h.Namespace + "-" + saName
+}
+
+// ClusterScopedK8sSensorRBACName returns a cluster-unique name for the k8s-sensor ClusterRole and ClusterRoleBinding.
+// Namespace is prepended unless it equals the ServiceAccount name (default single-tenant install).
+func (h *helpers) ClusterScopedK8sSensorRBACName() string {
+	k8sName := h.K8sSensorResourcesName()
+	if h.Namespace == h.ServiceAccountName() {
+		return k8sName
+	}
+	return h.Namespace + "-" + k8sName
+}
+
+func (h *helpers) TLSIsEnabled() bool {
+	return h.Spec.Agent.TlsSpec.SecretName != "" || (len(h.Spec.Agent.TlsSpec.Certificate) > 0 && len(h.Spec.Agent.TlsSpec.Key) > 0)
+}
+
+func (h *helpers) TLSSecretName() string {
+	return optional.Of(h.Spec.Agent.TlsSpec.SecretName).GetOrDefault(h.Name + "-tls")
+}
+
+func (h *helpers) HeadlessServiceName() string {
+	return h.Name + "-headless"
+}
+
+func (h *helpers) K8sSensorResourcesName() string {
+	return h.Name + "-k8sensor"
+}
+
+func (h *helpers) ContainersSecretName() string {
+	return h.Name + "-containers-instana-io"
+}
+
+func (h *helpers) UseContainersSecret() bool {
+	// Explicitly using e.PullSecrets != nil instead of len(e.PullSecrets) == 0 since the original chart specified that
+	// auto-generated secret shouldn't be used if the user explicitly provided an empty list of pull secrets
+	// (original logic was to only use the generated secret if the registry matches AND the pullSecrets field was
+	// omitted by the user). I don't understand why anyone would want this, but the original chart had comments
+	// specifically mentioning that this was the desired behavior, so keeping it until someone says otherwise.
+	return h.Spec.Agent.PullSecrets == nil && strings.HasPrefix(
+		h.Spec.Agent.ImageSpec.Name,
+		ContainersInstanaIORegistry,
+	)
+}
+
+func (h *helpers) ImagePullSecrets() []corev1.LocalObjectReference {
+	if h.UseContainersSecret() {
+		return []corev1.LocalObjectReference{
+			{
+				Name: h.ContainersSecretName(),
+			},
+		}
+	} else {
+		return h.Spec.Agent.ExtendedImageSpec.PullSecrets
+	}
+}
+
+func (h *helpers) SortEnvVarsByName(envVars []corev1.EnvVar) {
+	sort.Slice(envVars, func(i, j int) bool {
+		return envVars[i].Name < envVars[j].Name
+	})
+}
+
+func NewHelpers(agent *instanav1.InstanaAgent) Helpers {
+	return &helpers{
+		InstanaAgent: agent,
+	}
+}

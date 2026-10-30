@@ -1,0 +1,18 @@
+{
+  "_comment": "SaaS EU support replica for tenants on blue (AWS Dublin, ingress-blue-saas.instana.io). Frankfurt is emerald, Belgium is green - change SAAS_REGION for those.",
+  "schema": "instana-agent-input",
+  "schema_version": 1,
+  "parameters": {
+    "BACKEND_TYPE": "saas",
+    "SAAS_REGION": "ingress-blue-saas.instana.io:443",
+    "UPDATE_MODE": "dynamic",
+    "AGENT_MODE": "APM",
+    "ZONE": "support-replica-eu",
+    "TAG_ENV": "support",
+    "TAG_TEAM": "support"
+  },
+  "secrets": {
+    "AGENT_KEY": ""
+  },
+  "sensors": {}
+}

@@ -1,0 +1,144 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+println gradle.startParameter.taskRequests
+
+def buildType = gradle.startParameter.taskRequests.stream()
+        .flatMap { it.args.stream() }
+        .map { it.contains("Release") ? "Release" : it.contains("Debug") ? "Debug" : null}
+        .filter(Objects::nonNull)
+        .findFirst()
+
+buildType.ifPresent { println "buildType is ${it}" }
+
+def enableInstana = true
+//def enableInstana = buildType.orElse("").matches("Debug")
+if (enableInstana) {
+    println "instana> apply instana plugin"
+    apply plugin: 'com.instana.android-agent-plugin'
+}
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        targetSdkVersion 33
+        versionName "5.0"
+        versionCode 1
+        vectorDrawables.useSupportLibrary = true
+        multiDexEnabled true
+
+        def instanaProperties = new Properties()
+        instanaProperties.load(new FileInputStream("$project.projectDir/instana.properties.example"))
+        buildConfigField 'String', 'INSTANA_KEY', enableInstana ? "${instanaProperties["instana.key"]}" : '""'
+        buildConfigField 'String', 'INSTANA_REPORTING_URL', enableInstana ? "${instanaProperties["instana.reportingURL"]}" : '""'
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    signingConfigs {
+        debug {
+            storeFile file("$project.projectDir/keys/debug.keystore")
+            storePassword 'password'
+            keyAlias = 'debug'
+            keyPassword 'password'
+        }
+        release {
+            storeFile file("$project.projectDir/keys/release.keystore")
+            storePassword 'password'
+            keyAlias = 'release'
+            keyPassword 'password'
+        }
+    }
+    flavorDimensions "default"
+    productFlavors {
+        api21 {
+            minSdkVersion 21
+        }
+        api16 {
+            minSdkVersion 16
+        }
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            debuggable true
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    testOptions {
+        animationsDisabled true
+    }
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+    }
+    namespace 'com.instana.mobileeum'
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    implementation project(path: ':network')
+
+    // Language and support
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.0'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.0'
+    implementation 'com.google.android.material:material:1.6.1'
+
+    // Network clients
+    api21Implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    //noinspection GradleDependency
+    api16Implementation 'com.squareup.retrofit2:retrofit:2.6.4'
+
+    // UI
+    implementation 'com.squareup.picasso:picasso:2.8'
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+
+    // Instana Agent
+    implementation "com.instana:android-agent-runtime:$agent_version"
+//    implementation project(':runtime')
+
+    // Check for Google Play Services availability
+    implementation 'com.google.android.gms:play-services-basement:18.1.0'
+    implementation 'com.google.android.gms:play-services-base:18.1.0'
+
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.ext:junit-ktx:1.1.3'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'org.hamcrest:hamcrest-library:2.2'
+
+    implementation 'com.github.chuckerteam.chucker:library:3.5.2'
+}
+
+if (enableInstana) {
+    println "instana> plugin configuration"
+    instana {
+        ignoreClassesRegex = ['com\\.library\\.to\\.ignore\\..*']
+        logVisits = true
+        logInstrumentation = true
+        logTimeSpent = true
+    }
+}
