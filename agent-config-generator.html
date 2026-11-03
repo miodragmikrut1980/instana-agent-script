@@ -126,9 +126,19 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);ou
 /* Sensor detail panels */
 .sensor-panels{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 .sensor-panel{background:var(--paper);border:1px solid var(--line);border-radius:8px;
-  padding:10px 12px;display:none}
+  padding:12px 14px;display:none}
 .sensor-panel.visible{display:block}
-.sensor-panel h4{margin:0 0 8px;font-size:13px;font-weight:600}
+.sensor-panel-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.sensor-panel h4{margin:0;font-size:13.5px;font-weight:600}
+.sensor-panel-actions{display:flex;gap:6px}
+.btn-mini{font:600 11.5px var(--ui);border:1px solid var(--line);border-radius:5px;
+  background:var(--sheet);color:var(--ink);padding:3px 8px;cursor:pointer}
+.btn-mini:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.setup-snippet{display:none;margin-top:10px;padding:10px 12px;background:var(--code-bg);
+  color:var(--code-ink);border-radius:6px;font:12px/1.45 var(--mono);overflow-x:auto;white-space:pre-wrap;position:relative}
+.setup-snippet.open{display:block}
+.setup-snippet-title{font:600 11px var(--ui);text-transform:uppercase;letter-spacing:.04em;
+  color:var(--code-key);margin-bottom:6px;display:block}
 .sensor-panel .grid{gap:7px 12px}
 
 /* QManager rows */
@@ -205,14 +215,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <label><input type="radio" name="TARGET" value="linux" checked><span>Linux host<small>VM, bare metal</small></span></label>
         <label><input type="radio" name="TARGET" value="docker"><span>Docker<small>single container</small></span></label>
         <label><input type="radio" name="TARGET" value="kubernetes"><span>Kubernetes<small>Helm chart</small></span></label>
+        <label><input type="radio" name="TARGET" value="operator"><span>Operator / OpenShift<small>Custom Resource</small></span></label>
       </div>
     </div>
 
-    <!-- Cluster name (Kubernetes only) -->
+    <!-- Cluster name (Kubernetes / Operator only) -->
     <div class="field wide" id="cluster-field" hidden>
-      <label class="lbl" for="CLUSTER_NAME">Cluster name <small>(Kubernetes)</small></label>
+      <label class="lbl" for="CLUSTER_NAME">Cluster name <small>(Kubernetes / OpenShift)</small></label>
       <input type="text" class="code" id="CLUSTER_NAME" placeholder="my-cluster">
-      <span class="help">Used as <code>cluster.name</code> in the Helm command.</span>
+      <span class="help">Used as <code>cluster.name</code> in Helm values or InstanaAgent CR.</span>
     </div>
 
     <!-- Backend -->
@@ -519,25 +530,54 @@ button:disabled{opacity:.5;cursor:not-allowed}
       <div class="sensor-panels" id="sensor-panels">
 
         <div class="sensor-panel" id="panel-mysql">
-          <h4>MySQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:3306</span></h4>
+          <div class="sensor-panel-head">
+            <h4>MySQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:3306</span></h4>
+            <div class="sensor-panel-actions">
+              <button type="button" class="btn-mini" data-preset="mysql">Defaults</button>
+              <button type="button" class="btn-mini" data-toggle-sql="sql-mysql">Setup SQL 📋</button>
+            </div>
+          </div>
           <div class="grid">
             <div class="field"><label class="lbl" for="mysql_user">User</label><input type="text" class="code" id="mysql_user" placeholder="instana"></div>
             <div class="field"><label class="lbl" for="mysql_pass">Password</label>
               <div class="secret-row"><input type="password" class="code" id="mysql_pass" autocomplete="off"><button type="button" data-show="mysql_pass">Show</button></div></div>
           </div>
+          <div class="setup-snippet" id="sql-mysql">
+            <span class="setup-snippet-title">MySQL Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
+GRANT SELECT, PROCESS, REPLICATION CLIENT ON *.* TO 'instana'@'localhost';
+FLUSH PRIVILEGES;
+          </div>
         </div>
 
         <div class="sensor-panel" id="panel-mariadb">
-          <h4>MariaDB <span style="font-weight:400;color:var(--muted);font-size:12px">— separate sensor, MySQL sensor does not monitor MariaDB</span></h4>
+          <div class="sensor-panel-head">
+            <h4>MariaDB <span style="font-weight:400;color:var(--muted);font-size:12px">— separate sensor, MySQL sensor does not monitor MariaDB</span></h4>
+            <div class="sensor-panel-actions">
+              <button type="button" class="btn-mini" data-preset="mariadb">Defaults</button>
+              <button type="button" class="btn-mini" data-toggle-sql="sql-mariadb">Setup SQL 📋</button>
+            </div>
+          </div>
           <div class="grid">
             <div class="field"><label class="lbl" for="maria_user">User</label><input type="text" class="code" id="maria_user" placeholder="instana"></div>
             <div class="field"><label class="lbl" for="maria_pass">Password</label>
               <div class="secret-row"><input type="password" class="code" id="maria_pass" autocomplete="off"><button type="button" data-show="maria_pass">Show</button></div></div>
           </div>
+          <div class="setup-snippet" id="sql-mariadb">
+            <span class="setup-snippet-title">MariaDB Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
+GRANT SELECT ON performance_schema.* TO 'instana'@'localhost';
+GRANT SLAVE MONITOR ON *.* TO 'instana'@'localhost';
+FLUSH PRIVILEGES;
+          </div>
         </div>
 
         <div class="sensor-panel" id="panel-postgresql">
-          <h4>PostgreSQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:5432</span></h4>
+          <div class="sensor-panel-head">
+            <h4>PostgreSQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:5432</span></h4>
+            <div class="sensor-panel-actions">
+              <button type="button" class="btn-mini" data-preset="postgresql">Defaults</button>
+              <button type="button" class="btn-mini" data-toggle-sql="sql-postgresql">Setup SQL 📋</button>
+            </div>
+          </div>
           <div class="grid">
             <div class="field"><label class="lbl" for="pg_user">User</label><input type="text" class="code" id="pg_user" placeholder="instana"></div>
             <div class="field"><label class="lbl" for="pg_pass">Password</label>
@@ -545,10 +585,22 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <div class="field"><label class="lbl" for="pg_db">Database</label><input type="text" class="code" id="pg_db" placeholder="same as user">
               <span class="help">Optional. Used for authentication only.</span></div>
           </div>
+          <div class="setup-snippet" id="sql-postgresql">
+            <span class="setup-snippet-title">PostgreSQL Setup SQL (Documented Permissions):</span>CREATE USER instana WITH PASSWORD '&lt;password&gt;';
+CREATE DATABASE instana OWNER instana;
+GRANT CONNECT ON DATABASE instana TO instana;
+GRANT pg_monitor TO instana; -- PostgreSQL 10+
+          </div>
         </div>
 
         <div class="sensor-panel" id="panel-mongodb">
-          <h4>MongoDB <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:27017</span></h4>
+          <div class="sensor-panel-head">
+            <h4>MongoDB <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:27017</span></h4>
+            <div class="sensor-panel-actions">
+              <button type="button" class="btn-mini" data-preset="mongodb">Defaults</button>
+              <button type="button" class="btn-mini" data-toggle-sql="sql-mongodb">Setup Command 📋</button>
+            </div>
+          </div>
           <div class="grid">
             <div class="field"><label class="lbl" for="mongo_user">User</label><input type="text" class="code" id="mongo_user" placeholder="optional"></div>
             <div class="field"><label class="lbl" for="mongo_pass">Password</label>
@@ -557,14 +609,38 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <input type="text" class="code" id="mongo_source" placeholder="admin">
               <span class="help">Database where the user is defined (source field)</span></div>
           </div>
+          <div class="setup-snippet" id="sql-mongodb">
+            <span class="setup-snippet-title">MongoDB mongosh Command (Documented Permissions):</span>use admin
+db.createUser({
+  user: "instana",
+  pwd: "&lt;password&gt;",
+  roles: [
+    { role: "read", db: "admin" },
+    { role: "clusterMonitor", db: "admin" },
+    { role: "read", db: "local" }
+  ]
+})
+          </div>
         </div>
 
         <div class="sensor-panel" id="panel-redis">
-          <h4>Redis <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:6379</span></h4>
+          <div class="sensor-panel-head">
+            <h4>Redis <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:6379</span></h4>
+            <div class="sensor-panel-actions">
+              <button type="button" class="btn-mini" data-toggle-sql="sql-redis">Setup Note 📋</button>
+            </div>
+          </div>
           <div class="grid">
             <div class="field"><label class="lbl" for="redis_pass">Password</label>
               <div class="secret-row"><input type="password" class="code" id="redis_pass" autocomplete="off" placeholder="leave empty if no auth"><button type="button" data-show="redis_pass">Show</button></div>
               <span class="help">Leave empty if Redis has no authentication</span></div>
+          </div>
+          <div class="setup-snippet" id="sql-redis">
+            <span class="setup-snippet-title">Redis Setup Note:</span># In redis.conf (if password protected):
+requirepass "&lt;password&gt;"
+
+# CONFIG command must be accessible to the agent.
+# If CONFIG was renamed with rename-command, specify config-command in configuration.yaml.
           </div>
         </div>
 
@@ -576,7 +652,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
         </div>
 
         <div class="sensor-panel" id="panel-mssql">
-          <h4>Microsoft SQL Server</h4>
+          <div class="sensor-panel-head">
+            <h4>Microsoft SQL Server</h4>
+            <div class="sensor-panel-actions">
+              <button type="button" class="btn-mini" data-preset="mssql">Defaults</button>
+              <button type="button" class="btn-mini" data-toggle-sql="sql-mssql">Setup SQL 📋</button>
+            </div>
+          </div>
           <div class="grid">
             <div class="field"><label class="lbl" for="mssql_instance">Instance</label><input type="text" class="code" id="mssql_instance" value="MSSQLSERVER"></div>
             <div class="field"><label class="lbl" for="mssql_port">Port</label><input type="text" class="code" id="mssql_port" value="1433"></div>
@@ -584,13 +666,38 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <div class="field"><label class="lbl" for="mssql_pass">Password</label>
               <div class="secret-row"><input type="password" class="code" id="mssql_pass" autocomplete="off"><button type="button" data-show="mssql_pass">Show</button></div></div>
           </div>
+          <div class="setup-snippet" id="sql-mssql">
+            <span class="setup-snippet-title">SQL Server Setup SQL (Documented Permissions):</span>CREATE LOGIN instana WITH PASSWORD = '&lt;password&gt;';
+CREATE USER instana FOR LOGIN instana;
+GRANT VIEW SERVER STATE TO instana;
+GRANT VIEW DATABASE STATE TO instana;
+-- For disk volume & auto-growth metrics, add sysadmin membership or db_owner.
+          </div>
         </div>
 
         <div class="sensor-panel" id="panel-ibmmq">
-          <h4>IBM MQ</h4>
+          <div class="sensor-panel-head">
+            <h4>IBM MQ</h4>
+            <div class="sensor-panel-actions">
+              <button type="button" class="btn-mini" data-preset="ibmmq">Default QM</button>
+              <button type="button" class="btn-mini" data-toggle-sql="sql-ibmmq">OAM Rights 📋</button>
+            </div>
+          </div>
           <p class="help" style="margin-bottom:8px">Add one row per Queue Manager.</p>
           <div id="qmgr-list" class="qmgr-list"></div>
           <button type="button" class="add-btn" id="add-qmgr">+ Add Queue Manager</button>
+          <div class="setup-snippet" id="sql-ibmmq">
+            <span class="setup-snippet-title">IBM MQ runmqsc Authorization (Documented OAM Authority):</span>SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('&lt;user&gt;') AUTHADD(CONNECT,DSP,INQ)
+SET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,PUT,CHG)
+SET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,GET)
+SET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,GET,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,GET,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(CHANNEL) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(CLNTCONN) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(LISTENER) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(TOPIC) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+REFRESH SECURITY
+          </div>
         </div>
 
         <div class="sensor-panel" id="panel-kafka">
@@ -648,6 +755,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <button class="primary" id="btnDownloadYaml">Download YAML</button>
     <button id="btnCopyYaml">Copy YAML</button>
     <button id="btnCopyCmd">Copy install command</button>
+    <button id="btnDownloadJson" title="Download JSON configuration file for use with agent-install.sh --config">Download JSON</button>
     <button id="btnCopyTest" title="Copies a curl test to run on the target machine: checks the backend and repositories, through the proxy if one is set.">Copy connectivity test</button>
     <button id="btnCopyHeredoc" title="Copies a shell heredoc with the full config including agent key. Paste directly into terminal — avoid saving to shared logs.">Copy as paste-in ⚠</button>
   </div>
@@ -968,9 +1076,10 @@ renderQmgrs();
 // ---------- Layout ----------
 function layout() {
   const bt = radio("BACKEND_TYPE");
+  const tgt = radio("TARGET");
   $("saas-regions").hidden = bt !== "saas";
   $("selfhosted-fields").hidden = bt !== "selfhosted";
-  $("cluster-field").hidden = radio("TARGET") !== "kubernetes";
+  $("cluster-field").hidden = (tgt !== "kubernetes" && tgt !== "operator");
   $("static-version").hidden = radio("UPDATE_MODE") !== "static";
   // Show update time row when Daily or Weekly is selected
   const freq = radio("UPDATE_FREQ");
@@ -979,7 +1088,7 @@ function layout() {
   const rt = radio("RES_TARGET");
   $("res-linux").hidden      = rt !== "linux";
   $("res-docker").hidden     = rt !== "docker";
-  $("res-kubernetes").hidden = rt !== "kubernetes";
+  $("res-kubernetes").hidden = (rt !== "kubernetes" && rt !== "operator");
   document.querySelectorAll('input[name="sensor"]').forEach(cb => {
     const p = $("panel-" + cb.value);
     if(p) p.classList.toggle("visible", cb.checked);
@@ -1012,8 +1121,8 @@ function generateYAML() {
   const sq = v => `'${String(v).replace(/'/g,"''")}'`;
 
   // Zone — documented section: com.instana.plugin.generic.hardware
-  // On Kubernetes the zone is set with zone.name in the Helm command instead.
-  if(zone && radio("TARGET") !== "kubernetes"){
+  // On Kubernetes / Operator the zone is set with zone.name in Helm or CR instead.
+  if(zone && radio("TARGET") !== "kubernetes" && radio("TARGET") !== "operator"){
     c("com.instana.plugin.generic.hardware:");
     c("  enabled: true");
     c(`  availability-zone: ${sq(zone)}`);
@@ -1443,6 +1552,61 @@ function generateCmd() {
     out.push("# Check:");
     out.push("kubectl get pods -n instana-agent");
     return out.join("\n");
+  } else if(target==="operator"){
+    // Operator / OpenShift: documented InstanaAgent Custom Resource
+    const body = generateYAML().split("\n").filter(l => l.trim() && !l.trim().startsWith("#"));
+    const dlKey = val("DOWNLOAD_KEY").replace(/\s+/g,"");
+    const clusterName = val("CLUSTER_NAME") || "<YOUR_CLUSTER_NAME>";
+    const out = [
+      "# ── Kubernetes Operator / Red Hat OpenShift ──────────────────",
+      "# Requires the Instana Agent Operator installed (OperatorHub / OLM / kubectl).",
+      "",
+      "# 1. Create namespace (if not using OLM default):",
+      "kubectl create namespace instana-agent  # or: oc new-project instana-agent",
+      "",
+      "# 2. Deploy operator manifest (if not installed via OperatorHub):",
+      "kubectl apply -f https://github.com/instana/instana-agent-operator/releases/latest/download/instana-agent-operator.yaml",
+      "",
+      "# 3. Create InstanaAgent Custom Resource (instana-agent.customresource.yaml):",
+      "cat > instana-agent.customresource.yaml <<'EOF'",
+      "apiVersion: instana.io/v1",
+      "kind: InstanaAgent",
+      "metadata:",
+      "  name: instana-agent",
+      "  namespace: instana-agent",
+      "spec:",
+    ];
+    if(val("ZONE")) {
+      out.push("  zone:");
+      out.push(`    name: ${val("ZONE")}`);
+    }
+    out.push("  cluster:");
+    out.push(`    name: ${clusterName}`);
+    out.push("  agent:");
+    out.push(`    key: ${key}`);
+    if(dlKey) out.push(`    downloadKey: ${dlKey}`);
+    out.push(`    endpointHost: ${bhost}`);
+    out.push(`    endpointPort: "${bport}"`);
+    if(proxyHost){
+      out.push(`    proxyHost: ${proxyHost}`);
+      if(proxyPort) out.push(`    proxyPort: "${proxyPort}"`);
+      out.push(`    proxyProtocol: ${proxyType}`);
+      if(proxyUser) out.push(`    proxyUser: "${proxyUser}"`);
+      if(proxyPass) out.push(`    proxyPassword: "${proxyPass}"`);
+    }
+    out.push("    env: {}");
+    if(body.length){
+      out.push("    configuration_yaml: |");
+      body.forEach(l => out.push("      " + l));
+    }
+    out.push("EOF");
+    out.push("");
+    out.push("# 4. Apply custom resource:");
+    out.push("kubectl apply -f instana-agent.customresource.yaml  # or: oc apply -f instana-agent.customresource.yaml");
+    out.push("");
+    out.push("# 5. Verify deployment:");
+    out.push("kubectl get pods -n instana-agent");
+    return out.join("\n");
   } else {
     const sq = v => /^[A-Za-z0-9_.:\/-]+$/.test(v) ? v : `'${v.replace(/'/g, "'\\''")}'`;
     const lines = [
@@ -1608,7 +1772,7 @@ async function copyText(text,label){
   toast(`${label} copied`);
 }
 
-// ---------- Buttons ----------
+// ---------- Buttons & Presets ----------
 $("btnDownloadYaml").onclick=()=>{
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([_yaml],{type:"text/yaml"}));
@@ -1623,11 +1787,85 @@ $("btnCopyHeredoc").onclick=()=>copyText(
   "Paste-in command"
 );
 
-// ---------- Show/hide passwords ----------
+function exportJsonConfig() {
+  const p = {}, s = {}, sensors = {};
+  if(radio("BACKEND_TYPE")==="saas") p.SAAS_REGION = val("SAAS_REGION");
+  else { p.HOST = val("HOST"); if(val("PORT")) p.PORT = val("PORT"); }
+  if(val("AGENT_KEY_Q")) s.AGENT_KEY = val("AGENT_KEY_Q").replace(/\s+/g,"");
+  if(val("ZONE")) p.ZONE = val("ZONE");
+  if(radio("AGENT_MODE")!=="APM") p.AGENT_MODE = radio("AGENT_MODE");
+  if(radio("UPDATE_MODE")!=="dynamic") p.UPDATE_MODE = radio("UPDATE_MODE");
+  if(val("TAG_ENV")) p.TAG_ENV = val("TAG_ENV");
+  if(val("TAG_TEAM")) p.TAG_TEAM = val("TAG_TEAM");
+  if(val("PROXY_HOST")){
+    p.PROXY_HOST = val("PROXY_HOST");
+    p.PROXY_TYPE = val("PROXY_TYPE") || "http";
+    if(val("PROXY_PORT")) p.PROXY_PORT = val("PROXY_PORT");
+    if(val("PROXY_USER")) p.PROXY_USER = val("PROXY_USER");
+    if(val("PROXY_PASS")) s.PROXY_PASS = val("PROXY_PASS");
+  }
+  const selSensors = checked("sensor");
+  if(selSensors.includes("mysql") && val("mysql_user")){
+    sensors.mysql = { user: val("mysql_user"), password: val("mysql_pass") };
+  }
+  if(selSensors.includes("mariadb") && val("maria_user")){
+    sensors.mariadb = { user: val("maria_user"), password: val("maria_pass") };
+  }
+  if(selSensors.includes("postgresql") && val("pg_user")){
+    sensors.postgresql = { user: val("pg_user"), password: val("pg_pass") };
+    if(val("pg_db")) sensors.postgresql.database = val("pg_db");
+  }
+  if(selSensors.includes("mongodb")){
+    sensors.mongodb = { user: val("mongo_user"), password: val("mongo_pass"), source: val("mongo_source")||"admin" };
+  }
+  if(selSensors.includes("redis") && val("redis_pass")){
+    sensors.redis = { password: val("redis_pass") };
+  }
+  if(selSensors.includes("mssql")){
+    sensors.mssql = { local: [{ instance: val("mssql_instance")||"MSSQLSERVER", port: val("mssql_port")||"1433", user: val("mssql_user"), password: val("mssql_pass") }] };
+  }
+  if(selSensors.includes("ibmmq")){
+    const qms = qmgrRows.filter(r=>r.name);
+    if(qms.length) sensors.ibmmq = { queueManagers: qms };
+  }
+  return JSON.stringify({ parameters: p, secrets: s, sensors: sensors }, null, 2);
+}
+
+$("btnDownloadJson").onclick = () => {
+  const json = exportJsonConfig();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+  a.download = "instana-agent-config.json"; a.click(); URL.revokeObjectURL(a.href);
+  toast("Saved instana-agent-config.json");
+};
+
+// ---------- Show/hide passwords, Presets & SQL Snippets ----------
 document.addEventListener("click",e=>{
-  const btn=e.target.closest("[data-show]"); if(!btn) return;
-  const input=$(btn.dataset.show); if(!input) return;
-  const show=input.type==="password"; input.type=show?"text":"password"; btn.textContent=show?"Hide":"Show";
+  const showBtn=e.target.closest("[data-show]");
+  if(showBtn){
+    const input=$(showBtn.dataset.show); if(!input) return;
+    const show=input.type==="password"; input.type=show?"text":"password"; showBtn.textContent=show?"Hide":"Show";
+    return;
+  }
+  const pBtn=e.target.closest("[data-preset]");
+  if(pBtn){
+    const p=pBtn.dataset.preset;
+    if(p==="mysql"){ $("mysql_user").value="instana"; }
+    else if(p==="mariadb"){ $("maria_user").value="instana"; }
+    else if(p==="postgresql"){ $("pg_user").value="instana"; $("pg_db").value="instana"; }
+    else if(p==="mongodb"){ $("mongo_user").value="instana"; $("mongo_source").value="admin"; }
+    else if(p==="mssql"){ $("mssql_instance").value="MSSQLSERVER"; $("mssql_port").value="1433"; $("mssql_user").value="instana"; }
+    else if(p==="ibmmq"){ qmgrRows=[{name:"QM1",channel:"DEV.APP.SVRCONN",port:"1414",username:"app"}]; renderQmgrs(); }
+    update();
+    toast(`Loaded defaults for ${p}`);
+    return;
+  }
+  const sqlBtn=e.target.closest("[data-toggle-sql]");
+  if(sqlBtn){
+    const el=$(sqlBtn.dataset.toggleSql);
+    if(el) el.classList.toggle("open");
+    return;
+  }
 });
 
 // ---------- Load JSON config ----------
