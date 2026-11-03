@@ -683,16 +683,18 @@ REFRESH SECURITY
 <aside>
   <div class="panel">
     <div class="panel-head">
-      <h2>configuration.yaml</h2>
+      <h2 id="panel-title">configuration.yaml</h2>
       <div class="panel-tabs">
         <button class="panel-tab active" id="tab-yaml">YAML</button>
         <button class="panel-tab" id="tab-cmd">Install command</button>
         <button class="panel-tab" id="tab-test">Connectivity test</button>
+        <button class="panel-tab" id="tab-lab">Repro lab</button>
       </div>
     </div>
     <pre class="code-out" id="preview-yaml" aria-live="polite"></pre>
     <pre class="code-out" id="preview-cmd" aria-live="polite" hidden></pre>
     <pre class="code-out" id="preview-test" aria-live="polite" hidden></pre>
+    <pre class="code-out" id="preview-lab" aria-live="polite" hidden></pre>
   </div>
   <div class="status" id="status"></div>
   <div class="actions">
@@ -701,6 +703,7 @@ REFRESH SECURITY
     <button id="btnCopyCmd">Copy command</button>
     <button id="btnDownloadJson" title="Download JSON configuration file for use with agent-install.sh --config">Download JSON</button>
     <button id="btnCopyTest" title="Copies a curl test to run on target machine">Connectivity test</button>
+    <button id="btnCopyLab" title="Copies Docker repro lab setup script for test VM">Repro lab script</button>
     <button id="btnCopyHeredoc" title="Copies shell heredoc with config">Copy paste-in ⚠</button>
   </div>
   <p style="font-size:11.5px;color:var(--muted);margin:6px 0 0">
@@ -1533,6 +1536,230 @@ function generateTest(){
   return L.join("\n");
 }
 
+// ---------- Repro lab script ----------
+function generateLabScript(){
+  const sensors = checked("sensor");
+  const sq = v => /^[A-Za-z0-9_.:\/-]+$/.test(v) ? v : `'${v.replace(/'/g, "'\\''")}'`;
+  const L = [
+    "# ── Instana Support Repro Lab Setup ─────────────────────────────",
+    "# Run this script on a clean Linux test VM with Docker installed:",
+    "#   sudo apt update && sudo apt install -y docker.io",
+    "#",
+    "# Creates containerized instances configured with required users and",
+    "# permissions matching your active sensor configuration.",
+    "",
+  ];
+
+  const labSensors = sensors.filter(s => ["ibmmq","mysql","mariadb","postgresql","mongodb","redis","mssql"].includes(s));
+  if(!labSensors.length){
+    L.push("# No mockable database / messaging technologies currently selected.");
+    L.push("# Select technologies in 'Sensors & DBs' (IBM MQ, MySQL, PostgreSQL, MongoDB, Redis, MSSQL) to generate their mock containers.");
+    return L.join("\n");
+  }
+
+  // IBM MQ
+  if(sensors.includes("ibmmq")){
+    const rows = (typeof qmgrRows !== "undefined") ? qmgrRows.filter(r => r.name) : [];
+    const qms = rows.length ? rows : [{name:"QM1", channel:"DEV.APP.SVRCONN", port:"1414", username:"app", password:"pass123"}];
+    qms.forEach((qm, idx) => {
+      const qmName = qm.name || "QM1";
+      const qmPort = qm.port || "1414";
+      const qmUser = qm.username || qm.user || "app";
+      const qmPass = qm.password || qm.pass || "pass123";
+      const cName = idx === 0 ? "mq-test" : `mq-test-${idx+1}`;
+      L.push(`echo "==> Setting up IBM MQ (${qmName})..."`);
+      L.push(`sudo docker rm -f ${cName} 2>/dev/null || true`);
+      L.push("sudo docker run \\");
+      L.push("  --detach \\");
+      L.push(`  --name ${cName} \\`);
+      L.push("  --env LICENSE=accept \\");
+      L.push(`  --env MQ_QMGR_NAME=${sq(qmName)} \\`);
+      L.push(`  --env MQ_APP_PASSWORD=${sq(qmPass)} \\`);
+      L.push(`  --publish ${qmPort}:1414 \\`);
+      L.push("  --publish 9443:9443 \\");
+      L.push("  icr.io/ibm-messaging/mq:latest");
+      L.push("");
+      L.push(`echo "Waiting for IBM MQ ${qmName} to start..."`);
+      L.push(`until sudo docker exec ${cName} dspmq 2>/dev/null | grep -q 'Running'; do sleep 2; done`);
+      L.push("sleep 3");
+      L.push("");
+      L.push(`# Grant OAM authority required by Instana ibmmq sensor:`);
+      L.push(`sudo docker exec -i ${cName} runmqsc ${sq(qmName)} <<'EOF'`);
+      L.push(`SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('${qmUser}') AUTHADD(CONNECT,DSP,INQ)`);
+      L.push(`SET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,PUT,CHG)`);
+      L.push(`SET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,GET)`);
+      L.push(`SET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,GET,CHG)`);
+      L.push(`SET AUTHREC PROFILE('SYSTEM.ADMIN.PERFM.EVENT') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,GET,CHG)`);
+      L.push(`SET AUTHREC PROFILE('SYSTEM.ADMIN.CHANNEL.EVENT') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,GET,CHG)`);
+      L.push(`SET AUTHREC PROFILE('SYSTEM.ADMIN.QMGR.EVENT') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,GET,CHG)`);
+      L.push(`SET AUTHREC PROFILE('**') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,GET,CHG)`);
+      L.push(`SET AUTHREC PROFILE('**') OBJTYPE(CHANNEL) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+      L.push(`SET AUTHREC PROFILE('**') OBJTYPE(CLNTCONN) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+      L.push(`SET AUTHREC PROFILE('**') OBJTYPE(LISTENER) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+      L.push(`SET AUTHREC PROFILE('**') OBJTYPE(TOPIC) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+      L.push(`SET AUTHREC PROFILE('DEV.**') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+      L.push(`SET AUTHREC PROFILE('DEV.**') OBJTYPE(TOPIC) PRINCIPAL('${qmUser}') AUTHADD(DSP)`);
+      L.push("REFRESH SECURITY");
+      L.push("EOF");
+      L.push("");
+    });
+  }
+
+  // MySQL
+  if(sensors.includes("mysql")){
+    const u = val("mysql_user") || "instana";
+    const p = val("mysql_pass") || "My&Sql<Pass1";
+    L.push('echo "==> Setting up MySQL 8.4..."');
+    L.push("sudo docker rm -f mysql-test 2>/dev/null || true");
+    L.push("sudo docker run \\");
+    L.push("  --detach \\");
+    L.push("  --name mysql-test \\");
+    L.push("  --env MYSQL_ROOT_PASSWORD='rootpassword123' \\");
+    L.push("  --publish 3306:3306 \\");
+    L.push("  mysql:8.4 --mysql-native-password=ON");
+    L.push("");
+    L.push('echo "Waiting for MySQL to accept connections..."');
+    L.push('until sudo docker exec mysql-test mysqladmin ping -prootpassword123 --silent 2>/dev/null; do sleep 2; done');
+    L.push("");
+    L.push("sudo docker exec -i mysql-test mysql -uroot -prootpassword123 <<'EOF'");
+    L.push(`CREATE USER '${u}'@'%' IDENTIFIED BY '${p}';`);
+    L.push(`GRANT SELECT, PROCESS, REPLICATION CLIENT ON *.* TO '${u}'@'%';`);
+    L.push("FLUSH PRIVILEGES;");
+    L.push("EOF");
+    L.push("");
+  }
+
+  // MariaDB
+  if(sensors.includes("mariadb")){
+    const u = val("maria_user") || "instana";
+    const p = val("maria_pass") || "Ma&Pass1";
+    L.push('echo "==> Setting up MariaDB 11..."');
+    L.push("sudo docker rm -f mariadb-test 2>/dev/null || true");
+    L.push("sudo docker run \\");
+    L.push("  --detach \\");
+    L.push("  --name mariadb-test \\");
+    L.push("  --env MARIADB_ROOT_PASSWORD='rootpassword123' \\");
+    L.push("  --publish 3306:3306 \\");
+    L.push("  mariadb:11");
+    L.push("");
+    L.push('echo "Waiting for MariaDB to accept connections..."');
+    L.push('until sudo docker exec mariadb-test mariadb-admin ping -prootpassword123 --silent 2>/dev/null; do sleep 2; done');
+    L.push("");
+    L.push("sudo docker exec -i mariadb-test mariadb -uroot -prootpassword123 <<'EOF'");
+    L.push(`CREATE USER '${u}'@'%' IDENTIFIED BY '${p}';`);
+    L.push(`GRANT SELECT ON performance_schema.* TO '${u}'@'%';`);
+    L.push(`GRANT SLAVE MONITOR ON *.* TO '${u}'@'%';`);
+    L.push("FLUSH PRIVILEGES;");
+    L.push("EOF");
+    L.push("");
+  }
+
+  // PostgreSQL
+  if(sensors.includes("postgresql")){
+    const u = val("pg_user") || "instana";
+    const p = val("pg_pass") || "Pg&Pass<1";
+    const db = val("pg_db") || u;
+    L.push('echo "==> Setting up PostgreSQL 16..."');
+    L.push("sudo docker rm -f postgres-test 2>/dev/null || true");
+    L.push("sudo docker run \\");
+    L.push("  --detach \\");
+    L.push("  --name postgres-test \\");
+    L.push("  --env POSTGRES_PASSWORD='rootpassword123' \\");
+    L.push("  --publish 5432:5432 \\");
+    L.push("  postgres:16");
+    L.push("");
+    L.push('echo "Waiting for PostgreSQL to accept connections..."');
+    L.push('until sudo docker exec postgres-test pg_isready -U postgres 2>/dev/null; do sleep 2; done');
+    L.push("");
+    L.push("sudo docker exec -i postgres-test psql -U postgres <<'EOF'");
+    L.push(`CREATE USER ${u} WITH PASSWORD '${p}';`);
+    L.push(`CREATE DATABASE ${db} OWNER ${u};`);
+    L.push(`GRANT CONNECT ON DATABASE ${db} TO ${u};`);
+    L.push(`GRANT pg_monitor TO ${u};`);
+    L.push("EOF");
+    L.push("");
+  }
+
+  // MongoDB
+  if(sensors.includes("mongodb")){
+    const u = val("mongo_user") || "instana";
+    const p = val("mongo_pass") || "Mo&Pass<1";
+    L.push('echo "==> Setting up MongoDB 7..."');
+    L.push("sudo docker rm -f mongo-test 2>/dev/null || true");
+    L.push("sudo docker run \\");
+    L.push("  --detach \\");
+    L.push("  --name mongo-test \\");
+    L.push("  --publish 27017:27017 \\");
+    L.push("  mongo:7");
+    L.push("");
+    L.push('echo "Waiting for MongoDB to accept connections..."');
+    L.push('until sudo docker exec mongo-test mongosh --eval "db.adminCommand(\'ping\')" --quiet 2>/dev/null; do sleep 2; done');
+    L.push("");
+    L.push("sudo docker exec -i mongo-test mongosh <<'EOF'");
+    L.push("use admin");
+    L.push("db.createUser({");
+    L.push(`  user: "${u}",`);
+    L.push(`  pwd: "${p}",`);
+    L.push("  roles: [");
+    L.push('    { role: "read", db: "admin" },');
+    L.push('    { role: "clusterMonitor", db: "admin" },');
+    L.push('    { role: "read", db: "local" }');
+    L.push("  ]");
+    L.push("})");
+    L.push("EOF");
+    L.push("");
+  }
+
+  // Redis
+  if(sensors.includes("redis")){
+    const p = val("redis_pass");
+    L.push('echo "==> Setting up Redis 7..."');
+    L.push("sudo docker rm -f redis-test 2>/dev/null || true");
+    L.push("sudo docker run \\");
+    L.push("  --detach \\");
+    L.push("  --name redis-test \\");
+    L.push("  --publish 6379:6379 \\");
+    if(p){
+      L.push(`  redis:7 redis-server --requirepass "${p}"`);
+    } else {
+      L.push("  redis:7");
+    }
+    L.push("");
+  }
+
+  // MS SQL Server
+  if(sensors.includes("mssql")){
+    const u = val("mssql_user") || "instana";
+    const p = val("mssql_pass") || "Ms&Pass<1";
+    const port = val("mssql_port") || "1433";
+    L.push('echo "==> Setting up Microsoft SQL Server 2022..."');
+    L.push("sudo docker rm -f mssql-test 2>/dev/null || true");
+    L.push("sudo docker run \\");
+    L.push("  --detach \\");
+    L.push("  --name mssql-test \\");
+    L.push("  --env ACCEPT_EULA=Y \\");
+    L.push("  --env MSSQL_SA_PASSWORD='SaStrongPassword123!' \\");
+    L.push(`  --publish ${port}:1433 \\`);
+    L.push("  mcr.microsoft.com/mssql/server:2022-latest");
+    L.push("");
+    L.push('echo "Waiting for SQL Server to accept connections..."');
+    L.push('until sudo docker exec mssql-test /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "SaStrongPassword123!" -C -Q "SELECT 1" &>/dev/null; do sleep 3; done');
+    L.push("");
+    L.push('sudo docker exec -i mssql-test /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "SaStrongPassword123!" -C <<\'EOF\'');
+    L.push(`CREATE LOGIN [${u}] WITH PASSWORD = '${p}';`);
+    L.push(`CREATE USER [${u}] FOR LOGIN [${u}];`);
+    L.push(`GRANT VIEW SERVER STATE TO [${u}];`);
+    L.push(`GRANT VIEW DATABASE STATE TO [${u}];`);
+    L.push("GO");
+    L.push("EOF");
+    L.push("");
+  }
+
+  L.push("# ── Cleanup Command (run when done testing) ─────────────────");
+  L.push("# sudo docker rm -f mq-test mysql-test mariadb-test postgres-test mongo-test redis-test mssql-test 2>/dev/null || true");
+  return L.join("\n");
+}
+
 // ---------- Syntax highlighting ----------
 function highlightYAML(yaml){
   return yaml.split("\n").map(line=>{
@@ -1563,25 +1790,34 @@ function validate(){
 
 // ---------- Tabs in output preview ----------
 let activeTab="yaml";
+const tabTitles = {
+  yaml: "configuration.yaml",
+  cmd: "Install command",
+  test: "Connectivity test",
+  lab: "Repro lab setup script"
+};
 function showTab(name){
   activeTab=name;
-  ["yaml","cmd","test"].forEach(t=>{
-    $("tab-"+t).classList.toggle("active", t===name);
-    $("preview-"+t).hidden = t!==name;
+  if($("panel-title") && tabTitles[name]) $("panel-title").textContent = tabTitles[name];
+  ["yaml","cmd","test","lab"].forEach(t=>{
+    if($("tab-"+t)) $("tab-"+t).classList.toggle("active", t===name);
+    if($("preview-"+t)) $("preview-"+t).hidden = t!==name;
   });
 }
 $("tab-yaml").onclick=()=>showTab("yaml");
 $("tab-cmd").onclick=()=>showTab("cmd");
 $("tab-test").onclick=()=>showTab("test");
+$("tab-lab").onclick=()=>showTab("lab");
 
 // ---------- Main update ----------
-let _yaml="", _cmd="", _test="";
+let _yaml="", _cmd="", _test="", _lab="";
 function update(){
   layout();
-  _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest();
+  _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest(); _lab=generateLabScript();
   $("preview-yaml").innerHTML=highlightYAML(_yaml);
   $("preview-cmd").innerHTML=highlightCmd(_cmd);
   $("preview-test").innerHTML=highlightCmd(_test);
+  $("preview-lab").innerHTML=highlightCmd(_lab);
   const errs=validate();
   const sensors=checked("sensor");
   if(errs.length){
@@ -1610,6 +1846,7 @@ $("btnDownloadYaml").onclick=()=>{
 $("btnCopyYaml").onclick=()=>copyText(_yaml,"YAML");
 $("btnCopyCmd").onclick=()=>copyText(_cmd,"Install command");
 $("btnCopyTest").onclick=()=>copyText(_test,"Connectivity test");
+$("btnCopyLab").onclick=()=>copyText(_lab,"Repro lab script");
 $("btnCopyHeredoc").onclick=()=>copyText(
   `(umask 077; cat > ~/configuration.yaml <<'INSTANA_EOF'\n${_yaml}\nINSTANA_EOF\n)\necho "Saved to ~/configuration.yaml"\n`,
   "Paste-in command"
