@@ -20,196 +20,201 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--ui)}
-header{padding:28px 24px 8px;max-width:1380px;margin:0 auto}
-header h1{margin:0;font-size:26px;font-weight:600;letter-spacing:-.01em}
-header p{margin:6px 0 0;color:var(--muted);max-width:70ch}
-.wrap{max-width:1380px;margin:0 auto;padding:16px 24px 48px;display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:28px;align-items:start}
-@media (max-width:1000px){.wrap{grid-template-columns:minmax(0,1fr);padding:12px 16px 40px}header{padding:20px 16px 4px}}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.5 var(--ui)}
+header{padding:18px 24px 12px;max-width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--line);background:var(--paper)}
+header h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.01em}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px;max-width:65ch}
+.header-bar{display:flex;align-items:center;gap:10px}
+.header-hint{font-size:12px;color:var(--muted)}
 
-/* Quick setup card */
-.quick-card{background:var(--sheet);border:1px solid var(--line);border-radius:10px;
-  padding:20px 24px 24px;margin-bottom:16px}
-.quick-card h2{margin:0 0 4px;font-size:19px;font-weight:600}
-.quick-card .lead{margin:0 0 18px;color:var(--muted);font-size:14px}
-.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
-@media (max-width:600px){.quick-grid{grid-template-columns:1fr}}
-.quick-grid .wide{grid-column:1/-1}
+.wrap{max-width:1440px;margin:0 auto;padding:16px 24px 32px;display:grid;
+  grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:1080px){.wrap{grid-template-columns:minmax(0,1fr);padding:12px 16px 32px}}
 
-/* Advanced toggle */
-.adv-toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;
-  font-size:13.5px;font-weight:600;color:var(--accent);border:none;background:none;
-  padding:0;user-select:none}
-.adv-toggle svg{transition:transform .2s;flex:none}
-.adv-toggle.open svg{transform:rotate(90deg)}
-.adv-section{display:none;border-top:1px solid var(--line);padding-top:18px;margin-top:4px}
-.adv-section.open{display:block}
+/* Main Tab Navigation */
+.main-tabs{display:flex;gap:4px;margin-bottom:12px;background:var(--sheet);padding:4px;border-radius:8px;border:1px solid var(--line);flex-wrap:wrap}
+.main-tab{border:none;background:transparent;padding:7px 13px;border-radius:6px;font:600 13px var(--ui);color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .12s}
+.main-tab:hover{color:var(--ink);background:var(--paper)}
+.main-tab.active{background:var(--accent);color:#fff}
+.tab-badge{font-size:11px;padding:1px 6px;border-radius:10px;background:var(--paper);color:var(--ink);font-weight:700}
+.main-tab.active .tab-badge{background:rgba(255,255,255,0.25);color:#fff}
 
-/* Step sections inside advanced */
-section.step{background:var(--sheet);border:1px solid var(--line);border-radius:10px;
-  padding:16px 18px 18px;margin-bottom:12px;display:grid;grid-template-columns:28px 1fr;gap:0 10px}
-.num{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);
-  display:grid;place-items:center;font-size:12px;font-weight:600;margin-top:2px}
-.step h2{margin:0 0 2px;font-size:15px;font-weight:600}
-.step .lead{margin:0 0 10px;color:var(--muted);font-size:13.5px}
-.body{grid-column:2;min-width:0}
+/* Tab Panes */
+.tab-pane{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px 18px 20px;display:none}
+.tab-pane.active{display:block}
+.pane-title{margin:0 0 2px;font-size:16px;font-weight:600}
+.pane-lead{margin:0 0 14px;color:var(--muted);font-size:13px}
+
+.card-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.card-section-title{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--ink);text-transform:uppercase;letter-spacing:.03em}
+
+/* Form controls */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px 14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 14px}
+@media (max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field.wide{grid-column:1/-1}
-label.lbl{font-size:13px;font-weight:600}
-span.lbl{font-size:13px;font-weight:600;display:block;margin-bottom:4px}
-.help{font-size:12px;color:var(--muted)}
+label.lbl{font-size:12.5px;font-weight:600}
+span.lbl{font-size:12.5px;font-weight:600;display:block;margin-bottom:4px}
+.help{font-size:11.5px;color:var(--muted);line-height:1.4}
 input[type=text],input[type=password],input[type=number],select{
-  font:14px var(--ui);color:var(--ink);background:var(--paper);border:1px solid var(--line);
-  border-radius:6px;padding:8px 10px;width:100%}
-input.code{font-family:var(--mono);font-size:13px}
+  font:13.5px var(--ui);color:var(--ink);background:var(--paper);border:1px solid var(--line);
+  border-radius:6px;padding:7px 10px;width:100%}
+input.code{font-family:var(--mono);font-size:12.5px}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
 .field.bad input,.field.bad select{border-color:var(--err);background:var(--err-soft)}
 .msg{font-size:12px;min-height:0}
 .field.bad .msg{color:var(--err)}
-.seg{display:flex;flex-wrap:wrap;gap:8px}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg label{position:relative;cursor:pointer}
 .seg input{position:absolute;opacity:0;pointer-events:none}
-.seg span{display:block;padding:7px 13px;border:1px solid var(--line);border-radius:6px;
-  background:var(--paper);font-size:13.5px;transition:background .1s,border-color .1s}
+.seg span{display:block;padding:6px 12px;border:1px solid var(--line);border-radius:6px;
+  background:var(--paper);font-size:13px;transition:background .1s,border-color .1s}
 .seg input:checked+span{border-color:var(--accent);background:var(--accent-soft);
   color:var(--ink);box-shadow:inset 0 0 0 1px var(--accent)}
 .seg input:disabled+span{opacity:.45;cursor:not-allowed}
-.seg small{display:block;font-size:11px;color:var(--muted)}
-.note{font-size:13px;padding:10px 12px;border-radius:6px;background:var(--accent-soft);margin-top:10px}
+.seg small{display:block;font-size:10.5px;color:var(--muted)}
+
+.note{font-size:12.5px;padding:8px 11px;border-radius:6px;background:var(--accent-soft);margin-top:8px}
 .note.warn{background:var(--warn-soft);color:var(--ink)}
 
 /* Sensor grid */
-.sensor-categories{display:flex;flex-direction:column;gap:12px;margin-top:4px}
-.sensor-cat h3{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--muted);
+.sensor-categories{display:flex;flex-direction:column;gap:10px;margin-top:2px}
+.sensor-cat h3{margin:0 0 5px;font-size:11px;font-weight:600;color:var(--muted);
   text-transform:uppercase;letter-spacing:.04em}
-.sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:5px 8px}
+.sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:5px 6px}
 .sensor-chip{position:relative;cursor:pointer;display:flex;align-items:stretch}
 .sensor-chip input{position:absolute;opacity:0;pointer-events:none}
-.sensor-chip span{display:flex;align-items:center;justify-content:space-between;gap:6px;
-  flex:1;padding:6px 8px 6px 10px;border:1px solid var(--line);border-radius:6px;
-  background:var(--paper);font-size:13px;transition:background .1s,border-color .1s;user-select:none}
+.sensor-chip span{display:flex;align-items:center;justify-content:space-between;gap:4px;
+  flex:1;padding:5px 7px 5px 9px;border:1px solid var(--line);border-radius:6px;
+  background:var(--paper);font-size:12.5px;transition:background .1s,border-color .1s;user-select:none}
 .sensor-chip input:checked+span{border-color:var(--accent);background:var(--accent-soft);
   box-shadow:inset 0 0 0 1px var(--accent)}
-.sensor-chip input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+
 /* Info button inside chip */
 .sensor-info{display:inline-flex;align-items:center;justify-content:center;
-  width:16px;height:16px;border-radius:50%;background:transparent;
-  border:1px solid var(--muted);color:var(--muted);font-size:10px;font-weight:700;
+  width:15px;height:15px;border-radius:50%;background:transparent;
+  border:1px solid var(--muted);color:var(--muted);font-size:9.5px;font-weight:700;
   font-style:normal;line-height:1;cursor:pointer;flex:none;transition:all .15s;
   pointer-events:all;position:relative;z-index:2}
 .sensor-info:hover{background:var(--accent);border-color:var(--accent);color:#fff}
-/* Info modal overlay */
-.info-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;
-  display:none;align-items:center;justify-content:center;padding:20px}
-.info-overlay.open{display:flex}
-.info-modal{background:var(--sheet);border:1px solid var(--line);border-radius:12px;
-  max-width:480px;width:100%;padding:20px 22px 22px;position:relative;
-  box-shadow:0 8px 32px rgba(0,0,0,.18)}
-.info-modal h3{margin:0 28px 6px 0;font-size:16px;font-weight:600}
-.info-modal .info-sub{font-size:12.5px;color:var(--muted);margin:0 0 14px}
-.info-modal .info-section{margin-bottom:12px}
-.info-modal .info-section h4{margin:0 0 4px;font-size:12px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
-.info-modal .info-section p{margin:0;font-size:13.5px;line-height:1.5}
-.info-modal .info-section code{font-family:var(--mono);font-size:12px;
-  background:var(--paper);padding:1px 4px;border-radius:3px;border:1px solid var(--line)}
-.info-modal .info-link{display:inline-block;margin-top:14px;font-size:13px;
-  color:var(--accent);text-decoration:none;font-weight:600}
-.info-modal .info-link:hover{text-decoration:underline}
-.info-close{position:absolute;top:12px;right:14px;background:none;border:none;
-  font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:2px 6px}
-.info-close:hover{color:var(--ink)}
 
 /* Sensor detail panels */
 .sensor-panels{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 .sensor-panel{background:var(--paper);border:1px solid var(--line);border-radius:8px;
-  padding:12px 14px;display:none}
+  padding:10px 12px;display:none}
 .sensor-panel.visible{display:block}
-.sensor-panel-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
-.sensor-panel h4{margin:0;font-size:13.5px;font-weight:600}
-.sensor-panel-actions{display:flex;gap:6px}
-.btn-mini{font:600 11.5px var(--ui);border:1px solid var(--line);border-radius:5px;
-  background:var(--sheet);color:var(--ink);padding:3px 8px;cursor:pointer}
+.sensor-panel-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sensor-panel h4{margin:0;font-size:13px;font-weight:600}
+.sensor-panel-actions{display:flex;gap:5px}
+.btn-mini{font:600 11px var(--ui);border:1px solid var(--line);border-radius:4px;
+  background:var(--sheet);color:var(--ink);padding:2px 7px;cursor:pointer}
 .btn-mini:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
-.setup-snippet{display:none;margin-top:10px;padding:10px 12px;background:var(--code-bg);
-  color:var(--code-ink);border-radius:6px;font:12px/1.45 var(--mono);overflow-x:auto;white-space:pre-wrap;position:relative}
+.setup-snippet{display:none;margin-top:8px;padding:8px 10px;background:var(--code-bg);
+  color:var(--code-ink);border-radius:6px;font:11.5px/1.45 var(--mono);overflow-x:auto;white-space:pre-wrap;position:relative}
 .setup-snippet.open{display:block}
-.setup-snippet-title{font:600 11px var(--ui);text-transform:uppercase;letter-spacing:.04em;
-  color:var(--code-key);margin-bottom:6px;display:block}
-.sensor-panel .grid{gap:7px 12px}
+.setup-snippet-title{font:600 10.5px var(--ui);text-transform:uppercase;letter-spacing:.04em;
+  color:var(--code-key);margin-bottom:4px;display:block}
+.sensor-panel .grid{gap:6px 10px}
 
 /* QManager rows */
-.qmgr-list{display:flex;flex-direction:column;gap:7px;margin-top:4px}
-.qmgr-row{display:grid;grid-template-columns:1fr 1fr 80px 28px;gap:5px;align-items:end}
-.qmgr-row input{padding:6px 8px;font-size:13px}
-.del-btn{width:28px;height:33px;border:1px solid var(--line);border-radius:6px;background:var(--sheet);
-  color:var(--err);font-size:16px;cursor:pointer;display:grid;place-items:center;flex:none}
-.add-btn{margin-top:5px;font-size:13px;padding:5px 10px}
+.qmgr-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.qmgr-row{display:grid;grid-template-columns:1fr 1fr 80px 26px;gap:5px;align-items:end}
+.qmgr-row input{padding:5px 7px;font-size:12px}
+.del-btn{width:26px;height:30px;border:1px solid var(--line);border-radius:5px;background:var(--sheet);
+  color:var(--err);font-size:15px;cursor:pointer;display:grid;place-items:center;flex:none}
+.add-btn{margin-top:5px;font-size:12px;padding:4px 8px}
 
 /* Output panel */
 main,aside{min-width:0}
-aside{position:sticky;top:16px}
-@media (max-width:1000px){aside{position:static}}
-.panel{background:var(--code-bg);color:var(--code-ink);border-radius:10px;overflow:hidden;margin-bottom:12px}
-.panel-head{padding:12px 16px 10px;display:flex;justify-content:space-between;align-items:center;
+aside{position:sticky;top:14px}
+@media (max-width:1080px){aside{position:static}}
+.panel{background:var(--code-bg);color:var(--code-ink);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.panel-head{padding:10px 14px 8px;display:flex;justify-content:space-between;align-items:center;
   gap:8px;border-bottom:1px solid #22323E}
-.panel-head h2{margin:0;font-size:14px;font-weight:600;color:#fff}
+.panel-head h2{margin:0;font-size:13px;font-weight:600;color:#fff}
 .panel-tabs{display:flex;gap:2px}
-.panel-tab{font:600 12px var(--ui);border:1px solid #2A3E4E;border-radius:5px;
-  background:transparent;color:var(--code-dim);padding:4px 10px;cursor:pointer}
+.panel-tab{font:600 11.5px var(--ui);border:1px solid #2A3E4E;border-radius:5px;
+  background:transparent;color:var(--code-dim);padding:3px 8px;cursor:pointer}
 .panel-tab.active{background:#1E3040;color:#fff;border-color:#3A5060}
-pre.code-out{margin:0;padding:12px 16px;font:12.5px/1.55 var(--mono);max-height:48vh;
+pre.code-out{margin:0;padding:10px 14px;font:12px/1.5 var(--mono);max-height:52vh;
   overflow:auto;white-space:pre}
 pre.code-out .k{color:var(--code-key)}
 pre.code-out .s{color:var(--code-str)}
 pre.code-out .c{color:var(--code-dim)}
-.status{background:var(--sheet);border:1px solid var(--line);border-radius:10px;
-  padding:12px 16px;margin-bottom:12px;font-size:13.5px}
+.status{background:var(--sheet);border:1px solid var(--line);border-radius:8px;
+  padding:10px 14px;margin-bottom:10px;font-size:12.5px}
 .status .bad{color:var(--err)} .status .good{color:var(--ok);font-weight:600}
-.header-bar{margin-top:10px;display:flex;align-items:center;gap:10px}
-.header-hint{font-size:12px;color:var(--mute)}
-header{border-bottom:1px solid var(--line);padding:14px 20px;background:var(--paper)}
-body.drag-over header{background:color-mix(in srgb,var(--accent) 8%,var(--paper))}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
-button{font:600 13.5px var(--ui);border-radius:6px;border:1px solid var(--line);
-  background:var(--sheet);color:var(--ink);padding:8px 12px;cursor:pointer}
+
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+button{font:600 12.5px var(--ui);border-radius:6px;border:1px solid var(--line);
+  background:var(--sheet);color:var(--ink);padding:7px 11px;cursor:pointer}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 button:disabled{opacity:.5;cursor:not-allowed}
 .secret-row{display:flex;gap:6px}
-.secret-row button{flex:none}
+.secret-row button{flex:none;padding:5px 8px;font-size:12px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
-  background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;
-  font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none}
+  background:var(--ink);color:var(--paper);padding:7px 13px;border-radius:6px;
+  font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:200}
 .toast.on{opacity:1}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Info modal */
+.info-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;
+  display:none;align-items:center;justify-content:center;padding:20px}
+.info-overlay.open{display:flex}
+.info-modal{background:var(--sheet);border:1px solid var(--line);border-radius:12px;
+  max-width:480px;width:100%;padding:18px 20px 20px;position:relative;
+  box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.info-modal h3{margin:0 28px 4px 0;font-size:15px;font-weight:600}
+.info-modal .info-sub{font-size:12px;color:var(--muted);margin:0 0 12px}
+.info-modal .info-section{margin-bottom:10px}
+.info-modal .info-section h4{margin:0 0 3px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.info-modal .info-section p{margin:0;font-size:13px;line-height:1.45}
+.info-modal .info-section code{font-family:var(--mono);font-size:11.5px;
+  background:var(--paper);padding:1px 4px;border-radius:3px;border:1px solid var(--line)}
+.info-modal .info-link{display:inline-block;margin-top:12px;font-size:12.5px;
+  color:var(--accent);text-decoration:none;font-weight:600}
+.info-modal .info-link:hover{text-decoration:underline}
+.info-close{position:absolute;top:10px;right:12px;background:none;border:none;
+  font-size:18px;cursor:pointer;color:var(--muted);line-height:1;padding:2px 6px}
 </style>
 </head>
 <body>
 <header>
-  <h1>Instana Agent Config Generator</h1>
-  <p>Fill in the 3 required fields to get started. Use Advanced settings for sensors and extra options. Works offline — nothing is sent anywhere.</p>
+  <div>
+    <h1>Instana Agent Config Generator</h1>
+    <p>Configure agent deployment, connection, and technologies. Works completely offline.</p>
+  </div>
   <div class="header-bar">
-    <button type="button" id="btnLoadJson" title="Load a JSON config file exported by agent-install.sh (Edit existing configuration → option e)">Load JSON config</button>
+    <button type="button" id="btnLoadJson" title="Load a JSON config file exported by agent-install.sh">Load JSON</button>
     <input type="file" id="jsonFileInput" accept=".json" class="sr" aria-label="JSON config file">
-    <span class="header-hint">or drag a .json config file here</span>
+    <span class="header-hint">or drop .json</span>
   </div>
 </header>
 
 <div class="wrap">
 <main id="form">
 
-<!-- ═══════════════════════════════════════════════════════ QUICK SETUP -->
-<div class="quick-card">
-  <h2>Quick setup</h2>
-  <p class="lead">These 3 fields are all you need for a basic agent installation.</p>
+  <!-- Nav Tabs -->
+  <div class="main-tabs" role="tablist">
+    <button type="button" class="main-tab active" data-tab="tab-pane-setup">🎯 Setup &amp; Target</button>
+    <button type="button" class="main-tab" data-tab="tab-pane-sensors">🔌 Sensors &amp; DBs <span class="tab-badge" id="sensor-badge">0</span></button>
+    <button type="button" class="main-tab" data-tab="tab-pane-proxy">🌐 Proxy &amp; Network</button>
+    <button type="button" class="main-tab" data-tab="tab-pane-advanced">⚙️ Updates &amp; Resources</button>
+  </div>
 
-  <div class="quick-grid">
+  <!-- TAB 1: Setup & Target -->
+  <div class="tab-pane active" id="tab-pane-setup">
+    <h2 class="pane-title">Setup &amp; Target</h2>
+    <p class="pane-lead">Target platform, backend endpoint, keys, and host grouping.</p>
 
-    <!-- Target -->
-    <div class="field wide">
+    <div class="field wide" style="margin-bottom:12px">
       <span class="lbl">Deployment target</span>
       <div class="seg" role="radiogroup" aria-label="Target">
         <label><input type="radio" name="TARGET" value="linux" checked><span>Linux host<small>VM, bare metal</small></span></label>
@@ -220,14 +225,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
     </div>
 
     <!-- Cluster name (Kubernetes / Operator only) -->
-    <div class="field wide" id="cluster-field" hidden>
+    <div class="field wide" id="cluster-field" hidden style="margin-bottom:12px">
       <label class="lbl" for="CLUSTER_NAME">Cluster name <small>(Kubernetes / OpenShift)</small></label>
       <input type="text" class="code" id="CLUSTER_NAME" placeholder="my-cluster">
       <span class="help">Used as <code>cluster.name</code> in Helm values or InstanaAgent CR.</span>
     </div>
 
     <!-- Backend -->
-    <div class="field wide">
+    <div class="field wide" style="margin-bottom:12px">
       <span class="lbl">Instana backend</span>
       <div class="seg" style="margin-bottom:8px" role="radiogroup" aria-label="Backend type">
         <label><input type="radio" name="BACKEND_TYPE" value="saas" checked><span>SaaS</span></label>
@@ -258,90 +263,346 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </div>
     </div>
 
-    <!-- Agent key -->
-    <div class="field wide">
-      <label class="lbl" for="AGENT_KEY_Q">Agent key</label>
-      <div class="secret-row">
-        <input type="password" class="code" id="AGENT_KEY_Q" autocomplete="off"
-          placeholder="Find in Instana UI → Settings → Agents → Install Agents">
-        <button type="button" data-show="AGENT_KEY_Q">Show</button>
+    <!-- Keys -->
+    <div class="grid-2" style="margin-bottom:12px">
+      <div class="field">
+        <label class="lbl" for="AGENT_KEY_Q">Agent key</label>
+        <div class="secret-row">
+          <input type="password" class="code" id="AGENT_KEY_Q" autocomplete="off" placeholder="Leave empty for prompt">
+          <button type="button" data-show="AGENT_KEY_Q">Show</button>
+        </div>
+        <span class="help" id="AGENT_KEY_HELP">Prompted during install if empty.</span>
       </div>
-      <span class="help" id="AGENT_KEY_HELP">Leave empty to be prompted during install.</span>
+      <div class="field">
+        <label class="lbl" for="DOWNLOAD_KEY">Download key <small>(Docker / K8s)</small></label>
+        <div class="secret-row">
+          <input type="password" class="code" id="DOWNLOAD_KEY" autocomplete="off" placeholder="Optional (defaults to agent key)">
+          <button type="button" data-show="DOWNLOAD_KEY">Show</button>
+        </div>
+        <span class="help">Used if separate download key is configured.</span>
+      </div>
     </div>
 
-    <!-- Download key (Docker only) -->
-    <div class="field wide">
-      <label class="lbl" for="DOWNLOAD_KEY">Download key <small>(Docker, Kubernetes)</small></label>
-      <div class="secret-row">
-        <input type="password" class="code" id="DOWNLOAD_KEY" autocomplete="off"
-          placeholder="Find in Instana UI → Settings → Agents → Install Agents">
-        <button type="button" data-show="DOWNLOAD_KEY">Show</button>
+    <!-- Zone and tags -->
+    <div class="card-section">
+      <h3 class="card-section-title">Zone &amp; Host Tags</h3>
+      <div class="grid-3">
+        <div class="field"><label class="lbl" for="ZONE">Zone name</label>
+          <input type="text" class="code" id="ZONE" placeholder="production-eu-west"></div>
+        <div class="field"><label class="lbl" for="TAG_ENV">Tag: environment</label>
+          <input type="text" class="code" id="TAG_ENV" placeholder="production"></div>
+        <div class="field"><label class="lbl" for="TAG_TEAM">Tag: team</label>
+          <input type="text" class="code" id="TAG_TEAM" placeholder="platform"></div>
       </div>
-      <span class="help">Used as <code>INSTANA_DOWNLOAD_KEY</code> in the Docker command and as <code>agent.downloadKey</code> in the Helm command. Optional: if left empty, the agent key is used as the download key.</span>
+    </div>
+  </div>
+
+  <!-- TAB 2: Sensors & DBs -->
+  <div class="tab-pane" id="tab-pane-sensors">
+    <h2 class="pane-title">Sensors &amp; Technologies</h2>
+    <p class="pane-lead">Check technologies to configure. Active sensors appear below with defaults and setup commands.</p>
+
+    <div class="sensor-categories">
+      <div class="sensor-cat">
+        <h3>Databases</h3>
+        <div class="sensor-grid">
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mysql"><span>MySQL<i class="sensor-info" data-info="mysql">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mariadb"><span>MariaDB<i class="sensor-info" data-info="mariadb">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="postgresql"><span>PostgreSQL<i class="sensor-info" data-info="postgresql">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mongodb"><span>MongoDB<i class="sensor-info" data-info="mongodb">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="redis"><span>Redis<i class="sensor-info" data-info="redis">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="cassandra"><span>Cassandra<i class="sensor-info" data-info="cassandra">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="db2"><span>IBM Db2<i class="sensor-info" data-info="db2">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mssql"><span>MS SQL Server<i class="sensor-info" data-info="mssql">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="oracle"><span>Oracle DB<i class="sensor-info" data-info="oracle">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="elasticsearch"><span>Elasticsearch<i class="sensor-info" data-info="elasticsearch">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="couchbase"><span>Couchbase<i class="sensor-info" data-info="couchbase">i</i></span></label>
+        </div>
+      </div>
+      <div class="sensor-cat">
+        <h3>Messaging &amp; Integration</h3>
+        <div class="sensor-grid">
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="ibmmq"><span>IBM MQ<i class="sensor-info" data-info="ibmmq">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="ibmace"><span>IBM ACE<i class="sensor-info" data-info="ibmace">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="kafka"><span>Kafka<i class="sensor-info" data-info="kafka">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="rabbitmq"><span>RabbitMQ<i class="sensor-info" data-info="rabbitmq">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="activemq"><span>ActiveMQ<i class="sensor-info" data-info="activemq">i</i></span></label>
+        </div>
+      </div>
+      <div class="sensor-cat">
+        <h3>App Servers &amp; Web</h3>
+        <div class="sensor-grid">
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="tomcat"><span>Apache Tomcat<i class="sensor-info" data-info="tomcat">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="jboss"><span>JBoss / WildFly<i class="sensor-info" data-info="jboss">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="websphere"><span>WebSphere<i class="sensor-info" data-info="websphere">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="weblogic"><span>WebLogic<i class="sensor-info" data-info="weblogic">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="liberty"><span>Liberty<i class="sensor-info" data-info="liberty">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="nginx"><span>NGINX<i class="sensor-info" data-info="nginx">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="apache"><span>Apache HTTPd<i class="sensor-info" data-info="apache">i</i></span></label>
+          <label class="sensor-chip"><input type="checkbox" name="sensor" value="haproxy"><span>HAProxy<i class="sensor-info" data-info="haproxy">i</i></span></label>
+        </div>
+      </div>
     </div>
 
-  </div><!-- /quick-grid -->
-</div><!-- /quick-card -->
+    <!-- Active Sensor Panels -->
+    <div class="sensor-panels" id="sensor-panels">
+      <div class="sensor-panel" id="panel-mysql">
+        <div class="sensor-panel-head">
+          <h4>MySQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:3306</span></h4>
+          <div class="sensor-panel-actions">
+            <button type="button" class="btn-mini" data-preset="mysql">Defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mysql">Setup SQL 📋</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="mysql_user">User</label><input type="text" class="code" id="mysql_user" placeholder="instana"></div>
+          <div class="field"><label class="lbl" for="mysql_pass">Password</label>
+            <div class="secret-row"><input type="password" class="code" id="mysql_pass" autocomplete="off"><button type="button" data-show="mysql_pass">Show</button></div></div>
+        </div>
+        <div class="setup-snippet" id="sql-mysql">
+          <span class="setup-snippet-title">MySQL Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
+GRANT SELECT, PROCESS, REPLICATION CLIENT ON *.* TO 'instana'@'localhost';
+FLUSH PRIVILEGES;
+        </div>
+      </div>
 
-<!-- ═══════════════════════════════════════════════════════ ADVANCED -->
-<button type="button" class="adv-toggle" id="adv-toggle" aria-expanded="false">
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  Advanced settings — mode, update, zone, proxy, sensors
-</button>
+      <div class="sensor-panel" id="panel-mariadb">
+        <div class="sensor-panel-head">
+          <h4>MariaDB <span style="font-weight:400;color:var(--muted);font-size:12px">— separate sensor, MySQL sensor does not monitor MariaDB</span></h4>
+          <div class="sensor-panel-actions">
+            <button type="button" class="btn-mini" data-preset="mariadb">Defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mariadb">Setup SQL 📋</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="maria_user">User</label><input type="text" class="code" id="maria_user" placeholder="instana"></div>
+          <div class="field"><label class="lbl" for="maria_pass">Password</label>
+            <div class="secret-row"><input type="password" class="code" id="maria_pass" autocomplete="off"><button type="button" data-show="maria_pass">Show</button></div></div>
+        </div>
+        <div class="setup-snippet" id="sql-mariadb">
+          <span class="setup-snippet-title">MariaDB Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
+GRANT SELECT ON performance_schema.* TO 'instana'@'localhost';
+GRANT SLAVE MONITOR ON *.* TO 'instana'@'localhost';
+FLUSH PRIVILEGES;
+        </div>
+      </div>
 
-<div class="adv-section" id="adv-section">
+      <div class="sensor-panel" id="panel-postgresql">
+        <div class="sensor-panel-head">
+          <h4>PostgreSQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:5432</span></h4>
+          <div class="sensor-panel-actions">
+            <button type="button" class="btn-mini" data-preset="postgresql">Defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-postgresql">Setup SQL 📋</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="pg_user">User</label><input type="text" class="code" id="pg_user" placeholder="instana"></div>
+          <div class="field"><label class="lbl" for="pg_pass">Password</label>
+            <div class="secret-row"><input type="password" class="code" id="pg_pass" autocomplete="off"><button type="button" data-show="pg_pass">Show</button></div></div>
+          <div class="field"><label class="lbl" for="pg_db">Database</label><input type="text" class="code" id="pg_db" placeholder="same as user">
+            <span class="help">Optional. Used for authentication only.</span></div>
+        </div>
+        <div class="setup-snippet" id="sql-postgresql">
+          <span class="setup-snippet-title">PostgreSQL Setup SQL (Documented Permissions):</span>CREATE USER instana WITH PASSWORD '&lt;password&gt;';
+CREATE DATABASE instana OWNER instana;
+GRANT CONNECT ON DATABASE instana TO instana;
+GRANT pg_monitor TO instana; -- PostgreSQL 10+
+        </div>
+      </div>
 
-  <!-- Agent mode -->
-  <section class="step">
-    <div class="num">A</div>
-    <div class="body">
-      <h2>Agent mode</h2>
-      <p class="lead">Default is APM — traces and metrics.</p>
+      <div class="sensor-panel" id="panel-mongodb">
+        <div class="sensor-panel-head">
+          <h4>MongoDB <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:27017</span></h4>
+          <div class="sensor-panel-actions">
+            <button type="button" class="btn-mini" data-preset="mongodb">Defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mongodb">Setup Command 📋</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="mongo_user">User</label><input type="text" class="code" id="mongo_user" placeholder="optional"></div>
+          <div class="field"><label class="lbl" for="mongo_pass">Password</label>
+            <div class="secret-row"><input type="password" class="code" id="mongo_pass" autocomplete="off"><button type="button" data-show="mongo_pass">Show</button></div></div>
+          <div class="field"><label class="lbl" for="mongo_source">Auth database</label>
+            <input type="text" class="code" id="mongo_source" placeholder="admin">
+            <span class="help">Database where user is defined (source)</span></div>
+        </div>
+        <div class="setup-snippet" id="sql-mongodb">
+          <span class="setup-snippet-title">MongoDB mongosh Command (Documented Permissions):</span>use admin
+db.createUser({
+  user: "instana",
+  pwd: "&lt;password&gt;",
+  roles: [
+    { role: "read", db: "admin" },
+    { role: "clusterMonitor", db: "admin" },
+    { role: "read", db: "local" }
+  ]
+})
+        </div>
+      </div>
+
+      <div class="sensor-panel" id="panel-redis">
+        <div class="sensor-panel-head">
+          <h4>Redis <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:6379</span></h4>
+          <div class="sensor-panel-actions">
+            <button type="button" class="btn-mini" data-toggle-sql="sql-redis">Setup Note 📋</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="redis_pass">Password</label>
+            <div class="secret-row"><input type="password" class="code" id="redis_pass" autocomplete="off" placeholder="leave empty if no auth"><button type="button" data-show="redis_pass">Show</button></div>
+            <span class="help">Leave empty if Redis has no authentication</span></div>
+        </div>
+        <div class="setup-snippet" id="sql-redis">
+          <span class="setup-snippet-title">Redis Setup Note:</span># In redis.conf (if password protected):
+requirepass "&lt;password&gt;"
+
+# CONFIG command must be accessible to the agent.
+# If CONFIG was renamed with rename-command, specify config-command in configuration.yaml.
+        </div>
+      </div>
+
+      <div class="sensor-panel" id="panel-elasticsearch">
+        <h4>Elasticsearch</h4>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="es_poll">Poll rate (seconds)</label><input type="text" class="code" id="es_poll" value="1" placeholder="1"></div>
+        </div>
+      </div>
+
+      <div class="sensor-panel" id="panel-mssql">
+        <div class="sensor-panel-head">
+          <h4>Microsoft SQL Server</h4>
+          <div class="sensor-panel-actions">
+            <button type="button" class="btn-mini" data-preset="mssql">Defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mssql">Setup SQL 📋</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="mssql_instance">Instance</label><input type="text" class="code" id="mssql_instance" value="MSSQLSERVER"></div>
+          <div class="field"><label class="lbl" for="mssql_port">Port</label><input type="text" class="code" id="mssql_port" value="1433"></div>
+          <div class="field"><label class="lbl" for="mssql_user">User</label><input type="text" class="code" id="mssql_user" placeholder="instana"></div>
+          <div class="field"><label class="lbl" for="mssql_pass">Password</label>
+            <div class="secret-row"><input type="password" class="code" id="mssql_pass" autocomplete="off"><button type="button" data-show="mssql_pass">Show</button></div></div>
+        </div>
+        <div class="setup-snippet" id="sql-mssql">
+          <span class="setup-snippet-title">SQL Server Setup SQL (Documented Permissions):</span>CREATE LOGIN instana WITH PASSWORD = '&lt;password&gt;';
+CREATE USER instana FOR LOGIN instana;
+GRANT VIEW SERVER STATE TO instana;
+GRANT VIEW DATABASE STATE TO instana;
+-- For disk volume & auto-growth metrics, add sysadmin membership or db_owner.
+        </div>
+      </div>
+
+      <div class="sensor-panel" id="panel-ibmmq">
+        <div class="sensor-panel-head">
+          <h4>IBM MQ</h4>
+          <div class="sensor-panel-actions">
+            <button type="button" class="btn-mini" data-preset="ibmmq">Default QM</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-ibmmq">OAM Rights 📋</button>
+          </div>
+        </div>
+        <p class="help" style="margin-bottom:8px">Add one row per Queue Manager.</p>
+        <div id="qmgr-list" class="qmgr-list"></div>
+        <button type="button" class="add-btn" id="add-qmgr">+ Add Queue Manager</button>
+        <div class="setup-snippet" id="sql-ibmmq">
+          <span class="setup-snippet-title">IBM MQ runmqsc Authorization (Documented OAM Authority):</span>SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('&lt;user&gt;') AUTHADD(CONNECT,DSP,INQ)
+SET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,PUT,CHG)
+SET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,GET)
+SET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,GET,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,GET,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(CHANNEL) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(CLNTCONN) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(LISTENER) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+SET AUTHREC PROFILE('**') OBJTYPE(TOPIC) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
+REFRESH SECURITY
+        </div>
+      </div>
+
+      <div class="sensor-panel" id="panel-kafka">
+        <h4>Kafka</h4>
+        <div class="grid">
+          <div class="field wide"><label class="lbl" for="kafka_brokers">Bootstrap servers</label>
+            <input type="text" class="code" id="kafka_brokers" placeholder="localhost:9092,broker2:9092">
+            <span class="help">Comma-separated host:port list.</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-panel" id="panel-rabbitmq">
+        <h4>RabbitMQ</h4>
+        <div class="grid">
+          <div class="field"><label class="lbl" for="rmq_host">Host</label><input type="text" class="code" id="rmq_host" value="localhost"></div>
+          <div class="field"><label class="lbl" for="rmq_port">Management port</label><input type="text" class="code" id="rmq_port" value="15672"></div>
+          <div class="field"><label class="lbl" for="rmq_user">User</label><input type="text" class="code" id="rmq_user" placeholder="guest"></div>
+          <div class="field"><label class="lbl" for="rmq_pass">Password</label>
+            <div class="secret-row"><input type="password" class="code" id="rmq_pass" autocomplete="off"><button type="button" data-show="rmq_pass">Show</button></div></div>
+        </div>
+      </div>
+
+      <div class="sensor-panel" id="panel-nginx">
+        <h4>NGINX</h4>
+        <div class="grid">
+          <div class="field wide"><label class="lbl" for="nginx_status">Status URL</label>
+            <input type="text" class="code" id="nginx_status" value="http://localhost/nginx_status">
+            <span class="help">Enable <code>stub_status</code> module in nginx.conf.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Proxy & Network -->
+  <div class="tab-pane" id="tab-pane-proxy">
+    <h2 class="pane-title">Proxy &amp; Network</h2>
+    <p class="pane-lead">Configure HTTP or SOCKS proxy for outbound connection to Instana backend and repositories.</p>
+
+    <div class="grid-2">
+      <div class="field"><label class="lbl" for="PROXY_TYPE">Proxy type</label>
+        <select id="PROXY_TYPE">
+          <option value="http">http (also for HTTPS proxies)</option>
+          <option value="socks4">socks4</option>
+          <option value="socks5">socks5</option>
+        </select></div>
+      <div class="field"><label class="lbl" for="PROXY_HOST">Proxy host</label>
+        <input type="text" class="code" id="PROXY_HOST" placeholder="proxy.example.com"></div>
+      <div class="field"><label class="lbl" for="PROXY_PORT">Proxy port</label>
+        <input type="text" class="code" id="PROXY_PORT" placeholder="3128"></div>
+      <div class="field"><label class="lbl" for="PROXY_USER">Proxy user</label>
+        <input type="text" class="code" id="PROXY_USER" placeholder="optional"></div>
+      <div class="field wide"><label class="lbl" for="PROXY_PASS">Proxy password</label>
+        <div class="secret-row">
+          <input type="password" class="code" id="PROXY_PASS" autocomplete="off" placeholder="optional">
+          <button type="button" data-show="PROXY_PASS">Show</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>💡 How proxy settings are applied:</b> On Linux host agents, proxy credentials go into <code>Backend.cfg</code> and <code>mvn-settings.xml</code>. On Docker and Kubernetes, environment variables (<code>INSTANA_AGENT_PROXY_*</code>) are configured automatically.
+    </div>
+  </div>
+
+  <!-- TAB 4: Updates & Resources -->
+  <div class="tab-pane" id="tab-pane-advanced">
+    <h2 class="pane-title">Updates &amp; Resources</h2>
+    <p class="pane-lead">Agent operational mode, version pinning, update schedules, and memory/CPU limits.</p>
+
+    <div class="field wide" style="margin-bottom:12px">
+      <span class="lbl">Agent mode</span>
       <div class="seg" role="radiogroup">
         <label><input type="radio" name="AGENT_MODE" value="APM" checked><span>APM<small>traces + metrics</small></span></label>
         <label><input type="radio" name="AGENT_MODE" value="INFRASTRUCTURE"><span>Infrastructure only<small>metrics, no tracing</small></span></label>
         <label><input type="radio" name="AGENT_MODE" value="AWS"><span>AWS sensor</span></label>
       </div>
     </div>
-  </section>
 
-  <!-- Update mode -->
-  <section class="step">
-    <div class="num">B</div>
-    <div class="body">
-      <h2>Update mode</h2>
-      <p class="lead">Default is Dynamic — agent updates itself automatically.</p>
-      <div class="seg" role="radiogroup">
-        <label><input type="radio" name="UPDATE_MODE" value="dynamic" checked><span>Dynamic<small>auto-updates</small></span></label>
-        <label><input type="radio" name="UPDATE_MODE" value="static"><span>Static<small>fixed version</small></span></label>
-      </div>
-      <div id="static-version" class="grid" style="margin-top:10px" hidden>
-        <div class="field">
-          <label class="lbl" for="AGENT_VERSION">Version to pin</label>
-          <input type="text" class="code" id="AGENT_VERSION" placeholder="1.267.0">
-          <span class="help">Find versions: <code>apt-cache madison instana-agent-dynamic</code></span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Version pinning & update schedule -->
-  <section class="step">
-    <div class="num">F</div>
-    <div class="body">
-      <h2>Version pinning &amp; update schedule</h2>
-      <p class="lead">Control when and to which version the agent auto-updates. Useful for reproducing customer issues with an exact sensor build, or for change-freeze windows.</p>
-
-      <div class="field wide" style="margin-bottom:14px">
-        <label class="lbl" for="PIN_AGENT_VERSION">Pin sensors version</label>
+    <div class="card-section">
+      <h3 class="card-section-title">Update Schedule &amp; Version Pinning</h3>
+      <div class="field wide" style="margin-bottom:10px">
+        <label class="lbl" for="PIN_AGENT_VERSION">Pin sensors version (Freeze)</label>
         <input type="text" class="code" id="PIN_AGENT_VERSION" placeholder="e.g. 2025.11.20.1809">
-        <span class="help">Written to <code>AgentBootstrap.cfg</code> as <code>version = &lt;tag&gt;</code> — freezes all sensor downloads at that release. Find release tags at <a href="https://github.com/instana/agent-updates/tags" target="_blank" rel="noopener">github.com/instana/agent-updates/tags</a>. Leave empty for automatic updates.</span>
+        <span class="help">Written to <code>AgentBootstrap.cfg</code> — freezes sensor downloads at this build tag.</span>
       </div>
 
       <div class="field wide">
-        <label class="lbl">Update schedule <span style="font-weight:400;color:var(--mute)">(dynamic mode — written to UpdateManager.cfg)</span></label>
+        <span class="lbl">Update schedule <small>(UpdateManager.cfg)</small></span>
         <div class="seg" style="margin-bottom:8px" role="radiogroup" aria-label="Update frequency">
           <label><input type="radio" name="UPDATE_FREQ" value="" checked><span>Default<small>daily at 04:30</small></span></label>
           <label><input type="radio" name="UPDATE_FREQ" value="DAY"><span>Daily<small>custom time</small></span></label>
@@ -353,22 +614,29 @@ button:disabled{opacity:.5;cursor:not-allowed}
           <div class="field">
             <label class="lbl" for="UPDATE_TIME">Time (HH:MM, UTC)</label>
             <input type="text" class="code" id="UPDATE_TIME" placeholder="04:30" maxlength="5">
-            <span class="help">Jitter of ±30 min is applied automatically to spread load across agents.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field wide" style="margin-top:10px">
+        <span class="lbl">Update mode</span>
+        <div class="seg" role="radiogroup">
+          <label><input type="radio" name="UPDATE_MODE" value="dynamic" checked><span>Dynamic<small>auto-updates</small></span></label>
+          <label><input type="radio" name="UPDATE_MODE" value="static"><span>Static<small>fixed package</small></span></label>
+        </div>
+        <div id="static-version" class="grid" style="margin-top:8px" hidden>
+          <div class="field">
+            <label class="lbl" for="AGENT_VERSION">Static version</label>
+            <input type="text" class="code" id="AGENT_VERSION" placeholder="1.267.0">
           </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- Resources -->
-  <section class="step">
-    <div class="num">E</div>
-    <div class="body">
-      <h2>Resources (memory &amp; CPU)</h2>
-      <p class="lead">Default memory is 512–544 MB. Increase only when the agent log shows <code>OutOfMemoryError</code> or when monitoring many entities (IBM MQ, OMEGAMON, cloud sensors).</p>
-
-      <div class="field wide" style="margin-bottom:6px">
-        <label class="lbl">Deployment target for resource settings</label>
+    <!-- Resources -->
+    <div class="card-section">
+      <h3 class="card-section-title">Resource Limits (Memory &amp; CPU)</h3>
+      <div class="field wide" style="margin-bottom:8px">
         <div class="seg" role="radiogroup" aria-label="Resource target">
           <label><input type="radio" name="RES_TARGET" value="linux" checked><span>Linux host</span></label>
           <label><input type="radio" name="RES_TARGET" value="docker"><span>Docker</span></label>
@@ -376,363 +644,39 @@ button:disabled{opacity:.5;cursor:not-allowed}
         </div>
       </div>
 
-      <!-- Linux -->
-      <div id="res-linux" class="grid" style="margin-top:10px">
+      <div id="res-linux" class="grid-2">
         <div class="field">
           <label class="lbl" for="RES_MEM_LINUX">Max memory (AGENT_MAX_MEM)</label>
           <input type="text" class="code" id="RES_MEM_LINUX" placeholder="e.g. 1024M">
-          <span class="help">Set as systemd drop-in <code>Environment=AGENT_MAX_MEM=1024M</code>. Default: 544 MiB. Restart agent after change.</span>
+          <span class="help">Sets systemd drop-in <code>Environment=AGENT_MAX_MEM=1024M</code>. Default: 544 MiB.</span>
         </div>
         <div class="field">
           <label class="lbl" for="RES_JAVA_OPTS">Extra JVM opts (JAVA_OPTS)</label>
           <input type="text" class="code" id="RES_JAVA_OPTS" placeholder="e.g. -Xmx768m -Xms256m">
-          <span class="help">Optional. Set as systemd drop-in <code>Environment="JAVA_OPTS=..."</code> (e.g. <code>-Xmx1g</code>).</span>
         </div>
       </div>
 
-      <!-- Docker -->
-      <div id="res-docker" class="grid" style="margin-top:10px" hidden>
+      <div id="res-docker" class="grid-2" hidden>
         <div class="field">
           <label class="lbl" for="RES_MEM_DOCKER">Memory limit</label>
           <input type="text" class="code" id="RES_MEM_DOCKER" placeholder="e.g. 1g">
-          <span class="help">Passed as <code>--memory=1g</code> to docker run. Use <code>m</code> for MB, <code>g</code> for GB.</span>
         </div>
         <div class="field">
           <label class="lbl" for="RES_CPU_DOCKER">CPU limit</label>
           <input type="text" class="code" id="RES_CPU_DOCKER" placeholder="e.g. 0.5">
-          <span class="help">Passed as <code>--cpus=0.5</code>. IBM docs advise using soft limits — hard CPU limits can cause throttling.</span>
         </div>
       </div>
 
-      <!-- Kubernetes -->
-      <div id="res-kubernetes" style="margin-top:10px" hidden>
-        <div class="grid">
-          <div class="field">
-            <label class="lbl" for="RES_MEM_REQ">Memory request</label>
-            <input type="text" class="code" id="RES_MEM_REQ" placeholder="768Mi">
-          </div>
-          <div class="field">
-            <label class="lbl" for="RES_MEM_LIM">Memory limit</label>
-            <input type="text" class="code" id="RES_MEM_LIM" placeholder="768Mi">
-            <span class="help">Set request = limit for Guaranteed QoS (prevents eviction).</span>
-          </div>
-          <div class="field">
-            <label class="lbl" for="RES_CPU_REQ">CPU request</label>
-            <input type="text" class="code" id="RES_CPU_REQ" placeholder="0.5">
-          </div>
-          <div class="field">
-            <label class="lbl" for="RES_CPU_LIM">CPU limit</label>
-            <input type="text" class="code" id="RES_CPU_LIM" placeholder="leave empty (recommended)">
-            <span class="help">IBM docs: CPU limits not recommended — causes throttling. Use only if required by cluster policy.</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- Zone and tags -->
-  <section class="step">
-    <div class="num">C</div>
-    <div class="body">
-      <h2>Zone and tags</h2>
-      <p class="lead">Groups agents in the Infrastructure map. Optional.</p>
-      <div class="grid">
-        <div class="field"><label class="lbl" for="ZONE">Zone name</label>
-          <input type="text" class="code" id="ZONE" placeholder="production-eu-west"></div>
-        <div class="field"><label class="lbl" for="TAG_ENV">Tag: environment</label>
-          <input type="text" class="code" id="TAG_ENV" placeholder="production"></div>
-        <div class="field"><label class="lbl" for="TAG_TEAM">Tag: team</label>
-          <input type="text" class="code" id="TAG_TEAM" placeholder="platform"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Proxy -->
-  <section class="step">
-    <div class="num">D</div>
-    <div class="body">
-      <h2>Proxy</h2>
-      <p class="lead">Only if the agent needs a proxy to reach the backend.</p>
-      <div class="grid">
-        <div class="field"><label class="lbl" for="PROXY_TYPE">Proxy type</label>
-          <select id="PROXY_TYPE">
-            <option value="http">http (also for HTTPS proxies)</option>
-            <option value="socks4">socks4</option>
-            <option value="socks5">socks5</option>
-          </select></div>
-        <div class="field"><label class="lbl" for="PROXY_HOST">Proxy host</label>
-          <input type="text" class="code" id="PROXY_HOST" placeholder="proxy.example.com"></div>
-        <div class="field"><label class="lbl" for="PROXY_PORT">Proxy port</label>
-          <input type="text" class="code" id="PROXY_PORT" placeholder="3128"></div>
-        <div class="field"><label class="lbl" for="PROXY_USER">User</label>
-          <input type="text" class="code" id="PROXY_USER" placeholder="optional"></div>
-        <div class="field"><label class="lbl" for="PROXY_PASS">Password</label>
-          <div class="secret-row">
-            <input type="password" class="code" id="PROXY_PASS" autocomplete="off">
-            <button type="button" data-show="PROXY_PASS">Show</button>
-          </div>
+      <div id="res-kubernetes" hidden>
+        <div class="grid-2">
+          <div class="field"><label class="lbl" for="RES_MEM_REQ">Memory request</label><input type="text" class="code" id="RES_MEM_REQ" placeholder="768Mi"></div>
+          <div class="field"><label class="lbl" for="RES_MEM_LIM">Memory limit</label><input type="text" class="code" id="RES_MEM_LIM" placeholder="768Mi"></div>
+          <div class="field"><label class="lbl" for="RES_CPU_REQ">CPU request</label><input type="text" class="code" id="RES_CPU_REQ" placeholder="0.5"></div>
+          <div class="field"><label class="lbl" for="RES_CPU_LIM">CPU limit</label><input type="text" class="code" id="RES_CPU_LIM" placeholder="leave empty"></div>
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- Sensors -->
-  <section class="step">
-    <div class="num">H</div>
-    <div class="body">
-      <h2>Sensors</h2>
-      <p class="lead">Check technologies to monitor. Auto-discovered sensors (JVM, containers) need no configuration here.</p>
-
-      <div class="sensor-categories">
-        <div class="sensor-cat">
-          <h3>Databases</h3>
-          <div class="sensor-grid">
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="mysql"><span>MySQL<i class="sensor-info" data-info="mysql">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="mariadb"><span>MariaDB<i class="sensor-info" data-info="mariadb">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="postgresql"><span>PostgreSQL<i class="sensor-info" data-info="postgresql">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="mongodb"><span>MongoDB<i class="sensor-info" data-info="mongodb">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="redis"><span>Redis<i class="sensor-info" data-info="redis">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="cassandra"><span>Cassandra<i class="sensor-info" data-info="cassandra">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="db2"><span>IBM Db2<i class="sensor-info" data-info="db2">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="mssql"><span>MS SQL Server<i class="sensor-info" data-info="mssql">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="oracle"><span>Oracle DB<i class="sensor-info" data-info="oracle">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="elasticsearch"><span>Elasticsearch<i class="sensor-info" data-info="elasticsearch">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="couchbase"><span>Couchbase<i class="sensor-info" data-info="couchbase">i</i></span></label>
-          </div>
-        </div>
-        <div class="sensor-cat">
-          <h3>Messaging &amp; Integration</h3>
-          <div class="sensor-grid">
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="ibmmq"><span>IBM MQ<i class="sensor-info" data-info="ibmmq">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="ibmace"><span>IBM ACE<i class="sensor-info" data-info="ibmace">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="kafka"><span>Kafka<i class="sensor-info" data-info="kafka">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="rabbitmq"><span>RabbitMQ<i class="sensor-info" data-info="rabbitmq">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="activemq"><span>ActiveMQ<i class="sensor-info" data-info="activemq">i</i></span></label>
-          </div>
-        </div>
-        <div class="sensor-cat">
-          <h3>App Servers &amp; Web</h3>
-          <div class="sensor-grid">
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="tomcat"><span>Apache Tomcat<i class="sensor-info" data-info="tomcat">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="jboss"><span>JBoss / WildFly<i class="sensor-info" data-info="jboss">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="websphere"><span>WebSphere<i class="sensor-info" data-info="websphere">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="weblogic"><span>WebLogic<i class="sensor-info" data-info="weblogic">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="liberty"><span>Liberty<i class="sensor-info" data-info="liberty">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="nginx"><span>NGINX<i class="sensor-info" data-info="nginx">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="apache"><span>Apache HTTPd<i class="sensor-info" data-info="apache">i</i></span></label>
-            <label class="sensor-chip"><input type="checkbox" name="sensor" value="haproxy"><span>HAProxy<i class="sensor-info" data-info="haproxy">i</i></span></label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sensor detail panels -->
-      <div class="sensor-panels" id="sensor-panels">
-
-        <div class="sensor-panel" id="panel-mysql">
-          <div class="sensor-panel-head">
-            <h4>MySQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:3306</span></h4>
-            <div class="sensor-panel-actions">
-              <button type="button" class="btn-mini" data-preset="mysql">Defaults</button>
-              <button type="button" class="btn-mini" data-toggle-sql="sql-mysql">Setup SQL 📋</button>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="mysql_user">User</label><input type="text" class="code" id="mysql_user" placeholder="instana"></div>
-            <div class="field"><label class="lbl" for="mysql_pass">Password</label>
-              <div class="secret-row"><input type="password" class="code" id="mysql_pass" autocomplete="off"><button type="button" data-show="mysql_pass">Show</button></div></div>
-          </div>
-          <div class="setup-snippet" id="sql-mysql">
-            <span class="setup-snippet-title">MySQL Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
-GRANT SELECT, PROCESS, REPLICATION CLIENT ON *.* TO 'instana'@'localhost';
-FLUSH PRIVILEGES;
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-mariadb">
-          <div class="sensor-panel-head">
-            <h4>MariaDB <span style="font-weight:400;color:var(--muted);font-size:12px">— separate sensor, MySQL sensor does not monitor MariaDB</span></h4>
-            <div class="sensor-panel-actions">
-              <button type="button" class="btn-mini" data-preset="mariadb">Defaults</button>
-              <button type="button" class="btn-mini" data-toggle-sql="sql-mariadb">Setup SQL 📋</button>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="maria_user">User</label><input type="text" class="code" id="maria_user" placeholder="instana"></div>
-            <div class="field"><label class="lbl" for="maria_pass">Password</label>
-              <div class="secret-row"><input type="password" class="code" id="maria_pass" autocomplete="off"><button type="button" data-show="maria_pass">Show</button></div></div>
-          </div>
-          <div class="setup-snippet" id="sql-mariadb">
-            <span class="setup-snippet-title">MariaDB Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
-GRANT SELECT ON performance_schema.* TO 'instana'@'localhost';
-GRANT SLAVE MONITOR ON *.* TO 'instana'@'localhost';
-FLUSH PRIVILEGES;
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-postgresql">
-          <div class="sensor-panel-head">
-            <h4>PostgreSQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:5432</span></h4>
-            <div class="sensor-panel-actions">
-              <button type="button" class="btn-mini" data-preset="postgresql">Defaults</button>
-              <button type="button" class="btn-mini" data-toggle-sql="sql-postgresql">Setup SQL 📋</button>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="pg_user">User</label><input type="text" class="code" id="pg_user" placeholder="instana"></div>
-            <div class="field"><label class="lbl" for="pg_pass">Password</label>
-              <div class="secret-row"><input type="password" class="code" id="pg_pass" autocomplete="off"><button type="button" data-show="pg_pass">Show</button></div></div>
-            <div class="field"><label class="lbl" for="pg_db">Database</label><input type="text" class="code" id="pg_db" placeholder="same as user">
-              <span class="help">Optional. Used for authentication only.</span></div>
-          </div>
-          <div class="setup-snippet" id="sql-postgresql">
-            <span class="setup-snippet-title">PostgreSQL Setup SQL (Documented Permissions):</span>CREATE USER instana WITH PASSWORD '&lt;password&gt;';
-CREATE DATABASE instana OWNER instana;
-GRANT CONNECT ON DATABASE instana TO instana;
-GRANT pg_monitor TO instana; -- PostgreSQL 10+
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-mongodb">
-          <div class="sensor-panel-head">
-            <h4>MongoDB <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:27017</span></h4>
-            <div class="sensor-panel-actions">
-              <button type="button" class="btn-mini" data-preset="mongodb">Defaults</button>
-              <button type="button" class="btn-mini" data-toggle-sql="sql-mongodb">Setup Command 📋</button>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="mongo_user">User</label><input type="text" class="code" id="mongo_user" placeholder="optional"></div>
-            <div class="field"><label class="lbl" for="mongo_pass">Password</label>
-              <div class="secret-row"><input type="password" class="code" id="mongo_pass" autocomplete="off"><button type="button" data-show="mongo_pass">Show</button></div></div>
-            <div class="field"><label class="lbl" for="mongo_source">Auth database</label>
-              <input type="text" class="code" id="mongo_source" placeholder="admin">
-              <span class="help">Database where the user is defined (source field)</span></div>
-          </div>
-          <div class="setup-snippet" id="sql-mongodb">
-            <span class="setup-snippet-title">MongoDB mongosh Command (Documented Permissions):</span>use admin
-db.createUser({
-  user: "instana",
-  pwd: "&lt;password&gt;",
-  roles: [
-    { role: "read", db: "admin" },
-    { role: "clusterMonitor", db: "admin" },
-    { role: "read", db: "local" }
-  ]
-})
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-redis">
-          <div class="sensor-panel-head">
-            <h4>Redis <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:6379</span></h4>
-            <div class="sensor-panel-actions">
-              <button type="button" class="btn-mini" data-toggle-sql="sql-redis">Setup Note 📋</button>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="redis_pass">Password</label>
-              <div class="secret-row"><input type="password" class="code" id="redis_pass" autocomplete="off" placeholder="leave empty if no auth"><button type="button" data-show="redis_pass">Show</button></div>
-              <span class="help">Leave empty if Redis has no authentication</span></div>
-          </div>
-          <div class="setup-snippet" id="sql-redis">
-            <span class="setup-snippet-title">Redis Setup Note:</span># In redis.conf (if password protected):
-requirepass "&lt;password&gt;"
-
-# CONFIG command must be accessible to the agent.
-# If CONFIG was renamed with rename-command, specify config-command in configuration.yaml.
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-elasticsearch">
-          <h4>Elasticsearch</h4>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="es_poll">Poll rate (seconds)</label><input type="text" class="code" id="es_poll" value="1" placeholder="1"></div>
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-mssql">
-          <div class="sensor-panel-head">
-            <h4>Microsoft SQL Server</h4>
-            <div class="sensor-panel-actions">
-              <button type="button" class="btn-mini" data-preset="mssql">Defaults</button>
-              <button type="button" class="btn-mini" data-toggle-sql="sql-mssql">Setup SQL 📋</button>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="mssql_instance">Instance</label><input type="text" class="code" id="mssql_instance" value="MSSQLSERVER"></div>
-            <div class="field"><label class="lbl" for="mssql_port">Port</label><input type="text" class="code" id="mssql_port" value="1433"></div>
-            <div class="field"><label class="lbl" for="mssql_user">User</label><input type="text" class="code" id="mssql_user" placeholder="instana"></div>
-            <div class="field"><label class="lbl" for="mssql_pass">Password</label>
-              <div class="secret-row"><input type="password" class="code" id="mssql_pass" autocomplete="off"><button type="button" data-show="mssql_pass">Show</button></div></div>
-          </div>
-          <div class="setup-snippet" id="sql-mssql">
-            <span class="setup-snippet-title">SQL Server Setup SQL (Documented Permissions):</span>CREATE LOGIN instana WITH PASSWORD = '&lt;password&gt;';
-CREATE USER instana FOR LOGIN instana;
-GRANT VIEW SERVER STATE TO instana;
-GRANT VIEW DATABASE STATE TO instana;
--- For disk volume & auto-growth metrics, add sysadmin membership or db_owner.
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-ibmmq">
-          <div class="sensor-panel-head">
-            <h4>IBM MQ</h4>
-            <div class="sensor-panel-actions">
-              <button type="button" class="btn-mini" data-preset="ibmmq">Default QM</button>
-              <button type="button" class="btn-mini" data-toggle-sql="sql-ibmmq">OAM Rights 📋</button>
-            </div>
-          </div>
-          <p class="help" style="margin-bottom:8px">Add one row per Queue Manager.</p>
-          <div id="qmgr-list" class="qmgr-list"></div>
-          <button type="button" class="add-btn" id="add-qmgr">+ Add Queue Manager</button>
-          <div class="setup-snippet" id="sql-ibmmq">
-            <span class="setup-snippet-title">IBM MQ runmqsc Authorization (Documented OAM Authority):</span>SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('&lt;user&gt;') AUTHADD(CONNECT,DSP,INQ)
-SET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,PUT,CHG)
-SET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,GET)
-SET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,GET,CHG)
-SET AUTHREC PROFILE('**') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,GET,CHG)
-SET AUTHREC PROFILE('**') OBJTYPE(CHANNEL) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
-SET AUTHREC PROFILE('**') OBJTYPE(CLNTCONN) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
-SET AUTHREC PROFILE('**') OBJTYPE(LISTENER) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
-SET AUTHREC PROFILE('**') OBJTYPE(TOPIC) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,CHG)
-REFRESH SECURITY
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-kafka">
-          <h4>Kafka</h4>
-          <div class="grid">
-            <div class="field wide"><label class="lbl" for="kafka_brokers">Bootstrap servers</label>
-              <input type="text" class="code" id="kafka_brokers" placeholder="localhost:9092,broker2:9092">
-              <span class="help">Comma-separated host:port list.</span></div>
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-rabbitmq">
-          <h4>RabbitMQ</h4>
-          <div class="grid">
-            <div class="field"><label class="lbl" for="rmq_host">Host</label><input type="text" class="code" id="rmq_host" value="localhost"></div>
-            <div class="field"><label class="lbl" for="rmq_port">Management port</label><input type="text" class="code" id="rmq_port" value="15672"></div>
-            <div class="field"><label class="lbl" for="rmq_user">User</label><input type="text" class="code" id="rmq_user" placeholder="guest"></div>
-            <div class="field"><label class="lbl" for="rmq_pass">Password</label>
-              <div class="secret-row"><input type="password" class="code" id="rmq_pass" autocomplete="off"><button type="button" data-show="rmq_pass">Show</button></div></div>
-          </div>
-        </div>
-
-        <div class="sensor-panel" id="panel-nginx">
-          <h4>NGINX</h4>
-          <div class="grid">
-            <div class="field wide"><label class="lbl" for="nginx_status">Status URL</label>
-              <input type="text" class="code" id="nginx_status" value="http://localhost/nginx_status">
-              <span class="help">Enable <code>stub_status</code> module in nginx.conf.</span></div>
-          </div>
-        </div>
-
-      </div><!-- /sensor-panels -->
-    </div><!-- /step sensors -->
-
-</div><!-- /adv-section -->
+  </div>
 
 </main>
 
@@ -754,14 +698,13 @@ REFRESH SECURITY
   <div class="actions">
     <button class="primary" id="btnDownloadYaml">Download YAML</button>
     <button id="btnCopyYaml">Copy YAML</button>
-    <button id="btnCopyCmd">Copy install command</button>
+    <button id="btnCopyCmd">Copy command</button>
     <button id="btnDownloadJson" title="Download JSON configuration file for use with agent-install.sh --config">Download JSON</button>
-    <button id="btnCopyTest" title="Copies a curl test to run on the target machine: checks the backend and repositories, through the proxy if one is set.">Copy connectivity test</button>
-    <button id="btnCopyHeredoc" title="Copies a shell heredoc with the full config including agent key. Paste directly into terminal — avoid saving to shared logs.">Copy as paste-in ⚠</button>
+    <button id="btnCopyTest" title="Copies a curl test to run on target machine">Connectivity test</button>
+    <button id="btnCopyHeredoc" title="Copies shell heredoc with config">Copy paste-in ⚠</button>
   </div>
-  <p style="font-size:12px;color:var(--mute);margin:6px 0 0">
-    <b>⚠ Security:</b> YAML and paste-in contain the agent key in plaintext.
-    Download to a local file only — do not paste into shared terminals, chat, or logs.
+  <p style="font-size:11.5px;color:var(--muted);margin:6px 0 0">
+    <b>⚠ Security:</b> YAML and paste-in contain agent key in plaintext. Do not paste into shared logs.
   </p>
 </aside>
 </div>
@@ -785,6 +728,17 @@ const $ = id => document.getElementById(id);
 const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value || "";
 const val = id => $(id) ? $(id).value.trim() : "";
 const checked = n => [...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value);
+
+// ---------- Main tabs ----------
+document.querySelectorAll(".main-tab").forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll(".main-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    const targetPane = $(tab.dataset.tab);
+    if(targetPane) targetPane.classList.add("active");
+  };
+});
 
 // ---------- Sensor info database ----------
 const SENSOR_INFO = {
@@ -854,150 +808,154 @@ const SENSOR_INFO = {
   mssql: {
     title: "Microsoft SQL Server",
     sub: "com.instana.plugin.mssql",
-    what: "Local monitoring (agent on the SQL Server host) with SQL Server authentication: instance, user, password and port go under <code>local:</code>.",
-    prereq: "The SQL user needs VIEW SERVER STATE and VIEW DATABASE STATE. Disk volume and auto-growth metrics also need sysadmin membership.",
-    bestpractice: "Check that instance name and port are both correct: with SQL Server authentication the port takes precedence over the instance name, so a wrong port can monitor the wrong instance.",
-    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-microsoft-sql-server"
+    what: "Local monitoring (agent on SQL Server host) with SQL Server authentication: instance, user, password and port go under local:.",
+    prereq: "The SQL user needs VIEW SERVER STATE and VIEW DATABASE STATE.",
+    autodiscovery: "Local SQL Server instances on localhost:1433.",
+    bestpractice: "Use SQL Server authentication with a dedicated user.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-sql-server"
   },
   oracle: {
-    title: "Oracle Database",
+    title: "Oracle DB",
     sub: "com.instana.plugin.oracledb",
-    what: "Monitors Oracle SGA, buffer cache, SQL performance, sessions, tablespaces and redo logs via V$ views.",
-    prereq: "User defaults to 'sys as sysdba'. For a dedicated user:<br><code>CREATE USER instana IDENTIFIED BY password;<br>GRANT CREATE SESSION, SELECT ANY DICTIONARY TO instana;</code>",
-    autodiscovery: "Not auto-discovered — requires password. Default port 1521.",
-    bestpractice: "Use a dedicated monitoring user with SELECT ANY DICTIONARY instead of sysdba in production.",
-    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-oracledb"
+    what: "Monitors Oracle DB sessions, tablespaces, waits, redo logs, SGA/PGA memory and query statistics.",
+    prereq: "Create a monitoring user (c##instana in multitenant). Requires Oracle JDBC driver (ojdbc8.jar).",
+    autodiscovery: "Not auto-discovered — requires configuration.yaml entry.",
+    bestpractice: "Place ojdbc8.jar in /opt/instana/agent/etc/instana/plugins.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-oracle-database"
   },
   elasticsearch: {
     title: "Elasticsearch",
     sub: "com.instana.plugin.elasticsearch",
-    what: "The sensor is deployed automatically with the agent. The only documented setting is poll_rate (seconds, default 1). Does not monitor OpenSearch.",
+    what: "Monitors Elasticsearch cluster health, shard allocation, index operations, JVM memory and node metrics.",
+    prereq: "Configure poll_rate (default: 1 second). Note: OpenSearch is not supported.",
+    autodiscovery: "Auto-discovered on localhost:9200.",
+    bestpractice: "Documented parameter is poll_rate (seconds).",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-elasticsearch"
   },
   couchbase: {
     title: "Couchbase",
     sub: "com.instana.plugin.couchbase",
-    what: "Monitors Couchbase bucket statistics, rebalance, XDCR, operations per second and memory usage.",
-    prereq: "Requires Couchbase REST API access on port 8093 (or configured management port).",
-    autodiscovery: "Not auto-discovered — requires explicit cluster node configuration.",
-    bestpractice: "Use a read-only user with Cluster Read Only Admin role.",
+    what: "Monitors Couchbase cluster health, bucket operations, disk and memory usage, cache hit ratio and query latency.",
+    prereq: "Create a Read-Only Admin user in the Couchbase web console.",
+    autodiscovery: "Not auto-discovered — requires clusterNodes in configuration.yaml.",
+    bestpractice: "List all cluster nodes with their management ports (default: 8091 or 8093).",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-couchbase"
   },
   ibmmq: {
     title: "IBM MQ",
     sub: "com.instana.plugin.ibmmq",
-    what: "Monitors IBM MQ queue depths, message rates, channel status, dead letter queues and Queue Manager health.",
-    prereq: "The MQ user needs CONNECT and MONITOR authority on the Queue Manager:<br><code>SETMQAUT -m QM1 -t qmgr -p instana +CONNECT +INQ<br>SETMQAUT -m QM1 -t queue -n '**' -p instana +BROWSE +INQ</code>",
-    autodiscovery: "Not auto-discovered — requires explicit Queue Manager name, host, channel and port.",
-    bestpractice: "Use SYSTEM.DEF.SVRCONN channel or create a dedicated monitoring channel. Enable MQ statistics: SET AUTHREC.",
+    what: "Monitors Queue Managers, queues, channels, message depth, put/get rates and listener status.",
+    prereq: "Configure OAM rights via SET AUTHREC for the monitoring user or use client channel.",
+    autodiscovery: "Queue Managers require explicit entries under queueManagers: in configuration.yaml.",
+    bestpractice: "Use client binding mode. Ensure SYSTEM.ADMIN.COMMAND.QUEUE and SYSTEM.DEFAULT.MODEL.QUEUE permissions.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-ibm-mq"
   },
   ibmace: {
-    title: "IBM ACE (App Connect Enterprise)",
+    title: "IBM App Connect Enterprise (ACE)",
     sub: "com.instana.plugin.ibmace",
-    what: "Monitors IBM ACE message flows, resource statistics, message rates and error counts.",
-    prereq: "Enable statistics collection on the ACE server:<br><code>mqsichangeflowstats BrokerName -e ServerName -a -t basic -n advanced</code>",
-    autodiscovery: "Auto-discovered when ACE server is running on the same host.",
-    bestpractice: "Restart the ACE integration server after enabling statistics for the first time.",
-    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-ibm-ace"
+    what: "Monitors ACE integration nodes, integration servers, message flows and processing times.",
+    prereq: "Enable flow statistics: mqsichangeflowstats <node> -a -e <server> -j -c active -t basic -n advanced",
+    autodiscovery: "Auto-discovered when running on the same host.",
+    bestpractice: "Flow statistics must be actively publishing for metrics to appear in Instana.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-ibm-app-connect-enterprise"
   },
   kafka: {
     title: "Kafka",
     sub: "com.instana.plugin.kafka",
-    what: "Monitors Kafka broker throughput, consumer lag, partition leadership, under-replicated partitions and JVM metrics.",
-    prereq: "Kafka broker must expose JMX metrics. Set JMX_PORT in kafka-server-start.sh environment.",
-    autodiscovery: "Auto-discovered on localhost:9092. No configuration needed for standard setups.",
-    bestpractice: "Monitor consumer lag by configuring consumer group metrics. Use Kafka's built-in JMX metrics.",
+    what: "Monitors Kafka brokers, topics, partitions, consumer groups, message throughput and fetch/produce latency.",
+    prereq: "Expose JMX metrics on port 9092 or provide bootstrapServers.",
+    autodiscovery: "Auto-discovered on localhost:9092.",
+    bestpractice: "For remote Kafka clusters, specify bootstrapServers.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-kafka"
   },
   rabbitmq: {
     title: "RabbitMQ",
     sub: "com.instana.plugin.rabbitmq",
-    what: "Monitors RabbitMQ queue depth, message rates, connections, channels and node health via the Management API.",
-    prereq: "Enable the RabbitMQ Management Plugin:<br><code>rabbitmq-plugins enable rabbitmq_management</code>",
-    autodiscovery: "Auto-discovered when management plugin is running on localhost:15672.",
-    bestpractice: "Create a dedicated monitoring user with the 'monitoring' tag instead of administrator.",
+    what: "Monitors RabbitMQ queues, message rates, connections, channels, consumers and node resources.",
+    prereq: "Enable management plugin: rabbitmq-plugins enable rabbitmq_management",
+    autodiscovery: "Auto-discovered on localhost:15672.",
+    bestpractice: "Create a user with 'monitoring' tag.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-rabbitmq"
   },
   activemq: {
     title: "ActiveMQ",
     sub: "com.instana.plugin.activemq",
-    what: "Monitors ActiveMQ queues, topics, message rates, connections and broker statistics via JMX.",
-    prereq: "JMX must be enabled in activemq.xml. The agent discovers ActiveMQ via the JVM sensor automatically.",
-    autodiscovery: "Auto-discovered via JMX when ActiveMQ runs on the same host. No configuration needed.",
-    bestpractice: "No manual configuration needed in most cases — the sensor activates automatically.",
-    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-activemq"
+    what: "Monitors ActiveMQ brokers, queues, topics, consumer count and enqueue/dequeue rates.",
+    prereq: "JMX enabled.",
+    autodiscovery: "Auto-discovered via JVM sensor.",
+    bestpractice: "Standard JMX monitoring.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-apache-activemq"
   },
   nginx: {
     title: "NGINX",
     sub: "com.instana.plugin.nginx",
-    what: "Monitors NGINX active connections, requests per second, reading/writing/waiting states and upstream health.",
-    prereq: "Enable stub_status in nginx.conf:<br><code>location /nginx_status {<br>  stub_status on;<br>  allow 127.0.0.1;<br>  deny all;<br>}</code>",
-    autodiscovery: "Auto-discovered when stub_status is accessible. Set enabled: true in configuration.yaml.",
-    bestpractice: "Restrict the /nginx_status location to localhost only (127.0.0.1). Reload nginx after adding the location.",
+    what: "Monitors NGINX active connections, requests per second and connection states.",
+    prereq: "Enable stub_status module in nginx.conf.",
+    autodiscovery: "Auto-discovered when stub_status is available at /nginx_status.",
+    bestpractice: "Restrict /nginx_status to 127.0.0.1.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-nginx"
   },
   apache: {
     title: "Apache HTTPd",
     sub: "com.instana.plugin.httpd",
-    what: "Monitors Apache HTTP Server requests, workers, scoreboard and virtual host statistics via mod_status.",
-    prereq: "Enable mod_status in httpd.conf:<br><code>ExtendedStatus On<br>&lt;Location /server-status&gt;<br>  SetHandler server-status<br>  Require local<br>&lt;/Location&gt;</code>",
-    autodiscovery: "Auto-discovered when mod_status is accessible at /server-status.",
-    bestpractice: "Always use 'Require local' to restrict /server-status to localhost. Restart Apache after enabling.",
-    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-httpd"
+    what: "Monitors Apache HTTP requests, workers, scoreboard and virtual hosts.",
+    prereq: "Enable mod_status and ExtendedStatus On.",
+    autodiscovery: "Auto-discovered via /server-status?auto.",
+    bestpractice: "Restrict server-status to localhost.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-apache-httpd"
   },
   haproxy: {
     title: "HAProxy",
     sub: "com.instana.plugin.haproxy",
-    what: "Monitors HAProxy frontend/backend traffic, server health, queue depth and session rates via the stats endpoint.",
-    prereq: "Enable the stats endpoint in haproxy.cfg:<br><code>listen stats<br>  bind *:1936<br>  stats enable<br>  stats uri /stats<br>  stats auth admin:password</code>",
-    autodiscovery: "Auto-discovered when stats endpoint is accessible.",
-    bestpractice: "Secure the stats endpoint with authentication and bind it to localhost only.",
+    what: "Monitors HAProxy frontend/backend traffic, server health and session rates.",
+    prereq: "Enable stats socket or HTTP stats uri.",
+    autodiscovery: "Auto-discovered via stats endpoint.",
+    bestpractice: "Bind stats endpoint to localhost.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-haproxy"
   },
   tomcat: {
     title: "Apache Tomcat",
     sub: "com.instana.plugin.tomcat",
-    what: "Monitors Tomcat threads, connector requests, sessions, error rates and JVM metrics.",
-    prereq: "Tomcat is auto-discovered via JVM instrumentation when running on the same host. No extra configuration needed.",
-    autodiscovery: "Fully auto-discovered via JVM sensor. Instana instruments the JVM automatically.",
-    bestpractice: "Enable JMX if you want remote monitoring. For local monitoring, no action needed.",
+    what: "Monitors Tomcat threads, request throughput, error rates and sessions.",
+    prereq: "Auto-discovered via JVM instrumentation.",
+    autodiscovery: "Automatic.",
+    bestpractice: "No manual configuration needed.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-apache-tomcat"
   },
   jboss: {
     title: "JBoss / WildFly",
     sub: "com.instana.plugin.jboss",
-    what: "Monitors JBoss/WildFly deployments, data sources, transactions, threads and JVM metrics.",
-    prereq: "Auto-discovered via JVM instrumentation. Management interface must be accessible for deeper metrics.",
-    autodiscovery: "Auto-discovered via JVM sensor.",
-    bestpractice: "Enable the management HTTP interface for full metrics. Default port is 9990.",
+    what: "Monitors JBoss data sources, transactions, threads and deployments.",
+    prereq: "Auto-discovered via JVM instrumentation.",
+    autodiscovery: "Automatic.",
+    bestpractice: "Management interface HTTP port 9990.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-jboss-as"
   },
   websphere: {
     title: "WebSphere Application Server",
     sub: "com.instana.plugin.websphere",
-    what: "Monitors WebSphere thread pools, JCA connections, transactions, EJB performance and JVM metrics.",
-    prereq: "Requires SOAP/JMX access to the WebSphere admin server. Enable Performance Monitoring Infrastructure (PMI).",
-    autodiscovery: "Not fully auto-discovered — admin server host and port needed.",
-    bestpractice: "Enable PMI at 'Standard' level in WAS Admin Console. Use a dedicated monitoring user.",
+    what: "Monitors WebSphere thread pools, PMI metrics and EJB performance.",
+    prereq: "Enable PMI at Standard level.",
+    autodiscovery: "SOAP/JMX admin connection.",
+    bestpractice: "Use dedicated monitoring user.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-websphere-application-server"
   },
   weblogic: {
     title: "WebLogic",
     sub: "com.instana.plugin.weblogic",
-    what: "Monitors WebLogic thread pools, JDBC connections, JMS queues, deployments and JVM metrics.",
-    prereq: "Requires T3 or IIOP access to the Admin Server. Enable WebLogic Diagnostics Framework (WLDF).",
-    autodiscovery: "Not fully auto-discovered — admin server URL and credentials needed.",
-    bestpractice: "Create a dedicated monitoring user with 'Monitor' global role. Default admin port is 7001.",
+    what: "Monitors WebLogic JDBC connections, JMS queues and thread pools.",
+    prereq: "Requires T3 access to Admin Server.",
+    autodiscovery: "Admin port 7001.",
+    bestpractice: "Assign Monitor role.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-weblogic"
   },
   liberty: {
     title: "WebSphere Liberty",
     sub: "com.instana.plugin.liberty",
-    what: "Monitors Liberty thread pools, HTTP sessions, JDBC connections, transactions and JVM metrics.",
-    prereq: "Auto-discovered via JVM instrumentation when Liberty runs on the same host.",
-    autodiscovery: "Fully auto-discovered via JVM sensor. No configuration needed.",
-    bestpractice: "Enable the mpMetrics and monitor-1.0 features in server.xml for richer metrics.",
+    what: "Monitors Liberty thread pools, HTTP sessions and JDBC connections.",
+    prereq: "Auto-discovered via JVM instrumentation.",
+    autodiscovery: "Automatic.",
+    bestpractice: "Enable mpMetrics in server.xml.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-websphere-liberty"
   }
 };
@@ -1025,7 +983,6 @@ function openInfo(key) {
   $("info-close").focus();
 }
 
-// Click on ⓘ — open modal, don't toggle checkbox
 document.addEventListener("click", e => {
   const btn = e.target.closest(".sensor-info");
   if(!btn) return;
@@ -1033,13 +990,6 @@ document.addEventListener("click", e => {
   e.stopPropagation();
   openInfo(btn.dataset.info);
 });
-
-// ---------- Advanced toggle ----------
-$("adv-toggle").onclick = function() {
-  const open = $("adv-section").classList.toggle("open");
-  this.classList.toggle("open", open);
-  this.setAttribute("aria-expanded", open);
-};
 
 // ---------- QManager management ----------
 let qmgrRows = [{ name: "QM1", channel: "SYSTEM.DEF.SVRCONN", port: "1414" }];
@@ -1054,7 +1004,7 @@ function renderQmgrs() {
         <input type="text" class="code" data-qi="${i}" data-qf="channel" value="${esc(r.channel)}"></div>
       <div class="field">${i===0?'<label class="lbl">Port</label>':''}
         <input type="text" class="code" data-qi="${i}" data-qf="port" value="${esc(r.port)}" placeholder="1414"></div>
-      <button type="button" class="del-btn" data-qidel="${i}" title="Remove" style="margin-top:${i===0?'18':'0'}px">×</button>
+      <button type="button" class="del-btn" data-qidel="${i}" title="Remove" style="margin-top:${i===0?'16':'0'}px">×</button>
       <input type="text" class="code" data-qi="${i}" data-qf="host" value="${esc(r.host||"")}" placeholder="host (remote only)">
       <input type="text" class="code" data-qi="${i}" data-qf="username" value="${esc(r.username||"")}" placeholder="username">
       <input type="password" class="code" data-qi="${i}" data-qf="password" value="${esc(r.password||"")}" placeholder="password" autocomplete="off" style="grid-column:span 2">
@@ -1081,14 +1031,16 @@ function layout() {
   $("selfhosted-fields").hidden = bt !== "selfhosted";
   $("cluster-field").hidden = (tgt !== "kubernetes" && tgt !== "operator");
   $("static-version").hidden = radio("UPDATE_MODE") !== "static";
-  // Show update time row when Daily or Weekly is selected
   const freq = radio("UPDATE_FREQ");
   $("update-time-row").hidden = (freq === "" || freq === "NEVER");
-  // Resource panels
+  
   const rt = radio("RES_TARGET");
   $("res-linux").hidden      = rt !== "linux";
   $("res-docker").hidden     = rt !== "docker";
   $("res-kubernetes").hidden = (rt !== "kubernetes" && rt !== "operator");
+
+  const selSensors = checked("sensor");
+  $("sensor-badge").textContent = selSensors.length;
   document.querySelectorAll('input[name="sensor"]').forEach(cb => {
     const p = $("panel-" + cb.value);
     if(p) p.classList.toggle("visible", cb.checked);
@@ -1112,16 +1064,11 @@ function generateYAML() {
   c("# Place at: /opt/instana/agent/etc/instana/configuration.yaml");
   c("");
 
-  // NOTE: agent key, backend host/port, agent mode and proxy are NOT part of
-  // configuration.yaml. They are set via the installer (-a, -e, -m) or
-  // Backend.cfg (proxy.*) — see the "Install command" tab.
   const zone = val("ZONE");
   const tagEnv = val("TAG_ENV");
   const tagTeam = val("TAG_TEAM");
   const sq = v => `'${String(v).replace(/'/g,"''")}'`;
 
-  // Zone — documented section: com.instana.plugin.generic.hardware
-  // On Kubernetes / Operator the zone is set with zone.name in Helm or CR instead.
   if(zone && radio("TARGET") !== "kubernetes" && radio("TARGET") !== "operator"){
     c("com.instana.plugin.generic.hardware:");
     c("  enabled: true");
@@ -1129,7 +1076,6 @@ function generateYAML() {
     c("");
   }
 
-  // Host tags — documented section: com.instana.plugin.host
   if(tagEnv||tagTeam){
     c("com.instana.plugin.host:");
     c("  tags:");
@@ -1138,11 +1084,7 @@ function generateYAML() {
     c("");
   }
 
-  // ── Version pinning & update schedule ─────────────────────────────────────
-  // NOTE: These settings go into .cfg files, NOT configuration.yaml.
-  // They are emitted as commented instructions inside the YAML output.
   const updateFreq   = radio("UPDATE_FREQ");
-  const updateTime   = val("UPDATE_TIME");
   const pinAgentVer  = val("PIN_AGENT_VERSION");
 
   if(pinAgentVer || updateFreq){
@@ -1157,104 +1099,38 @@ function generateYAML() {
     c("#    /opt/instana/agent/etc/instana/com.instana.agent.bootstrap.AgentBootstrap.cfg");
     c("#");
     c(`#    version = ${pinAgentVer}`);
-    c("#");
-    c("# This freezes ALL sensor downloads at that release tag.");
-    c("# Restart the agent after setting. To unpin, remove the version= line.");
-    c("# Release tags: https://github.com/instana/agent-updates/tags");
     c("");
   }
 
-  if(updateFreq === "NEVER"){
-    c("# 2. Freeze updates — set a version pin (section 1 above).");
-    c("#    Per Instana docs, pinning a version stops all future sensors updates.");
-    c("#    Merely disabling the schedule is NOT enough: the agent still pulls the");
-    c("#    latest sensors version on every restart.");
-    if(!pinAgentVer) c("#    WARNING: no version entered above — enter one to actually freeze updates.");
-    c("");
-  } else if(updateFreq){
-    const time = updateTime || "04:30";
-    c("# 2. Update schedule — write to:");
+  if(updateFreq && updateFreq !== "NEVER"){
+    const updateTime = val("UPDATE_TIME") || "04:30";
+    c("# 2. Auto-update schedule — write to:");
     c("#    /opt/instana/agent/etc/instana/com.instana.agent.main.config.UpdateManager.cfg");
     c("#");
-    c("#    mode = AUTO");
-    c(`#    every = ${updateFreq}`);
-    c(`#    at = ${time}`);
-    c("#    jitter = 30");
-    c("#");
-    c("# Restart not required — agent picks up UpdateManager.cfg on next update cycle.");
+    c("    mode = AUTO");
+    c(`    every = ${updateFreq}`);
+    c(`    at = ${updateTime}`);
+    c("    jitter = 30");
+    c("");
+  } else if(updateFreq === "NEVER"){
+    c("# 2. Auto-updates disabled — version pinned above.");
     c("");
   }
 
-  // ── Resources — instructions only (Linux setenv / Docker flags / K8s YAML) ──
-  const resTarget   = radio("RES_TARGET");
-  const resMemLinux = val("RES_MEM_LINUX");
-  const resJavaOpts = val("RES_JAVA_OPTS");
-  const resMemDocker = val("RES_MEM_DOCKER");
-  const resCpuDocker = val("RES_CPU_DOCKER");
-  const resMemReq = val("RES_MEM_REQ");
-  const resMemLim = val("RES_MEM_LIM");
-  const resCpuReq = val("RES_CPU_REQ");
-  const resCpuLim = val("RES_CPU_LIM");
-
-  const hasResources = resMemLinux || resJavaOpts || resMemDocker || resCpuDocker ||
-                       resMemReq || resMemLim || resCpuReq || resCpuLim;
-  if(hasResources){
-    c("# ═══════════════════════════════════════════════════════════════════════════");
-    c("# RESOURCE LIMITS — applied outside configuration.yaml");
-    c("# ═══════════════════════════════════════════════════════════════════════════");
-    c("");
-    if(resTarget === "linux"){
-      c("# Linux host (systemd) — create drop-in:");
-      c("#   /etc/systemd/system/instana-agent.service.d/10-environment.conf");
-      c("#");
-      c("#   [Service]");
-      if(resMemLinux) c(`#   Environment=AGENT_MAX_MEM=${resMemLinux}`);
-      if(resJavaOpts) c(`#   Environment="JAVA_OPTS=${resJavaOpts}"`);
-      c("#");
-      c("# then: sudo systemctl daemon-reload && sudo systemctl restart instana-agent");
-      c("");
-    } else if(resTarget === "docker"){
-      c("# Docker — add flags to docker run:");
-      c("#");
-      if(resMemDocker) c(`#   --memory=${resMemDocker}`);
-      if(resCpuDocker) c(`#   --cpus=${resCpuDocker}`);
-      c("#");
-      c("# Note: CPU limits can cause throttling. Prefer --cpus as a soft guide.");
-      c("");
-    } else if(resTarget === "kubernetes"){
-      c("# Kubernetes / OpenShift — Helm values or agent CR:");
-      c("#");
-      c("#   agent:");
-      c("#     resources:");
-      c("#       requests:");
-      if(resMemReq) c(`#         memory: "${resMemReq}"`);
-      if(resCpuReq) c(`#         cpu: "${resCpuReq}"`);
-      c("#       limits:");
-      if(resMemLim) c(`#         memory: "${resMemLim}"  # set equal to request for Guaranteed QoS`);
-      if(resCpuLim) c(`#         cpu: "${resCpuLim}"`);
-      else          c("#         # cpu limit omitted (recommended — avoids throttling)");
-      c("");
-    }
-  }
-
-  // Sensors
   const sensors = checked("sensor");
 
-  // MySQL — auto-discovers on localhost:3306, only user/password needed
   if(sensors.includes("mysql")){
     c("com.instana.plugin.mysql:");
     c("  user: "+q(val("mysql_user")||"instana"));
     c("  password: "+q(val("mysql_pass")||"changeme"));
     c("");
   }
-  // MariaDB — separate sensor, user/password required
   if(sensors.includes("mariadb")){
     c("com.instana.plugin.mariadb:");
     c("  user: "+q(val("maria_user")||"instana"));
     c("  password: "+q(val("maria_pass")||"changeme"));
     c("");
   }
-  // PostgreSQL — auto-discovers on localhost:5432, only user/password needed
   if(sensors.includes("postgresql")){
     c("com.instana.plugin.postgresql:");
     c("  user: "+q(val("pg_user")||"instana"));
@@ -1262,7 +1138,6 @@ function generateYAML() {
     if(val("pg_db")) kv("  database",val("pg_db"));
     c("");
   }
-  // MongoDB — auto-discovers on localhost:27017; source = db where user is defined
   if(sensors.includes("mongodb")){
     c("com.instana.plugin.mongodb:");
     if(val("mongo_user")) kv("  user",val("mongo_user"));
@@ -1270,7 +1145,6 @@ function generateYAML() {
     if(val("mongo_source")) kv("  source",val("mongo_source"));
     c("");
   }
-  // Redis — auto-discovers; only password and optional config-command needed
   if(sensors.includes("redis")){
     c("com.instana.plugin.redis:");
     if(val("redis_pass")) kv("  password",val("redis_pass"));
@@ -1298,7 +1172,6 @@ function generateYAML() {
     c("  password: 'changeme'");
     c("");
   }
-  // MSSQL — documented format: local list (instance, user, password, port)
   if(sensors.includes("mssql")){
     c("com.instana.plugin.mssql:");
     c("  local:");
@@ -1307,7 +1180,6 @@ function generateYAML() {
     ms.forEach(([k,id], i) => c((i===0 ? "    - " : "      ")+k+": "+sq(val(id))));
     c("");
   }
-  // OracleDB — password required, user defaults to 'sys as sysdba', port defaults to 1521
   if(sensors.includes("oracle")){
     c("com.instana.plugin.oracledb:");
     c("  password: 'changeme'");
@@ -1322,7 +1194,6 @@ function generateYAML() {
     c("      port: 8093");
     c("");
   }
-  // IBM MQ — host required per Queue Manager
   if(sensors.includes("ibmmq")){
     c("com.instana.plugin.ibmmq:");
     c("  queueManagers:");
@@ -1343,7 +1214,6 @@ function generateYAML() {
     c("  # mqsichangeflowstats defaultBroker -e <server> -a -t basic");
     c("");
   }
-  // Kafka — auto-discovers on localhost:9092; explicit config only if non-default
   if(sensors.includes("kafka")){
     const brokers = val("kafka_brokers");
     if(brokers && brokers !== "localhost:9092"){
@@ -1360,7 +1230,6 @@ function generateYAML() {
       c("");
     }
   }
-  // RabbitMQ — user/password required
   if(sensors.includes("rabbitmq")){
     c("com.instana.plugin.rabbitmq:");
     c("  user: "+q(val("rmq_user")||"guest"));
@@ -1372,7 +1241,6 @@ function generateYAML() {
     c("  # Auto-discovered via JMX.");
     c("");
   }
-  // NGINX — only needs enabled: true (stub_status auto-discovered)
   if(sensors.includes("nginx")){
     c("com.instana.plugin.nginx:");
     c("  enabled: true");
@@ -1380,7 +1248,6 @@ function generateYAML() {
     c("  # location /nginx_status { stub_status on; allow 127.0.0.1; deny all; }");
     c("");
   }
-  // Apache HTTPd — correct key is com.instana.plugin.httpd (not apachehttpd)
   if(sensors.includes("apache")){
     c("com.instana.plugin.httpd:");
     c("  # user: ''");
@@ -1414,14 +1281,13 @@ function generateCmd() {
   const proxyPort = val("PROXY_PORT");
   const proxyUser = val("PROXY_USER");
   const proxyPass = val("PROXY_PASS");
-  const agentVer = val("AGENT_VERSION");
   const rawKey = val("AGENT_KEY_Q").replace(/\s+/g, "");
   const keyOk = rawKey === "" || /^[A-Za-z0-9_-]+$/.test(rawKey);
   const keyHelp = $("AGENT_KEY_HELP");
   if (keyHelp) keyHelp.textContent = !keyOk
-    ? "Key contains characters that are not valid in an agent key (letters, digits, - and _ only). Paste only the key."
+    ? "Key contains invalid characters (letters, digits, - and _ only)."
     : (rawKey && (rawKey.length < 16 || rawKey.length > 40))
-      ? "Key length is " + rawKey.length + " — unusual for an agent key (expected ~22)."
+      ? "Key length is " + rawKey.length + " (expected ~22)."
       : "Leave empty to be prompted during install.";
   const key = !rawKey ? "<YOUR_AGENT_KEY>" : (keyOk ? rawKey : "<INVALID_AGENT_KEY>");
   let bhost="", bport="";
@@ -1451,13 +1317,13 @@ function generateCmd() {
       `  -m ${modeFlag} \\`,
       `  -e ${bhost}:${bport}`,
       "",
-      "# 2. Copy configuration.yaml (zone / tags):",
+      "# 2. Copy configuration.yaml (zone / tags / sensors):",
       "sudo cp configuration.yaml \\",
       "  /opt/instana/agent/etc/instana/configuration.yaml",
       "",
     ];
     if(proxyHost){
-      cmds.push("# Proxy (agent -> backend) goes to Backend.cfg, not configuration.yaml:");
+      cmds.push("# Proxy configuration (Backend.cfg):");
       cmds.push("sudo tee -a /opt/instana/agent/etc/instana/com.instana.agent.main.sender.Backend.cfg <<'EOF'");
       cmds.push(`proxy.type=${proxyType}`);
       cmds.push(`proxy.host=${proxyHost}`);
@@ -1466,12 +1332,10 @@ function generateCmd() {
       if(proxyPass) cmds.push(`proxy.password=${proxyPass}`);
       cmds.push("proxy.dns=true");
       cmds.push("EOF");
-      cmds.push("# Also needed for sensor/agent updates: in /opt/instana/agent/etc/mvn-settings.xml remove the <!-- --> around <proxies>");
-      cmds.push(`# and fill in protocol=${proxyType}, host=${proxyHost}${proxyPort?", port="+proxyPort:""}${proxyUser?", username/password":""} (agent-install.sh does this for you).`);
       cmds.push("");
     }
     if(memLinux || javaOpts){
-      cmds.push("# 3. Set resource limits via systemd drop-in:");
+      cmds.push("# 3. Resource limits via systemd drop-in:");
       cmds.push("sudo mkdir -p /etc/systemd/system/instana-agent.service.d");
       cmds.push("sudo tee /etc/systemd/system/instana-agent.service.d/10-environment.conf <<'EOF'");
       cmds.push("[Service]");
@@ -1482,8 +1346,7 @@ function generateCmd() {
       cmds.push("");
     }
     if(pinVer){
-      const step = (memLinux || javaOpts) ? "4" : "3";
-      cmds.push(`# ${step}. Pin sensors version:`);
+      cmds.push(`# Version pin:`);
       cmds.push(`echo 'version = ${pinVer}' | sudo tee /opt/instana/agent/etc/instana/com.instana.agent.bootstrap.AgentBootstrap.cfg`);
       cmds.push("");
     }
@@ -1496,27 +1359,16 @@ function generateCmd() {
       cmds.push("jitter = 30");
       cmds.push("EOF");
       cmds.push("");
-    } else if(updFreq === "NEVER"){
-      cmds.push("# Freeze updates: pinning a version (above) is what stops updates.");
-      if(!pinVer) cmds.push("# WARNING: no version pin entered — enter one to actually freeze updates.");
-      cmds.push("");
     }
-    const restartStep = [memLinux,javaOpts,pinVer,updFreq].some(Boolean) ? "Restart to apply all changes:" : "Restart to apply:";
-    cmds.push(`# ${restartStep}`);
     cmds.push("sudo systemctl restart instana-agent");
-    cmds.push("");
-    cmds.push("# Check status:");
     cmds.push("sudo systemctl status instana-agent");
-    cmds.push("sudo tail -f /opt/instana/agent/data/log/agent.log");
     return cmds.join("\n");
   } else if(target==="kubernetes"){
-    // Helm chart: documented parameters agent.key, agent.endpointHost, agent.endpointPort,
-    // cluster.name, zone.name; sensors/tags go to agent.configuration_yaml in values.yaml.
     const sq = v => /^[A-Za-z0-9_.:\/-]+$/.test(v) ? v : `'${v.replace(/'/g, "'\\''")}'`;
-    const sv = v => sq(String(v).replace(/([,\\])/g, "\\$1"));   // helm --set: escape , and \
+    const sv = v => sq(String(v).replace(/([,\\])/g, "\\$1"));
     const body = generateYAML().split("\n").filter(l => l.trim() && !l.trim().startsWith("#"));
     const dlKey = val("DOWNLOAD_KEY").replace(/\s+/g,"");
-    const out = ["# ── Kubernetes (Helm chart) ─────────────────────────────────", "# Needs helm 3 and kubectl pointed at the cluster.", ""];
+    const out = ["# ── Kubernetes (Helm chart) ─────────────────────────────────", "# Requires helm 3 and kubectl.", ""];
     if(body.length){
       out.push("# 1. values.yaml (agent.configuration_yaml):");
       out.push("cat > values.yaml <<'EOF'");
@@ -1553,7 +1405,6 @@ function generateCmd() {
     out.push("kubectl get pods -n instana-agent");
     return out.join("\n");
   } else if(target==="operator"){
-    // Operator / OpenShift: documented InstanaAgent Custom Resource
     const body = generateYAML().split("\n").filter(l => l.trim() && !l.trim().startsWith("#"));
     const dlKey = val("DOWNLOAD_KEY").replace(/\s+/g,"");
     const clusterName = val("CLUSTER_NAME") || "<YOUR_CLUSTER_NAME>";
@@ -1650,8 +1501,7 @@ function generateCmd() {
   }
 }
 
-// ---------- Connectivity test (curl, run on the target machine) ----------
-// Endpoints per Instana docs "Outbound network access requirements for Instana SaaS deployments".
+// ---------- Connectivity test ----------
 function generateTest(){
   let bhost, bport;
   if(radio("BACKEND_TYPE")==="saas"){
@@ -1664,13 +1514,7 @@ function generateTest(){
   if(saas) hosts.push("containers.instana.io");
   const L = [
     "# ── Connectivity test ───────────────────────────────────────",
-    "# Run on the machine where the agent will run. Any HTTP code (even 401/403/404)",
-    "# means the connection and TLS work. FAIL lines explain what is blocked:",
-    "#   CONNECT tunnel failed, response 407 -> proxy needs a user/password",
-    "#   CONNECT tunnel failed, response 403 -> proxy policy blocks this host",
-    "#   Could not resolve host / proxy       -> DNS problem",
-    "#   Connection refused / timed out       -> firewall or wrong proxy address",
-    "#   SSL certificate problem              -> proxy TLS inspection, certificate not trusted",
+    "# Run on target machine to verify backend reachability.",
     "",
   ];
   if(ph){
@@ -1686,7 +1530,6 @@ function generateTest(){
   L.push(`  R=$(curl -sS -o /dev/null --http2 --connect-timeout 10 --max-time 25${pa} -w '%{http_code} h%{http_version}' "https://$H/" 2>&1) \\`);
   L.push('    && echo "OK   $R" || echo "FAIL $(echo "$R" | head -1)"');
   L.push("done");
-  if(!ph) L.push("", "# No proxy set: this tests the direct connection.");
   return L.join("\n");
 }
 
@@ -1703,37 +1546,22 @@ function highlightCmd(cmd){
   return cmd.split("\n").map(l=>/^\s*#/.test(l)?`<span class="c">${esc(l)}</span>`:esc(l)).join("\n");
 }
 
-// ---------- Validation + field highlight ----------
+// ---------- Validation ----------
 function validate(){
   const errs=[];
   const hostField = $("HOST");
-  const hostWrap = hostField && hostField.closest(".field");
-
   if(radio("BACKEND_TYPE")==="selfhosted"){
     if(!val("HOST")){
-      errs.push("Backend host is required — enter it in the field above");
-      if(hostField){
-        hostField.style.borderColor="var(--err)";
-        hostField.style.background="var(--err-soft)";
-        hostField.placeholder="⚠ Required — e.g. instana.example.com";
-      }
-    } else {
-      if(hostField){
-        hostField.style.borderColor="";
-        hostField.style.background="";
-        hostField.placeholder="instana.example.com";
-      }
-    }
+      errs.push("Backend host is required");
+      if(hostField){ hostField.style.borderColor="var(--err)"; hostField.style.background="var(--err-soft)"; }
+    } else if(hostField){ hostField.style.borderColor=""; hostField.style.background=""; }
     const p=val("PORT");
     if(p&&(!/^\d+$/.test(p)||+p<1||+p>65535)) errs.push("Port must be 1–65535");
-  } else {
-    // Reset highlight when SaaS is selected
-    if(hostField){ hostField.style.borderColor=""; hostField.style.background=""; }
-  }
+  } else if(hostField){ hostField.style.borderColor=""; hostField.style.background=""; }
   return errs;
 }
 
-// ---------- Tabs ----------
+// ---------- Tabs in output preview ----------
 let activeTab="yaml";
 function showTab(name){
   activeTab=name;
@@ -1759,12 +1587,12 @@ function update(){
   if(errs.length){
     $("status").innerHTML=`<span class="bad"><b>${errs.length} issue${errs.length>1?"s":""}</b>: ${errs.map(esc).join("; ")}</span>`;
   } else {
-    const note=sensors.length?` · ${sensors.length} sensor${sensors.length>1?"s":""} configured`:"";
+    const note=sensors.length?` · ${sensors.length} sensor${sensors.length>1?"s":""} active`:"";
     $("status").innerHTML=`<span class="good">Ready.${note}</span>`;
   }
 }
 
-// ---------- Toast ----------
+// ---------- Toast & Copy ----------
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("on"),2200);}
 async function copyText(text,label){
   try{await navigator.clipboard.writeText(text);}
@@ -1840,7 +1668,7 @@ $("btnDownloadJson").onclick = () => {
 };
 
 // ---------- Show/hide passwords, Presets & SQL Snippets ----------
-document.addEventListener("click",e=>{
+document.addEventListener("click", e => {
   const showBtn=e.target.closest("[data-show]");
   if(showBtn){
     const input=$(showBtn.dataset.show); if(!input) return;
@@ -1886,8 +1714,6 @@ function applyJsonConfig(json) {
   let cfg;
   try { cfg = JSON.parse(json); } catch(e) { toast("Invalid JSON — could not parse"); return; }
 
-  // Nested format (profiles / --edit export): parameters + secrets + sensors.
-  // Flattened below so the rest of the function handles both formats.
   const sensorsCfg = cfg.sensors || {};
   if (cfg.parameters) {
     const p = cfg.parameters, s = cfg.secrets || {};
@@ -1896,7 +1722,6 @@ function applyJsonConfig(json) {
     cfg = Object.assign({}, p, { BACKEND_HOST: h, BACKEND_PORT: pt }, s);
   }
 
-  // Backend
   const host = cfg.BACKEND_HOST || "";
   const port = cfg.BACKEND_PORT || "443";
   const saasVal = SAAS_REGIONS[host];
@@ -1909,41 +1734,21 @@ function applyJsonConfig(json) {
     $("PORT").value = port;
   }
 
-  // Agent key
   if (cfg.AGENT_KEY) $("AGENT_KEY_Q").value = cfg.AGENT_KEY;
+  if (cfg.ZONE) $("ZONE").value = cfg.ZONE;
+  if (cfg.TAG_ENV) $("TAG_ENV").value = cfg.TAG_ENV;
+  if (cfg.TAG_TEAM) $("TAG_TEAM").value = cfg.TAG_TEAM;
 
-  // Zone
-  if (cfg.ZONE) {
-    // Open advanced if not open
-    if (!$("adv-section").classList.contains("open")) $("adv-toggle").click();
-    $("ZONE").value = cfg.ZONE;
-  }
-
-  // Agent mode
   if (cfg.AGENT_MODE) {
     const modeInput = document.querySelector(`input[name="AGENT_MODE"][value="${cfg.AGENT_MODE}"]`);
     if (modeInput) modeInput.checked = true;
   }
-
-  // Update mode
   if (cfg.UPDATE_MODE) {
     const updInput = document.querySelector(`input[name="UPDATE_MODE"][value="${cfg.UPDATE_MODE}"]`);
     if (updInput) updInput.checked = true;
   }
 
-  // Tags
-  if (cfg.TAG_ENV) {
-    if (!$("adv-section").classList.contains("open")) $("adv-toggle").click();
-    $("TAG_ENV").value = cfg.TAG_ENV;
-  }
-  if (cfg.TAG_TEAM) {
-    if (!$("adv-section").classList.contains("open")) $("adv-toggle").click();
-    $("TAG_TEAM").value = cfg.TAG_TEAM;
-  }
-
-  // Proxy
   if (cfg.PROXY_HOST) {
-    if (!$("adv-section").classList.contains("open")) $("adv-toggle").click();
     $("PROXY_HOST").value = cfg.PROXY_HOST;
     if (["http","socks4","socks5"].includes(cfg.PROXY_TYPE)) $("PROXY_TYPE").value = cfg.PROXY_TYPE;
     if (cfg.PROXY_PORT) $("PROXY_PORT").value = cfg.PROXY_PORT;
@@ -1951,7 +1756,6 @@ function applyJsonConfig(json) {
     if (cfg.PROXY_PASS) $("PROXY_PASS").value = cfg.PROXY_PASS;
   }
 
-  // Sensors from the "sensors" block (mssql: only the first local entry)
   const tick = n => { const cb = document.querySelector(`input[name="sensor"][value="${n}"]`); if (cb) cb.checked = true; };
   if (sensorsCfg.ibmmq) {
     tick("ibmmq");
@@ -2006,10 +1810,9 @@ $("jsonFileInput").onchange = e => {
   const r = new FileReader();
   r.onload = ev => applyJsonConfig(ev.target.result);
   r.readAsText(f);
-  e.target.value = ""; // reset so same file can be re-loaded
+  e.target.value = "";
 };
 
-// Drag-and-drop JSON onto the page
 document.addEventListener("dragover", e => { e.preventDefault(); document.body.classList.add("drag-over"); });
 document.addEventListener("dragleave", e => { if(!e.relatedTarget) document.body.classList.remove("drag-over"); });
 document.addEventListener("drop", e => {
@@ -2022,7 +1825,6 @@ document.addEventListener("drop", e => {
   r.readAsText(f);
 });
 
-// ---------- Wire inputs ----------
 $("form").addEventListener("input",update);
 $("form").addEventListener("change",update);
 update();
