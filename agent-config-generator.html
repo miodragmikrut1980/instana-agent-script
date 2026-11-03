@@ -687,12 +687,14 @@ REFRESH SECURITY
       <div class="panel-tabs">
         <button class="panel-tab active" id="tab-yaml">YAML</button>
         <button class="panel-tab" id="tab-cmd">Install command</button>
+        <button class="panel-tab" id="tab-reply">Ticket reply</button>
         <button class="panel-tab" id="tab-test">Connectivity test</button>
         <button class="panel-tab" id="tab-lab">Repro lab</button>
       </div>
     </div>
     <pre class="code-out" id="preview-yaml" aria-live="polite"></pre>
     <pre class="code-out" id="preview-cmd" aria-live="polite" hidden></pre>
+    <pre class="code-out" id="preview-reply" aria-live="polite" hidden></pre>
     <pre class="code-out" id="preview-test" aria-live="polite" hidden></pre>
     <pre class="code-out" id="preview-lab" aria-live="polite" hidden></pre>
   </div>
@@ -701,6 +703,7 @@ REFRESH SECURITY
     <button class="primary" id="btnDownloadYaml">Download YAML</button>
     <button id="btnCopyYaml">Copy YAML</button>
     <button id="btnCopyCmd">Copy command</button>
+    <button id="btnCopyReply" title="Copies formatted reply template for Salesforce / Jira ticket">Copy Ticket reply</button>
     <button id="btnDownloadJson" title="Download JSON configuration file for use with agent-install.sh --config">Download JSON</button>
     <button id="btnCopyTest" title="Copies a curl test to run on target machine">Connectivity test</button>
     <button id="btnCopyLab" title="Copies Docker repro lab setup script for test VM">Repro lab script</button>
@@ -1760,6 +1763,157 @@ function generateLabScript(){
   return L.join("\n");
 }
 
+// ---------- Ticket reply template ----------
+function generateReplyTemplate(){
+  const target = radio("TARGET");
+  const sensors = checked("sensor");
+  const L = [
+    "Hello,",
+    "",
+    "Thank you for contacting IBM Instana Support.",
+    "Please follow the documented steps below to configure your Instana Agent environment:",
+    "",
+  ];
+
+  if(target === "linux"){
+    L.push("### Step 1: Update Agent Configuration");
+    L.push("Place the configuration below into your host configuration file:");
+    L.push("  Path: /opt/instana/agent/etc/instana/configuration.yaml");
+    L.push("");
+    L.push("```yaml");
+    L.push(_yaml || generateYAML());
+    L.push("```");
+    L.push("");
+
+    const ph = val("PROXY_HOST");
+    if(ph){
+      L.push("### Step 2: Configure Proxy Settings (if not already set)");
+      L.push("Add the following backend proxy properties to:");
+      L.push("  Path: /opt/instana/agent/etc/instana/com.instana.agent.main.sender.Backend.cfg");
+      L.push("");
+      L.push("```ini");
+      L.push(`proxy.type=${val("PROXY_TYPE") || "http"}`);
+      L.push(`proxy.host=${ph}`);
+      if(val("PROXY_PORT")) L.push(`proxy.port=${val("PROXY_PORT")}`);
+      if(val("PROXY_USER")) L.push(`proxy.user=${val("PROXY_USER")}`);
+      L.push("proxy.dns=true");
+      L.push("```");
+      L.push("");
+    }
+
+    if(sensors.length){
+      L.push("### Step 3: Required Database / Middleware Permissions");
+      if(sensors.includes("ibmmq")){
+        const rows = (typeof qmgrRows !== "undefined") ? qmgrRows.filter(r => r.name) : [];
+        const qmUser = (rows.length && (rows[0].username || rows[0].user)) ? (rows[0].username || rows[0].user) : "app";
+        L.push(`- **IBM MQ (runmqsc):** Grant OAM authority rules to principal '${qmUser}':`);
+        L.push("  ```text");
+        L.push(`  SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('${qmUser}') AUTHADD(CONNECT,DSP,INQ)`);
+        L.push(`  SET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,PUT,CHG)`);
+        L.push(`  SET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,GET)`);
+        L.push(`  SET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,GET,CHG)`);
+        L.push(`  SET AUTHREC PROFILE('**') OBJTYPE(QUEUE) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,GET,CHG)`);
+        L.push(`  SET AUTHREC PROFILE('**') OBJTYPE(CHANNEL) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+        L.push(`  SET AUTHREC PROFILE('**') OBJTYPE(CLNTCONN) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+        L.push(`  SET AUTHREC PROFILE('**') OBJTYPE(LISTENER) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+        L.push(`  SET AUTHREC PROFILE('**') OBJTYPE(TOPIC) PRINCIPAL('${qmUser}') AUTHADD(DSP,INQ,CHG)`);
+        L.push("  REFRESH SECURITY");
+        L.push("  ```");
+      }
+      if(sensors.includes("mysql")){
+        const u = val("mysql_user") || "instana";
+        L.push(`- **MySQL:** Grant monitoring privileges to user '${u}':`);
+        L.push("  ```sql");
+        L.push(`  GRANT SELECT, PROCESS, REPLICATION CLIENT ON *.* TO '${u}'@'localhost';`);
+        L.push("  FLUSH PRIVILEGES;");
+        L.push("  ```");
+      }
+      if(sensors.includes("mariadb")){
+        const u = val("maria_user") || "instana";
+        L.push(`- **MariaDB:** Grant monitoring privileges to user '${u}':`);
+        L.push("  ```sql");
+        L.push(`  GRANT SELECT ON performance_schema.* TO '${u}'@'localhost';`);
+        L.push(`  GRANT SLAVE MONITOR ON *.* TO '${u}'@'localhost';`);
+        L.push("  FLUSH PRIVILEGES;");
+        L.push("  ```");
+      }
+      if(sensors.includes("postgresql")){
+        const u = val("pg_user") || "instana";
+        const db = val("pg_db") || u;
+        L.push(`- **PostgreSQL:** Grant monitoring privileges to user '${u}':`);
+        L.push("  ```sql");
+        L.push(`  GRANT CONNECT ON DATABASE ${db} TO ${u};`);
+        L.push(`  GRANT pg_monitor TO ${u};`);
+        L.push("  ```");
+      }
+      if(sensors.includes("mongodb")){
+        const u = val("mongo_user") || "instana";
+        L.push(`- **MongoDB:** Ensure user '${u}' in admin database has roles: clusterMonitor, read (admin), read (local).`);
+      }
+      if(sensors.includes("mssql")){
+        const u = val("mssql_user") || "instana";
+        L.push(`- **MS SQL Server:** Grant server and database state views to user '${u}':`);
+        L.push("  ```sql");
+        L.push(`  GRANT VIEW SERVER STATE TO [${u}];`);
+        L.push(`  GRANT VIEW DATABASE STATE TO [${u}];`);
+        L.push("  ```");
+      }
+      L.push("");
+    }
+
+    L.push("### Step 4: Restart and Verify Agent");
+    L.push("Restart the host agent service:");
+    L.push("  ```bash");
+    L.push("  sudo systemctl restart instana-agent");
+    L.push("  ```");
+    L.push("");
+    L.push("Check connectivity and backend authentication status:");
+    L.push("  ```bash");
+    L.push("  sudo ./agent-install.sh --status");
+    L.push("  # or check log: sudo tail -n 50 /opt/instana/agent/data/log/agent.log");
+    L.push("  ```");
+  } else if(target === "docker"){
+    L.push("### Step 1: Run Docker Container");
+    L.push("Execute the following command on your Docker host:");
+    L.push("```bash");
+    L.push(_cmd || generateCmd());
+    L.push("```");
+    L.push("");
+    L.push("### Step 2: Verify Container Status");
+    L.push("```bash");
+    L.push("sudo docker logs -f instana-agent");
+    L.push("```");
+  } else if(target === "kubernetes"){
+    L.push("### Step 1: Deploy with Helm");
+    L.push("Execute the following Helm command:");
+    L.push("```bash");
+    L.push(_cmd || generateCmd());
+    L.push("```");
+    L.push("");
+    L.push("### Step 2: Verify Pods");
+    L.push("```bash");
+    L.push("kubectl get pods -n instana-agent");
+    L.push("```");
+  } else if(target === "operator"){
+    L.push("### Step 1: Apply InstanaAgent Custom Resource");
+    L.push("```bash");
+    L.push(_cmd || generateCmd());
+    L.push("```");
+    L.push("");
+    L.push("### Step 2: Verify Deployment");
+    L.push("```bash");
+    L.push("kubectl get pods -n instana-agent  # or: oc get pods -n instana-agent");
+    L.push("```");
+  }
+
+  L.push("");
+  L.push("Please let us know if you encounter any issues or have additional questions.");
+  L.push("");
+  L.push("Best regards,");
+  L.push("IBM Instana Support");
+  return L.join("\n");
+}
+
 // ---------- Syntax highlighting ----------
 function highlightYAML(yaml){
   return yaml.split("\n").map(line=>{
@@ -1793,29 +1947,32 @@ let activeTab="yaml";
 const tabTitles = {
   yaml: "configuration.yaml",
   cmd: "Install command",
+  reply: "Support Ticket Reply Template",
   test: "Connectivity test",
   lab: "Repro lab setup script"
 };
 function showTab(name){
   activeTab=name;
   if($("panel-title") && tabTitles[name]) $("panel-title").textContent = tabTitles[name];
-  ["yaml","cmd","test","lab"].forEach(t=>{
+  ["yaml","cmd","reply","test","lab"].forEach(t=>{
     if($("tab-"+t)) $("tab-"+t).classList.toggle("active", t===name);
     if($("preview-"+t)) $("preview-"+t).hidden = t!==name;
   });
 }
 $("tab-yaml").onclick=()=>showTab("yaml");
 $("tab-cmd").onclick=()=>showTab("cmd");
+$("tab-reply").onclick=()=>showTab("reply");
 $("tab-test").onclick=()=>showTab("test");
 $("tab-lab").onclick=()=>showTab("lab");
 
 // ---------- Main update ----------
-let _yaml="", _cmd="", _test="", _lab="";
+let _yaml="", _cmd="", _reply="", _test="", _lab="";
 function update(){
   layout();
-  _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest(); _lab=generateLabScript();
+  _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest(); _lab=generateLabScript(); _reply=generateReplyTemplate();
   $("preview-yaml").innerHTML=highlightYAML(_yaml);
   $("preview-cmd").innerHTML=highlightCmd(_cmd);
+  $("preview-reply").innerHTML=highlightCmd(_reply);
   $("preview-test").innerHTML=highlightCmd(_test);
   $("preview-lab").innerHTML=highlightCmd(_lab);
   const errs=validate();
@@ -1845,6 +2002,7 @@ $("btnDownloadYaml").onclick=()=>{
 };
 $("btnCopyYaml").onclick=()=>copyText(_yaml,"YAML");
 $("btnCopyCmd").onclick=()=>copyText(_cmd,"Install command");
+$("btnCopyReply").onclick=()=>copyText(_reply,"Ticket reply");
 $("btnCopyTest").onclick=()=>copyText(_test,"Connectivity test");
 $("btnCopyLab").onclick=()=>copyText(_lab,"Repro lab script");
 $("btnCopyHeredoc").onclick=()=>copyText(
