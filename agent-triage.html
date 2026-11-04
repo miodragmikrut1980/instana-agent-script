@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instana Agent Log Triage &amp; Dijagnostika</title>
+<style>
+:root{
+  --paper:#EDF1F4; --sheet:#FFFFFF; --ink:#16212B; --muted:#5A6B7A; --line:#CBD5DE;
+  --accent:#0F6E74; --accent-soft:#DCEEEF; --warn:#8A5300; --warn-soft:#FBF0DC;
+  --err:#B3261E; --err-soft:#FBE4E2; --ok:#2E7D4F; --ok-soft:#E2F4E9;
+  --code-bg:#13202A; --code-ink:#D6E2EA; --code-key:#8FD3D8; --code-str:#F2C98B; --code-dim:#6E8494;
+  --ui:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#0F171D; --sheet:#17222B; --ink:#E3EAF0; --muted:#93A4B2; --line:#2B3A46;
+    --accent:#4FB3B8; --accent-soft:#16363A; --warn:#E3A84A; --warn-soft:#33270F;
+    --err:#F08A80; --err-soft:#3A1A18; --ok:#6CC28F; --ok-soft:#173423;
+    --code-bg:#0A1116;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.5 var(--ui)}
+header{padding:18px 24px 12px;max-width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--line);background:var(--paper)}
+header h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.01em}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px;max-width:70ch}
+.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.wrap{max-width:1440px;margin:0 auto;padding:16px 24px 32px;display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr);gap:22px;align-items:start}
+@media (max-width:1100px){.wrap{grid-template-columns:minmax(0,1fr);padding:12px 16px 32px}}
+
+/* Cards & Sections */
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.card-title{margin:0;font-size:15px;font-weight:600}
+.card-lead{margin:0 0 12px;color:var(--muted);font-size:12.5px}
+
+/* Drag-Drop Zone */
+.drop-zone{border:2px dashed var(--line);border-radius:8px;padding:16px 14px;text-align:center;
+  background:var(--paper);cursor:pointer;transition:all .15s;margin-bottom:12px}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:var(--accent-soft)}
+.drop-icon{font-size:24px;margin-bottom:4px;display:block}
+.drop-text{font-size:13px;font-weight:600;color:var(--ink);margin:0}
+.drop-hint{font-size:11.5px;color:var(--muted);margin:3px 0 0}
+
+/* Textarea Log Input */
+.log-input{width:100%;height:320px;font:12px/1.45 var(--mono);background:var(--code-bg);color:var(--code-ink);
+  border:1px solid var(--line);border-radius:6px;padding:10px 12px;resize:vertical;white-space:pre}
+.log-input:focus{outline:2px solid var(--accent);outline-offset:1px}
+
+/* Form Controls */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px 12px}
+.field{display:flex;flex-direction:column;gap:3px;min-width:0}
+label.lbl{font-size:12px;font-weight:600}
+select,input[type=text]{font:13px var(--ui);color:var(--ink);background:var(--paper);border:1px solid var(--line);
+  border-radius:6px;padding:6px 9px;width:100%}
+select:focus,input:focus{outline:2px solid var(--accent)}
+
+/* Metric Stats Row */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px}
+.stat-box{padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--sheet);text-align:center}
+.stat-box.crit{border-color:var(--err);background:var(--err-soft)}
+.stat-box.warn{border-color:var(--warn);background:var(--warn-soft)}
+.stat-box.ok{border-color:var(--ok);background:var(--ok-soft)}
+.stat-num{font-size:22px;font-weight:700;line-height:1.1;display:block}
+.stat-lbl{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.stat-box.crit .stat-num,.stat-box.crit .stat-lbl{color:var(--err)}
+.stat-box.warn .stat-num,.stat-box.warn .stat-lbl{color:var(--warn)}
+.stat-box.ok .stat-num,.stat-box.ok .stat-lbl{color:var(--ok)}
+
+/* Triage Issue Cards */
+.triage-section{margin-bottom:16px}
+.triage-section-title{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.03em}
+.triage-list{display:flex;flex-direction:column;gap:10px}
+
+.triage-card{border-radius:8px;border:1px solid var(--line);background:var(--sheet);padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
+.triage-card.crit{border-left:4px solid var(--err)}
+.triage-card.warn{border-left:4px solid var(--warn)}
+.triage-card.ok{border-left:4px solid var(--ok)}
+
+.tc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.tc-title{font-size:13.5px;font-weight:700;margin:0;display:flex;align-items:center;gap:6px}
+.tc-badge{font-size:11px;padding:2px 7px;border-radius:10px;font-weight:700;text-transform:uppercase}
+.tc-badge.crit{background:var(--err-soft);color:var(--err)}
+.tc-badge.warn{background:var(--warn-soft);color:var(--warn)}
+.tc-badge.ok{background:var(--ok-soft);color:var(--ok)}
+
+.tc-line{font:11.5px/1.45 var(--mono);background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:5px 8px;margin:6px 0;word-break:break-all;color:var(--ink)}
+.tc-cause{font-size:12.5px;margin:4px 0 6px;color:var(--ink)}
+.tc-cause b{font-weight:600}
+.tc-fix-title{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:6px 0 2px}
+.tc-fix{background:var(--code-bg);color:var(--code-ink);border-radius:6px;padding:8px 10px;font:12px/1.45 var(--mono);margin:4px 0;white-space:pre-wrap;position:relative}
+
+/* Buttons */
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+button{font:600 12.5px var(--ui);border-radius:6px;border:1px solid var(--line);
+  background:var(--sheet);color:var(--ink);padding:6px 11px;cursor:pointer;transition:all .12s}
+button:hover{background:var(--paper)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{opacity:.92}
+button.btn-mini{font-size:11px;padding:3px 7px}
+
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+  background:var(--ink);color:var(--paper);padding:7px 14px;border-radius:6px;
+  font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:200}
+.toast.on{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Instana Agent Log Triage &amp; Dijagnostika</h1>
+    <p>Automatska analiza logova agenta (/opt/instana/agent/data/log/agent.log), detekcija problema i preporučene komande za popravku.</p>
+  </div>
+  <div class="header-actions">
+    <button type="button" id="btnDemoError">Učitaj primer sa greškama</button>
+    <button type="button" id="btnDemoClean">Učitaj čist log</button>
+    <button type="button" id="btnClear">Obriši</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: Input & Controls -->
+  <main>
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">1. Unos Log Fajla</h2>
+        <span id="logMeta" style="font-size:12px;color:var(--muted)">0 linija</span>
+      </div>
+
+      <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Prevucite log fajl ovde ili kliknite">
+        <span class="drop-icon">📂</span>
+        <p class="drop-text">Prevucite <code>agent.log</code> fajl ovde ili kliknite za odabir</p>
+        <p class="drop-hint">Putanja na hostu: <code>/opt/instana/agent/data/log/agent.log</code></p>
+        <input type="file" id="fileInput" class="sr" accept=".log,.txt">
+      </div>
+
+      <div class="field" style="margin-bottom:10px">
+        <label class="lbl" for="logText">Ili nalepite sadržaj loga direktno:</label>
+        <textarea id="logText" class="log-input" placeholder="Nalepite linije iz agent.log fajla ovde..."></textarea>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label class="lbl" for="selScope">Opseg analize</label>
+          <select id="selScope">
+            <option value="all">Ceo uneti log</option>
+            <option value="300" selected>Poslednjih 300 linija</option>
+            <option value="500">Poslednjih 500 linija</option>
+            <option value="1000">Poslednjih 1000 linija</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="selFilter">Filter kategorije</label>
+          <select id="selFilter">
+            <option value="all">Sve kategorije</option>
+            <option value="auth">Autentifikacija &amp; Ključevi</option>
+            <option value="mq">IBM MQ</option>
+            <option value="db">Baze podataka (MySQL, Postgres, Mongo...)</option>
+            <option value="network">Mreža, TLS &amp; Proxy</option>
+            <option value="resources">Memorija &amp; Resursi</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick info card -->
+    <div class="card" style="font-size:12.5px;color:var(--muted)">
+      <h3 style="margin:0 0 6px;font-size:13px;color:var(--ink)">💡 Kako preuzeti log sa servera:</h3>
+      <code>sudo tail -n 300 /opt/instana/agent/data/log/agent.log &gt; agent-recent.log</code><br>
+      Ili direktno pokrenite skriptu na serveru: <code>sudo ./agent-install.sh --triage</code>
+    </div>
+  </main>
+
+  <!-- RIGHT: Triage Report -->
+  <aside>
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">2. Rezultati Analize (Triage Report)</h2>
+        <div class="actions" style="margin:0">
+          <button type="button" class="primary" id="btnExportMd">📋 Kopiraj izveštaj</button>
+          <button type="button" id="btnDownloadTxt">💾 Preuzmi .txt</button>
+        </div>
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="stats-row">
+        <div class="stat-box crit">
+          <span class="stat-num" id="statCrit">0</span>
+          <span class="stat-lbl">Kritično</span>
+        </div>
+        <div class="stat-box warn">
+          <span class="stat-num" id="statWarn">0</span>
+          <span class="stat-lbl">Upozorenja</span>
+        </div>
+        <div class="stat-box ok">
+          <span class="stat-num" id="statOk">0</span>
+          <span class="stat-lbl">Ispravno</span>
+        </div>
+      </div>
+
+      <!-- Findings List -->
+      <div id="triageOutput">
+        <p style="color:var(--muted);text-align:center;padding:30px 10px">Učitajte ili nalepite log fajl na levoj strani da biste pokrenuli analizu.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+
+// ──────────────────────────────────────────────────────────────────────────
+// Baza potpisa grešaka i kurativa (Documented Instana Signatures)
+// ──────────────────────────────────────────────────────────────────────────
+const SIGNATURES = [
+  // ── 1. Autentifikacija & Ključevi
+  {
+    id: "auth-403",
+    cat: "auth",
+    severity: "crit",
+    title: "Neuspešna autentifikacija agenta (403 Forbidden)",
+    patterns: [/Forbidden \(403\)/i, /Backend rejected the agent key/i],
+    cause: "Instana backend je odbio navedeni Agent Key. Ključ je neispravan, istekao ili opozvan u Instana UI-u.",
+    fix: "Ažurirajte ključ u /opt/instana/agent/etc/instana/com.instana.agent.main.sender.Backend.cfg (polje key=) ili pokrenite: sudo ./agent-install.sh -> Izmena konfiguracije -> opcija 4.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=agents-installing-host-agent"
+  },
+  {
+    id: "auth-401",
+    cat: "auth",
+    severity: "crit",
+    title: "Neuspešno preuzimanje paketa senzora (401 Unauthorized)",
+    patterns: [/Unauthorized \(401\)/i, /download key invalid/i, /artifact-public\.instana\.io.*401/i],
+    cause: "Download Key nije ispravan ili nema dozvolu za preuzimanje senzora sa artifact-public.instana.io.",
+    fix: "Proverite Agent Download Key u Instana UI -> Settings -> Agents -> Install Agents.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=requirements-agent-repositories"
+  },
+
+  // ── 2. IBM MQ
+  {
+    id: "ibmmq-auth",
+    cat: "mq",
+    severity: "crit",
+    title: "IBM MQ: Nedovoljne OAM privilegije korisnika (Reason 2035 / AMQ8077W)",
+    patterns: [/Reason '2035'/i, /AMQ8077W/i, /MQJE001.*Reason '2035'/i],
+    cause: "Korisnik naveden za IBM MQ senzor nema dovoljna OAM (Object Authority Manager) prava na Queue Manager-u.",
+    fix: `Pokrenite u runmqsc <QMGR>:\nSET AUTHREC OBJTYPE(QMGR) PRINCIPAL('<user>') AUTHADD(CONNECT,DSP,INQ)\nSET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,INQ,PUT,CHG)\nSET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,GET)\nSET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,INQ,GET,CHG)\nSET AUTHREC PROFILE('**') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,INQ,GET,CHG)\nSET AUTHREC PROFILE('**') OBJTYPE(CHANNEL) PRINCIPAL('<user>') AUTHADD(DSP,INQ,CHG)\nREFRESH SECURITY`,
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-ibm-mq#configuring-ibm-mq-authority"
+  },
+  {
+    id: "ibmmq-local-fallback",
+    cat: "mq",
+    severity: "ok",
+    title: "IBM MQ: Prelazak na Client Binding mod (Reason 2495)",
+    patterns: [/Reason '2495'/i, /Connected to .* with client binding mode/i],
+    cause: "MQ native biblioteke nisu prisutne na hostu (ili je MQ u kontejneru), pa se senzor uspešno povezao preko TCP mrežnog kanala (Client binding).",
+    fix: "Ovo je očekivano i normalno ponašanje kada je MQ izolovan.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-ibm-mq"
+  },
+
+  // ── 3. Baze podataka
+  {
+    id: "mysql-auth-plugin",
+    cat: "db",
+    severity: "crit",
+    title: "MySQL 8: Nepodržan autentifikacioni protokol (caching_sha2_password)",
+    patterns: [/caching_sha2_password/i, /Authentication protocol.*not supported/i],
+    cause: "MySQL 8 podrazumevano koristi caching_sha2_password, dok Instana senzor zahteva mysql_native_password.",
+    fix: "U MySQL-u pokrenite:\nALTER USER '<user>'@'%' IDENTIFIED WITH mysql_native_password BY '<password>';\nFLUSH PRIVILEGES;\nIli pokrenite MySQL server sa parametrom --mysql-native-password=ON.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-mysql#troubleshooting"
+  },
+  {
+    id: "mariadb-slave-monitor",
+    cat: "db",
+    severity: "warn",
+    title: "MariaDB: Nedostaje SLAVE MONITOR privilegija",
+    patterns: [/need SLAVE MONITOR privilege/i, /WARN 1227.*SLAVE MONITOR/i],
+    cause: "MariaDB 10.5+ zahteva SLAVE MONITOR privilegiju za prikupljanje replikacionih metrika.",
+    fix: "U MariaDB-u pokrenite:\nGRANT SLAVE MONITOR ON *.* TO '<user>'@'localhost';\nFLUSH PRIVILEGES;\nZatim restartujte agenta (sudo systemctl restart instana-agent).",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-mariadb"
+  },
+  {
+    id: "mariadb-perf-schema",
+    cat: "db",
+    severity: "crit",
+    title: "MariaDB: Nedostaje SELECT pristup performance_schema tabelama",
+    patterns: [/SELECT command denied.*performance_schema/i],
+    cause: "Korisnik za MariaDB monitoring nema pravo čitanja performance_schema šeme.",
+    fix: "U MariaDB-u pokrenite:\nGRANT SELECT ON performance_schema.* TO '<user>'@'localhost';\nFLUSH PRIVILEGES;",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-mariadb"
+  },
+  {
+    id: "postgres-auth",
+    cat: "db",
+    severity: "crit",
+    title: "PostgreSQL: Neuspešna autentifikacija korisnika",
+    patterns: [/password authentication failed for user/i, /FATAL:.*authentication failed/i],
+    cause: "Korisničko ime ili lozinka navedena pod com.instana.plugin.postgresql u configuration.yaml nije ispravna.",
+    fix: "Proverite korisnika i lozinku u /opt/instana/agent/etc/instana/configuration.yaml i dodelite:\nGRANT CONNECT ON DATABASE <db> TO <user>;\nGRANT pg_monitor TO <user>;",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-postgresql"
+  },
+  {
+    id: "mongo-auth",
+    cat: "db",
+    severity: "crit",
+    title: "MongoDB: Neuspešna autentifikacija ili nedovoljne role",
+    patterns: [/Command find requires authentication/i, /Authentication failed on admin/i],
+    cause: "MongoDB zahteva autentifikaciju ili korisnik nema clusterMonitor / read role.",
+    fix: "U mongosh-u (admin baza) kreirajte korisnika:\nuse admin\ndb.createUser({ user: 'instana', pwd: '<password>', roles: [{ role: 'read', db: 'admin' }, { role: 'clusterMonitor', db: 'admin' }, { role: 'read', db: 'local' }] })",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-mongodb"
+  },
+  {
+    id: "redis-noauth",
+    cat: "db",
+    severity: "crit",
+    title: "Redis: Zahteva se autentifikacija (NOAUTH)",
+    patterns: [/NOAUTH Authentication required/i, /redis_invalid_password/i],
+    cause: "Redis server ima uključenu requirepass zaštitu, a lozinka nije navedena u configuration.yaml.",
+    fix: "U configuration.yaml pod com.instana.plugin.redis dodajte:\npassword: '<password>'",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-redis"
+  },
+
+  // ── 4. Mreža, TLS & Proxy
+  {
+    id: "tls-pkix",
+    cat: "network",
+    severity: "crit",
+    title: "TLS Handshake Greška: Nepouzdani sertifikat (PKIX Path Building Failed)",
+    patterns: [/PKIX path building failed/i, /SSLHandshakeException/i, /sun\.security\.validator\.ValidatorException/i],
+    cause: "Korporativni TLS proxy (npr. Zscaler, BlueCoat, Fortinet) presreće saobraćaj, a njegov CA root sertifikat nije u JVM keystore-u.",
+    fix: "Importujte CA sertifikat u JVM cacerts bazu agenta:\nsudo /opt/instana/agent/jvm/bin/keytool -importcert -noprompt -alias corp-ca \\\n  -keystore /opt/instana/agent/jvm/lib/security/cacerts -storepass changeit -file /path/to/corporate-ca.crt\nZatim restartujte agenta: sudo systemctl restart instana-agent",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=agent-backend-tls-certificates"
+  },
+  {
+    id: "proxy-407",
+    cat: "network",
+    severity: "crit",
+    title: "Proxy: Zahteva se autentifikacija (407 Proxy Authentication Required)",
+    patterns: [/CONNECT tunnel failed, response 407/i, /HTTP\/.*407/i],
+    cause: "HTTP/HTTPS proxy zahteva korisničko ime i lozinku koji nisu podešeni ili su neispravni.",
+    fix: "Podesite proxy.user i proxy.password u Backend.cfg i u mvn-settings.xml.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=agents-configuring-host-agent#proxy"
+  },
+  {
+    id: "net-timeout",
+    cat: "network",
+    severity: "warn",
+    title: "Mrežni Timeout / Prekid veze",
+    patterns: [/ConnectTimeoutException/i, /Read timed out/i, /Connection timed out/i],
+    cause: "Mrežni paketi se odbacuju ili firewall blokira odlazni saobraćaj na portovima 443 / 1444.",
+    fix: "Proverite odlazne mrežne rute ka backendu pomoću komande: sudo ./agent-install.sh --connectivity",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=requirements-network-requirements"
+  },
+
+  // ── 5. Memorija & JVM Resursi
+  {
+    id: "res-oom",
+    cat: "resources",
+    severity: "crit",
+    title: "JVM Greška: Potrošena memorija (OutOfMemoryError)",
+    patterns: [/java\.lang\.OutOfMemoryError/i, /GC overhead limit exceeded/i],
+    cause: "Instana agent je prekoračio podrazumevani memorijski limit (544 MB) usled praćenja velikog broja entiteta ili senzora.",
+    fix: "Povećajte memoriju preko systemd drop-in konfiguracije:\nsudo mkdir -p /etc/systemd/system/instana-agent.service.d\nsudo tee /etc/systemd/system/instana-agent.service.d/10-environment.conf <<'EOF'\n[Service]\nEnvironment=AGENT_MAX_MEM=1024M\nEOF\nsudo systemctl daemon-reload && sudo systemctl restart instana-agent",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=agent-setting-host-memory-cpu"
+  },
+
+  // ── 6. Zdrave provere (Healthy)
+  {
+    id: "ok-http2",
+    cat: "network",
+    severity: "ok",
+    title: "Backend veza: Uspostavljen HTTP/2 Handshake",
+    patterns: [/Connected using HTTP\/2 to/i, /Backend accepted the connection/i],
+    cause: "Agent je uspešno uspostavio enkriptovanu HTTP/2 vezu sa Instana backendom.",
+    fix: "Nije potrebna akcija — agent uspešno komunicira sa backendom.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current"
+  },
+  {
+    id: "ok-sensor-activated",
+    cat: "db",
+    severity: "ok",
+    title: "Senzor uspešno aktiviran",
+    patterns: [/Activated Sensor for/i, /Activated .* Sensor/i],
+    cause: "Tehnološki senzor je uspešno prepoznao lokalni proces i započeo prikupljanje metrika.",
+    fix: "Metrike se uspešno šalju.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current"
+  }
+];
+
+// ──────────────────────────────────────────────────────────────────────────
+// Analiza i parsiranje
+// ──────────────────────────────────────────────────────────────────────────
+let currentFindings = [];
+let currentLogRaw = "";
+
+function analyzeLog(rawText) {
+  currentLogRaw = rawText;
+  const lines = rawText.split("\n");
+  $("logMeta").textContent = `${lines.length} linija (${(new Blob([rawText]).size / 1024).toFixed(1)} KB)`;
+
+  const scope = $("selScope").value;
+  let activeLines = lines;
+  if(scope !== "all") {
+    const count = parseInt(scope, 10);
+    activeLines = lines.slice(-count);
+  }
+
+  const categoryFilter = $("selFilter").value;
+  const findings = [];
+  const matchedSignatures = new Set();
+
+  activeLines.forEach((line, lineIndex) => {
+    if(!line.trim()) return;
+    SIGNATURES.forEach(sig => {
+      if(categoryFilter !== "all" && sig.cat !== categoryFilter) return;
+
+      const matched = sig.patterns.some(p => p.test(line));
+      if(matched && !matchedSignatures.has(sig.id)) {
+        matchedSignatures.add(sig.id);
+        findings.push({
+          ...sig,
+          matchedLine: line.trim(),
+          lineNumber: lines.length - activeLines.length + lineIndex + 1
+        });
+      }
+    });
+  });
+
+  currentFindings = findings;
+  renderFindings(findings);
+}
+
+function renderFindings(findings) {
+  const container = $("triageOutput");
+  if(!findings.length) {
+    if(!currentLogRaw.trim()) {
+      container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:30px 10px">Učitajte ili nalepite log fajl na levoj strani da biste pokrenuli analizu.</p>';
+      $("statCrit").textContent = "0";
+      $("statWarn").textContent = "0";
+      $("statOk").textContent = "0";
+      return;
+    }
+    container.innerHTML = `
+      <div class="triage-card ok" style="padding:18px;text-align:center">
+        <h3 style="color:var(--ok);margin:0 0 6px">✓ Nisu pronađeni poznati problemi</h3>
+        <p style="margin:0;font-size:13px;color:var(--muted)">U analiziranom delu loga nema registrovanih kritičnih grešaka ni upozorenja.</p>
+      </div>`;
+    $("statCrit").textContent = "0";
+    $("statWarn").textContent = "0";
+    $("statOk").textContent = "1";
+    return;
+  }
+
+  const crits = findings.filter(f => f.severity === "crit");
+  const warns = findings.filter(f => f.severity === "warn");
+  const oks = findings.filter(f => f.severity === "ok");
+
+  $("statCrit").textContent = crits.length;
+  $("statWarn").textContent = warns.length;
+  $("statOk").textContent = oks.length;
+
+  let html = "";
+
+  if(crits.length) {
+    html += `<div class="triage-section">
+      <h3 class="triage-section-title" style="color:var(--err)">🔴 Kritični Problemi (${crits.length})</h3>
+      <div class="triage-list">
+        ${crits.map(renderCard).join("")}
+      </div>
+    </div>`;
+  }
+
+  if(warns.length) {
+    html += `<div class="triage-section">
+      <h3 class="triage-section-title" style="color:var(--warn)">🟡 Upozorenja &amp; Preporuke (${warns.length})</h3>
+      <div class="triage-list">
+        ${warns.map(renderCard).join("")}
+      </div>
+    </div>`;
+  }
+
+  if(oks.length) {
+    html += `<div class="triage-section">
+      <h3 class="triage-section-title" style="color:var(--ok)">🟢 Ispravne Provere (${oks.length})</h3>
+      <div class="triage-list">
+        ${oks.map(renderCard).join("")}
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+
+  // Wire copy buttons inside cards
+  container.querySelectorAll("[data-copy]").forEach(btn => {
+    btn.onclick = () => copyText(btn.dataset.copy, "Komanda za popravku");
+  });
+}
+
+function renderCard(f) {
+  const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return `
+    <div class="triage-card ${f.severity}">
+      <div class="tc-head">
+        <h4 class="tc-title">${esc(f.title)}</h4>
+        <span class="tc-badge ${f.severity}">${f.severity === "crit" ? "Kritično" : (f.severity === "warn" ? "Upozorenje" : "Ispravno")}</span>
+      </div>
+      <div class="tc-cause"><b>Uzrok:</b> ${esc(f.cause)}</div>
+      <div class="tc-line"><b>Linija #${f.lineNumber}:</b> ${esc(f.matchedLine)}</div>
+      <div class="tc-fix-title">Preporučena akcija:</div>
+      <div class="tc-fix">${esc(f.fix)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;flex-wrap:wrap;gap:6px">
+        <button type="button" class="btn-mini" data-copy="${esc(f.fix)}">📋 Kopiraj akciju</button>
+        ${f.doc ? `<a href="${f.doc}" target="_blank" rel="noopener" style="font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600">Dokumentacija →</a>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Izvoz Izveštaja (Markdown & Text)
+// ──────────────────────────────────────────────────────────────────────────
+function buildMarkdownReport() {
+  const crits = currentFindings.filter(f => f.severity === "crit");
+  const warns = currentFindings.filter(f => f.severity === "warn");
+  const oks = currentFindings.filter(f => f.severity === "ok");
+
+  const L = [
+    "# Instana Agent Log Triage Izveštaj",
+    `Datum analize: ${new Date().toISOString()}`,
+    `Ukupan broj analiziranih stavki: ${currentFindings.length} (Kritično: ${crits.length}, Upozorenja: ${warns.length}, Ispravno: ${oks.length})`,
+    "",
+    "---",
+    ""
+  ];
+
+  if(crits.length) {
+    L.push("## 🔴 Kritični Problemi");
+    crits.forEach(c => {
+      L.push(`### ${c.title}`);
+      L.push(`- **Uzrok:** ${c.cause}`);
+      L.push(`- **Detektovana linija (#${c.lineNumber}):** \`${c.matchedLine}\``);
+      L.push(`- **Preporučena akcija:**\n\`\`\`\n${c.fix}\n\`\`\``);
+      if(c.doc) L.push(`- **Dokumentacija:** ${c.doc}`);
+      L.push("");
+    });
+  }
+
+  if(warns.length) {
+    L.push("## 🟡 Upozorenja i Preporuke");
+    warns.forEach(w => {
+      L.push(`### ${w.title}`);
+      L.push(`- **Uzrok:** ${w.cause}`);
+      L.push(`- **Detektovana linija (#${w.lineNumber}):** \`${w.matchedLine}\``);
+      L.push(`- **Preporučena akcija:**\n\`\`\`\n${w.fix}\n\`\`\``);
+      L.push("");
+    });
+  }
+
+  if(oks.length) {
+    L.push("## 🟢 Ispravne Provere");
+    oks.forEach(o => {
+      L.push(`- **${o.title}:** ${o.cause}`);
+    });
+    L.push("");
+  }
+
+  L.push("---");
+  L.push("Generisano pomoću Instana Agent Log Triage Alata.");
+  return L.join("\n");
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Toast & Copy Helper
+// ──────────────────────────────────────────────────────────────────────────
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.classList.add("on");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("on"), 2200);
+}
+
+async function copyText(text, label) {
+  try { await navigator.clipboard.writeText(text); }
+  catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  toast(`${label} kopirano u clipboard`);
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Događaji & Učitavanje
+// ──────────────────────────────────────────────────────────────────────────
+$("logText").addEventListener("input", e => analyzeLog(e.target.value));
+$("selScope").addEventListener("change", () => analyzeLog($("logText").value));
+$("selFilter").addEventListener("change", () => analyzeLog($("logText").value));
+
+// Drag & Drop
+const dropZone = $("dropZone");
+const fileInput = $("fileInput");
+
+dropZone.onclick = () => fileInput.click();
+dropZone.onkeydown = e => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); } };
+
+dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add("dragover"); };
+dropZone.ondragleave = () => dropZone.classList.remove("dragover");
+dropZone.ondrop = e => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+};
+fileInput.onchange = e => { if(e.target.files.length) handleFile(e.target.files[0]); };
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    $("logText").value = ev.target.result;
+    analyzeLog(ev.target.result);
+    toast(`Učitan fajl: ${file.name}`);
+  };
+  reader.readAsText(file);
+}
+
+// Dugmad za izvoz
+$("btnExportMd").onclick = () => {
+  if(!currentFindings.length && !currentLogRaw.trim()) { toast("Nema podataka za izvoz"); return; }
+  copyText(buildMarkdownReport(), "Triage izveštaj");
+};
+
+$("btnDownloadTxt").onclick = () => {
+  if(!currentFindings.length && !currentLogRaw.trim()) { toast("Nema podataka za preuzimanje"); return; }
+  const blob = new Blob([buildMarkdownReport()], { type: "text/markdown;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `instana-agent-triage-${new Date().toISOString().slice(0,10)}.md`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("Preuzet izveštaj");
+};
+
+// Demo primeri
+$("btnDemoError").onclick = () => {
+  const sample = `2026-11-04T10:14:01.002+00:00 | INFO  | Agent version: 1.1.788
+2026-11-04T10:14:02.120+00:00 | INFO  | Connected using HTTP/2 to ingress-red-saas.instana.io:443
+2026-11-04T10:14:02.450+00:00 | WARN  | Forbidden (403): Agent key rejected by backend
+2026-11-04T10:14:15.301+00:00 | WARN  | MQJE001: Completion Code '2', Reason '2035' (AMQ8077W: SYSTEM.ADMIN.COMMAND.QUEUE)
+2026-11-04T10:14:22.010+00:00 | ERROR | Authentication protocol caching_sha2_password not supported by MySQL sensor
+2026-11-04T10:14:30.120+00:00 | WARN  | 1227 need SLAVE MONITOR privilege for MariaDB replication metrics
+2026-11-04T10:14:40.890+00:00 | ERROR | Redis sensor: NOAUTH Authentication required on 127.0.0.1:6379
+2026-11-04T10:14:55.100+00:00 | ERROR | sun.security.validator.ValidatorException: PKIX path building failed: unable to find valid certification path`;
+  $("logText").value = sample;
+  analyzeLog(sample);
+  toast("Učitan primer sa greškama");
+};
+
+$("btnDemoClean").onclick = () => {
+  const sample = `2026-11-04T10:14:01.002+00:00 | INFO  | Agent version: 1.1.788
+2026-11-04T10:14:02.120+00:00 | INFO  | Connected using HTTP/2 to ingress-red-saas.instana.io:443
+2026-11-04T10:14:03.010+00:00 | INFO  | Backend accepted the connection
+2026-11-04T10:14:10.500+00:00 | INFO  | Activated Sensor for PID 1420 (PostgreSQL)
+2026-11-04T10:14:15.220+00:00 | INFO  | Activated MySql Sensor on 127.0.0.1:3306`;
+  $("logText").value = sample;
+  analyzeLog(sample);
+  toast("Učitan čist log");
+};
+
+$("btnClear").onclick = () => {
+  $("logText").value = "";
+  analyzeLog("");
+  toast("Obrisano");
+};
+
+})();
+</script>
+</body>
+</html>

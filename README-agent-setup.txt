@@ -8,7 +8,8 @@ Scope v1: Linux host agent + Docker. Kubernetes/cloud = v2.
 FILES
 ─────
 agent-config-generator.html   Browser konfigurator (radi offline, bez servera)
-agent-install.sh               Interaktivni Linux installer + manager
+agent-triage.html             Browser log dijagnosticar & Triage analizator
+agent-install.sh               Interaktivni Linux installer + manager (--triage)
 profiles/                      Predefinisani profili za ceste scenarije
 
 

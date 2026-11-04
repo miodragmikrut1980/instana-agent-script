@@ -6,7 +6,8 @@ Scope v1: Linux host agent + Docker + Kubernetes (Helm). Operator, OpenShift i c
 
 ## Fajlovi (Agent/)
 - `agent-config-generator.html`: offline browser konfigurator (jedan fajl)
-- `agent-install.sh`: shell installer (`--dry-run`, `--config`, `--profile NAME`, `--status`, `--edit`, `--support-bundle`; env `INSTANA_AGENT_KEY` za neinteraktivno)
+- `agent-triage.html`: offline browser dijagnostičar i analizator logova (jedan fajl)
+- `agent-install.sh`: shell installer (`--dry-run`, `--config`, `--profile NAME`, `--status`, `--connectivity`, `--triage`, `--edit`, `--support-bundle`; env `INSTANA_AGENT_KEY` za neinteraktivno)
 - `profiles/*.json`: ibm-mq, java-app, infrastructure-only, saas-eu-replica, saas-us-west (tenant je US West: `ingress-red-saas.instana.io`)
 - Dizajn referenca: `skripta/instana-backend-skripta/config-generator.html`
 
