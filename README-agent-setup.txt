@@ -8,7 +8,8 @@ Scope v1: Linux host agent + Docker. Kubernetes/cloud = v2.
 FILES
 ─────
 agent-config-generator.html   Browser konfigurator (radi offline, bez servera)
-agent-install.sh               Interaktivni Linux installer + manager
+agent-triage.html             Browser log dijagnosticar & Triage analizator
+agent-install.sh               Interaktivni Linux installer + manager (--triage)
 profiles/                      Predefinisani profili za ceste scenarije
 
 
@@ -139,6 +140,17 @@ Napomena: MariaDB se NE prepoznaje kao MySQL, ima poseban senzor "mariadb"
 (korisniku treba i GRANT SELECT ON performance_schema.*). Ako agent.log javi
 "need SLAVE MONITOR privilege", dodaj GRANT SLAVE MONITOR ON *.* (nije u
 dokumentaciji senzora; potvrdjeno samo da upozorenje nestaje).
+Napomena: IBM MQ. Ako agent i Queue Manager nisu na istoj masini (ili je MQ u
+Docker-u), senzor koristi "client binding" i spaja se kao obican klijent. Korisnik iz
+"username" mora imati OAM prava (dokumentacija "Configuring IBM MQ authority"),
+inace agent.log javlja MQJE001 Reason '2035' a MQ log AMQ8077W. Minimum: QMGR
+CONNECT,DSP,INQ; SYSTEM.ADMIN.COMMAND.QUEUE DSP,INQ,PUT,CHG; SYSTEM.DEFAULT.MODEL.QUEUE
+DSP,GET; plus prava za SYSTEM.ADMIN.*.EVENT i STATISTICS.QUEUE, pa REFRESH SECURITY.
+U runmqsc ime korisnika pisati u navodnicima: PRINCIPAL('app'). Docker image ima
+zaseban zapis DEV.** koji ima prednost nad '**' (treba i DSP za DEV.**).
+AMQ8077W za SYSTEM.AUTH.DATA.QUEUE (chg) je poznato ogranicenje, nije kvar.
+
+
 
 Sta installer NE radi (ovo se i dalje podesava rucno ili iz HTML-a):
 ostali senzori (npr. mssql remote, elasticsearch), pin verzije, raspored update-a i resursi.

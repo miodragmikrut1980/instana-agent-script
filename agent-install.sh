@@ -80,6 +80,7 @@ while [[ $# -gt 0 ]]; do
     --profile)       PROFILE_NAME="$2"; shift 2 ;;
     --status)        MODE="status"; shift ;;
     --connectivity)  MODE="connectivity"; shift ;;
+    --triage)        MODE="triage"; shift ;;
     --edit)          MODE="edit"; shift ;;
     --support-bundle) MODE="bundle"; shift ;;
     --help|-h)       MODE="help"; shift ;;
@@ -102,6 +103,7 @@ show_help() {
   printf "  %-22s %s\n" "--profile NAME"     "Load a predefined profile from profiles/ directory"
   printf "  %-22s %s\n" "--status"           "Show current agent status, version, connectivity (exit 1 if not installed or not running)"
   printf "  %-22s %s\n" "--connectivity"     "Test backend and repositories, no menu (exit 1 on any failure or 403)"
+  printf "  %-22s %s\n" "--triage"           "Scan agent.log for known error signatures and print fixes (exit 1 on issues)"
   printf "  %-22s %s\n" "--edit"             "Edit configuration.yaml interactively"
   printf "  %-22s %s\n" "--support-bundle"   "Generate a ZIP bundle for support (masked keys)"
   printf "  %-22s %s\n" "--help"             "Show this help"
@@ -743,6 +745,110 @@ test_connectivity() {
 }
 
 # --------------------------------------------------------------------------- #
+#  Log Triage (pretraga poznatih potpisa gresaka u agent.log)                  #
+# --------------------------------------------------------------------------- #
+TRIAGE_ISSUES=0
+triage_agent_log() {
+  TRIAGE_ISSUES=0
+  hdr "Instana Agent Log Triage"
+
+  if ! agent_is_installed; then
+    warn "Instana Agent is not installed."
+    return 0
+  fi
+
+  if [[ ! -f "$AGENT_LOG_FILE" ]]; then
+    warn "Agent log file not found at ${AGENT_LOG_FILE}"
+    return 0
+  fi
+
+  log "Scanning last 300 lines of ${AGENT_LOG_FILE} for known error signatures..."
+  echo ""
+
+  local log_chunk
+  log_chunk=$(tail -n 300 "$AGENT_LOG_FILE" 2>/dev/null || true)
+
+  # 1. Agent Key Auth (403 / 401)
+  if [[ "$log_chunk" == *'Forbidden (403)'* || "$log_chunk" == *'Unauthorized (401)'* ]]; then
+    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+    err "[!] Agent Key Authentication Failed (403 Forbidden / 401 Unauthorized)"
+    printf "    Cause: Backend rejected the configured agent key.\n"
+    printf "    Fix:   Update the agent key in %s (option 4 in menu) or check UI → Settings → Agents.\n\n" "$BACKEND_CFG_FILE"
+  fi
+
+  # 2. IBM MQ OAM Authority (Reason 2035 / AMQ8077W / MQJE001)
+  if [[ "$log_chunk" == *"Reason '2035'"* || "$log_chunk" == *"AMQ8077W"* ]]; then
+    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+    err "[!] IBM MQ Sensor: Authorization Failure (Reason 2035 / AMQ8077W)"
+    printf "    Cause: Monitored user lacks required OAM permissions on Queue Manager.\n"
+    printf "    Fix:   In runmqsc <QMGR>, grant documented authorities:\n"
+    printf "           SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('<user>') AUTHADD(CONNECT,DSP,INQ)\n"
+    printf "           SET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,INQ,PUT,CHG)\n"
+    printf "           SET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,GET)\n"
+    printf "           SET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,INQ,GET,CHG)\n"
+    printf "           SET AUTHREC PROFILE('**') OBJTYPE(QUEUE) PRINCIPAL('<user>') AUTHADD(DSP,INQ,GET,CHG)\n"
+    printf "           REFRESH SECURITY\n\n"
+  fi
+
+  # 3. MySQL 8 caching_sha2_password
+  if [[ "$log_chunk" == *"caching_sha2_password"* || "$log_chunk" == *"Authentication protocol not supported"* ]]; then
+    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+    err "[!] MySQL Sensor: Authentication Protocol Not Supported"
+    printf "    Cause: MySQL 8 uses caching_sha2_password; Instana sensor requires mysql_native_password.\n"
+    printf "    Fix:   Run in MySQL: ALTER USER '<user>'@'%%' IDENTIFIED WITH mysql_native_password BY '<password>';\n"
+    printf "           Or start MySQL with --mysql-native-password=ON\n\n"
+  fi
+
+  # 4. MariaDB SLAVE MONITOR
+  if [[ "$log_chunk" == *"need SLAVE MONITOR privilege"* ]]; then
+    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+    err "[!] MariaDB Sensor: Missing SLAVE MONITOR Privilege"
+    printf "    Cause: MariaDB requires SLAVE MONITOR privilege for replication monitoring.\n"
+    printf "    Fix:   Run in MariaDB: GRANT SLAVE MONITOR ON *.* TO '<user>'@'localhost'; FLUSH PRIVILEGES;\n\n"
+  fi
+
+  # 5. Redis NOAUTH
+  if [[ "$log_chunk" == *"NOAUTH Authentication required"* || "$log_chunk" == *"redis_invalid_password"* ]]; then
+    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+    err "[!] Redis Sensor: Authentication Required (NOAUTH)"
+    printf "    Cause: Redis server requires a password, but none was configured in configuration.yaml.\n"
+    printf "    Fix:   Add password under com.instana.plugin.redis: password: '<pass>' in configuration.yaml\n\n"
+  fi
+
+  # 6. Corporate TLS Interception (PKIX / SSLHandshakeException)
+  if [[ "$log_chunk" == *"PKIX path building failed"* || "$log_chunk" == *"SSLHandshakeException"* ]]; then
+    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+    err "[!] TLS Handshake Failed (PKIX / Untrusted Certificate)"
+    printf "    Cause: Corporate proxy or custom CA certificate is not trusted by the JVM.\n"
+    printf "    Fix:   Import your CA certificate into agent keystore:\n"
+    printf "           sudo /opt/instana/agent/jvm/bin/keytool -importcert -noprompt -alias corp-ca \\\n"
+    printf "             -keystore /opt/instana/agent/jvm/lib/security/cacerts -storepass changeit -file /path/to/ca.crt\n\n"
+  fi
+
+  # 7. JVM Out of Memory
+  if [[ "$log_chunk" == *"java.lang.OutOfMemoryError"* || "$log_chunk" == *"GC overhead limit exceeded"* ]]; then
+    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+    err "[!] JVM Out Of Memory (OutOfMemoryError)"
+    printf "    Cause: Agent heap limit exceeded (default 544 MB).\n"
+    printf "    Fix:   Create /etc/systemd/system/instana-agent.service.d/10-environment.conf:\n"
+    printf "           [Service]\n"
+    printf "           Environment=AGENT_MAX_MEM=1024M\n"
+    printf "           Then run: sudo systemctl daemon-reload && sudo systemctl restart instana-agent\n\n"
+  fi
+
+  if [[ "$TRIAGE_ISSUES" -eq 0 ]]; then
+    ok "No known error signatures detected in the last 300 log lines."
+    if [[ "$log_chunk" == *"Connected using HTTP/2"* ]]; then
+      ok "Backend HTTP/2 handshake is active."
+    fi
+    return 0
+  else
+    warn "Triage complete: ${TRIAGE_ISSUES} actionable issue(s) detected."
+    return 1
+  fi
+}
+
+# --------------------------------------------------------------------------- #
 #  Instalacija agenta                                                          #
 # --------------------------------------------------------------------------- #
 # Na apt sistemima installer pravi /usr/share/keyrings/instana-agent.gpg pomocu `gpg --dearmor`.
@@ -976,6 +1082,7 @@ show_edit_menu() {
     echo -e "  ${CYN}7)${RST} View recent logs (last 50 lines)"
     echo -e "  ${CYN}8)${RST} Check backend connectivity"
     echo -e "  ${CYN}9)${RST} Restore last backup"
+    echo -e "  ${CYN}t)${RST} Diagnose agent log (Triage)"
     echo -e "  ${CYN}e)${RST} Export config to JSON (for agent-config-generator.html)"
     echo -e "  ${CYN}0)${RST} Exit"
     echo ""
@@ -1111,6 +1218,9 @@ show_edit_menu() {
         else
           warn "No backups found"
         fi
+        ;;
+      t|T)
+        triage_agent_log
         ;;
       e|E)
         # Export config to JSON — reads system path if installed, else ./configuration.yaml
@@ -1455,6 +1565,9 @@ case "$MODE" in
       fi
     fi
     exit "$_conn_rc" ;;
+  triage)
+    triage_agent_log
+    exit "$?" ;;
   edit)
     show_edit_menu ;;
   bundle)
