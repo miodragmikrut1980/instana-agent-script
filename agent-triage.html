@@ -97,9 +97,9 @@ select:focus,input:focus{outline:2px solid var(--accent)}
 
 /* Buttons */
 .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-button{font:600 12.5px var(--ui);border-radius:6px;border:1px solid var(--line);
-  background:var(--sheet);color:var(--ink);padding:6px 11px;cursor:pointer;transition:all .12s}
-button:hover{background:var(--paper)}
+button,.btn-nav{font:600 12.5px var(--ui);border-radius:6px;border:1px solid var(--line);
+  background:var(--sheet);color:var(--ink);padding:6px 11px;cursor:pointer;transition:all .12s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+button:hover,.btn-nav:hover{background:var(--paper)}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 button.primary:hover{opacity:.92}
 button.btn-mini{font-size:11px;padding:3px 7px}
@@ -119,6 +119,7 @@ button.btn-mini{font-size:11px;padding:3px 7px}
     <p>Automatska analiza logova agenta (/opt/instana/agent/data/log/agent.log), detekcija problema i preporučene komande za popravku.</p>
   </div>
   <div class="header-actions">
+    <a href="agent-config-generator.html" class="btn-nav" title="Otvori Config Generator">⚙️ Config Generator</a>
     <button type="button" id="btnDemoError">Učitaj primer sa greškama</button>
     <button type="button" id="btnDemoClean">Učitaj čist log</button>
     <button type="button" id="btnClear">Obriši</button>
