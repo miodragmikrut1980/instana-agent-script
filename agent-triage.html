@@ -231,6 +231,7 @@ const SIGNATURES = [
     severity: "crit",
     title: "Neuspešna autentifikacija agenta (403 Forbidden)",
     patterns: [/Forbidden \(403\)/i, /Backend rejected the agent key/i],
+    resolvedBy: ["ok-http2"],
     cause: "Instana backend je odbio navedeni Agent Key. Ključ je neispravan, istekao ili opozvan u Instana UI-u.",
     fix: "Ažurirajte ključ u /opt/instana/agent/etc/instana/com.instana.agent.main.sender.Backend.cfg (polje key=) ili pokrenite: sudo ./agent-install.sh -> Izmena konfiguracije -> opcija 4.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=agents-installing-host-agent"
@@ -241,6 +242,7 @@ const SIGNATURES = [
     severity: "crit",
     title: "Neuspešno preuzimanje paketa senzora (401 Unauthorized)",
     patterns: [/Unauthorized \(401\)/i, /download key invalid/i, /artifact-public\.instana\.io.*401/i],
+    resolvedBy: ["ok-sensor-activated"],
     cause: "Download Key nije ispravan ili nema dozvolu za preuzimanje senzora sa artifact-public.instana.io.",
     fix: "Proverite Agent Download Key u Instana UI -> Settings -> Agents -> Install Agents.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=requirements-agent-repositories"
@@ -419,13 +421,14 @@ function analyzeLog(rawText) {
   const findings = [];
   const matchedSignatures = new Set();
 
+  const lastHit = {};
   activeLines.forEach((line, lineIndex) => {
     if(!line.trim()) return;
     SIGNATURES.forEach(sig => {
+      if(!sig.patterns.some(p => p.test(line))) return;
+      lastHit[sig.id] = lineIndex;
       if(categoryFilter !== "all" && sig.cat !== categoryFilter) return;
-
-      const matched = sig.patterns.some(p => p.test(line));
-      if(matched && !matchedSignatures.has(sig.id)) {
+      if(!matchedSignatures.has(sig.id)) {
         matchedSignatures.add(sig.id);
         findings.push({
           ...sig,
@@ -434,6 +437,26 @@ function analyzeLog(rawText) {
         });
       }
     });
+  });
+
+  // Greška koju je kasnija uspešna veza otklonila prikazuje se kao "Rešeno";
+  // za takve potpise prikazuje se poslednje pojavljivanje, ne prvo.
+  const base = lines.length - activeLines.length;
+  findings.forEach((f, i) => {
+    if(!f.resolvedBy) return;
+    const last = lastHit[f.id];
+    const fixedAt = Math.max(-1, ...f.resolvedBy.map(id => lastHit[id] ?? -1));
+    findings[i] = {
+      ...f,
+      matchedLine: activeLines[last].trim(),
+      lineNumber: base + last + 1,
+      ...(fixedAt > last ? {
+        severity: "ok",
+        resolved: true,
+        title: "Rešeno: " + f.title,
+        cause: f.cause + " Kasnije u logu (linija #" + (base + fixedAt + 1) + ") agent se uspešno povezao."
+      } : {})
+    };
   });
 
   currentFindings = findings;
@@ -512,7 +535,7 @@ function renderCard(f) {
     <div class="triage-card ${f.severity}">
       <div class="tc-head">
         <h4 class="tc-title">${esc(f.title)}</h4>
-        <span class="tc-badge ${f.severity}">${f.severity === "crit" ? "Kritično" : (f.severity === "warn" ? "Upozorenje" : "Ispravno")}</span>
+        <span class="tc-badge ${f.severity}">${f.severity === "crit" ? "Kritično" : (f.severity === "warn" ? "Upozorenje" : (f.resolved ? "Rešeno" : "Ispravno"))}</span>
       </div>
       <div class="tc-cause"><b>Uzrok:</b> ${esc(f.cause)}</div>
       <div class="tc-line"><b>Linija #${f.lineNumber}:</b> ${esc(f.matchedLine)}</div>
