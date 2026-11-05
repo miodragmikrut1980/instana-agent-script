@@ -346,7 +346,7 @@ const SIGNATURES = [
     cat: "network",
     severity: "crit",
     title: "Proxy: Zahteva se autentifikacija (407 Proxy Authentication Required)",
-    patterns: [/CONNECT tunnel failed, response 407/i, /HTTP\/.*407/i],
+    patterns: [/CONNECT tunnel failed, response 407/i, /HTTP\/[\d.]+\s+407\b/i, /Proxy Authentication Required/i],
     cause: "HTTP/HTTPS proxy zahteva korisničko ime i lozinku koji nisu podešeni ili su neispravni.",
     fix: "Podesite proxy.user i proxy.password u Backend.cfg i u mvn-settings.xml.",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=agents-configuring-host-agent#proxy"
