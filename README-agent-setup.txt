@@ -136,6 +136,8 @@ Backend.cfg (ako je zadat) i restartuje servis.
 Senzori iz "sensors" bloka: installer upisuje ibmmq, mysql, mariadb, postgresql,
 mongodb, mssql (samo "local" lista) i redis u configuration.yaml (isti izlaz kao HTML). Ostali senzori se
 preskacu uz upozorenje; za njih koristi HTML konfigurator.
+mssql: na Linuxu ime instance mora biti "DEFAULT" (ne "MSSQLSERVER"), inace senzor biva uklonjen
+("Sensor removed due to invalid or missing configuration"); na Windowsu je to MSSQLSERVER ili ime instance.
 Napomena: MariaDB se NE prepoznaje kao MySQL, ima poseban senzor "mariadb"
 (korisniku treba i GRANT SELECT ON performance_schema.*). Ako agent.log javi
 "need SLAVE MONITOR privilege", dodaj GRANT SLAVE MONITOR ON *.* (nije u

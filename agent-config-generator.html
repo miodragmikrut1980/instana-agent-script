@@ -724,7 +724,7 @@ requirepass "&lt;password&gt;"
           </div>
         </div>
         <div class="grid">
-          <div class="field"><label class="lbl" for="mssql_instance">Instance</label><input type="text" class="code" id="mssql_instance" value="MSSQLSERVER"></div>
+          <div class="field"><label class="lbl" for="mssql_instance">Instance</label><input type="text" class="code" id="mssql_instance" value="DEFAULT"><span class="help">Linux: <code>DEFAULT</code> (confirmed on a live agent). Windows: <code>MSSQLSERVER</code> or the named instance. A wrong name removes the sensor ("invalid or missing configuration").</span></div>
           <div class="field"><label class="lbl" for="mssql_port">Port</label><input type="text" class="code" id="mssql_port" value="1433"></div>
           <div class="field"><label class="lbl" for="mssql_user">User</label><input type="text" class="code" id="mssql_user" placeholder="instana"></div>
           <div class="field"><label class="lbl" for="mssql_pass">Password</label>
@@ -979,6 +979,7 @@ REFRESH SECURITY
 (() => {
 const $ = id => document.getElementById(id);
 const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value || "";
+const mssqlDefaultInstance = () => radio("TARGET").startsWith("win-") ? "MSSQLSERVER" : "DEFAULT";
 const val = id => $(id) ? $(id).value.trim() : "";
 const checked = n => [...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value);
 
@@ -1061,7 +1062,7 @@ const SENSOR_INFO = {
   mssql: {
     title: "Microsoft SQL Server",
     sub: "com.instana.plugin.mssql",
-    what: "Local monitoring (agent on SQL Server host) with SQL Server authentication: instance, user, password and port go under local:.",
+    what: "Local monitoring (agent on SQL Server host) with SQL Server authentication: instance, user, password and port go under local:. The instance name must match the one the sensor discovers: DEFAULT on Linux, MSSQLSERVER (or the named instance) on Windows.",
     prereq: "The SQL user needs VIEW SERVER STATE and VIEW DATABASE STATE.",
     autodiscovery: "Local SQL Server instances on localhost:1433.",
     bestpractice: "Use SQL Server authentication with a dedicated user.",
@@ -2932,7 +2933,7 @@ function exportJsonConfig() {
     sensors.redis = { password: val("redis_pass") };
   }
   if(selSensors.includes("mssql")){
-    sensors.mssql = { local: [{ instance: val("mssql_instance")||"MSSQLSERVER", port: val("mssql_port")||"1433", user: val("mssql_user"), password: val("mssql_pass") }] };
+    sensors.mssql = { local: [{ instance: val("mssql_instance")||mssqlDefaultInstance(), port: val("mssql_port")||"1433", user: val("mssql_user"), password: val("mssql_pass") }] };
   }
   if(selSensors.includes("ibmmq")){
     const qms = qmgrRows.filter(r=>r.name);
@@ -2964,7 +2965,7 @@ document.addEventListener("click", e => {
     else if(p==="mariadb"){ $("maria_user").value="instana"; }
     else if(p==="postgresql"){ $("pg_user").value="instana"; $("pg_db").value="instana"; }
     else if(p==="mongodb"){ $("mongo_user").value="instana"; $("mongo_source").value="admin"; }
-    else if(p==="mssql"){ $("mssql_instance").value="MSSQLSERVER"; $("mssql_port").value="1433"; $("mssql_user").value="instana"; }
+    else if(p==="mssql"){ $("mssql_instance").value=mssqlDefaultInstance(); $("mssql_port").value="1433"; $("mssql_user").value="instana"; }
     else if(p==="ibmmq"){ qmgrRows=[{name:"QM1",channel:"DEV.APP.SVRCONN",port:"1414",username:"app"}]; renderQmgrs(); }
     update();
     toast(`Loaded defaults for ${p}`);
@@ -3067,7 +3068,7 @@ function applyJsonConfig(json) {
   if (sensorsCfg.mssql) {
     tick("mssql");
     const l0 = (sensorsCfg.mssql.local || [])[0] || {};
-    $("mssql_instance").value = l0.instance || "MSSQLSERVER";
+    $("mssql_instance").value = l0.instance || mssqlDefaultInstance();
     $("mssql_port").value = l0.port || "1433";
     $("mssql_user").value = l0.user || "";
     $("mssql_pass").value = l0.password || "";

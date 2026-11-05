@@ -302,6 +302,38 @@ const SIGNATURES = [
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-mariadb"
   },
   {
+    id: "mssql-no-credentials",
+    cat: "db",
+    severity: "crit",
+    title: "SQL Server: Senzor nema korisnika i lozinku (integrated authentication)",
+    patterns: [/Cannot connect to MS SQL Server\. This driver is not configured for integrated authentication/i],
+    resolvedBy: ["mssql-connected"],
+    cause: "U configuration.yaml nema com.instana.plugin.mssql bloka sa user/password, pa senzor pokušava Windows Authentication, koja na Linuxu ne radi.",
+    fix: "U configuration.yaml dodajte (na Linuxu je ime instance DEFAULT):\ncom.instana.plugin.mssql:\n  local:\n    - instance: 'DEFAULT'\n      user: '<user>'\n      password: '<password>'\n      port: '1433'\nKorisnik treba VIEW SERVER STATE i VIEW DATABASE STATE. Agent sam učitava izmenu u roku od nekoliko sekundi.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-sql-server"
+  },
+  {
+    id: "mssql-sensor-removed",
+    cat: "db",
+    severity: "crit",
+    title: "SQL Server: Senzor uklonjen zbog neispravne konfiguracije",
+    patterns: [/Mssql\s*\|.*Sensor removed due to invalid or missing configuration/i],
+    resolvedBy: ["mssql-connected"],
+    cause: "Ime instance u com.instana.plugin.mssql.local nije isto kao ime koje je senzor otkrio. Na Linuxu je to DEFAULT, a ne MSSQLSERVER (potvrđeno na živom agentu, senzor 1.1.55).",
+    fix: "U configuration.yaml postavite instance: 'DEFAULT' na Linuxu (MSSQLSERVER ili ime instance na Windowsu), pa sačekajte nekoliko sekundi; restart nije potreban.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-sql-server"
+  },
+  {
+    id: "mssql-connected",
+    cat: "db",
+    severity: "ok",
+    title: "SQL Server: Senzor povezan",
+    patterns: [/Successfully connected to MS SQL instance/i],
+    cause: "Senzor se uspešno prijavio na SQL Server.",
+    fix: "Nije potrebna akcija.",
+    doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-sql-server"
+  },
+  {
     id: "postgres-auth",
     cat: "db",
     severity: "crit",
