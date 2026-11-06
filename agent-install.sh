@@ -748,6 +748,27 @@ test_connectivity() {
 #  Log Triage (pretraga poznatih potpisa gresaka u agent.log)                  #
 # --------------------------------------------------------------------------- #
 TRIAGE_ISSUES=0
+
+# Broj poslednje linije u $1 koja odgovara ERE-u $2 (0 ako nema poklapanja).
+triage_last_line() {
+  local n
+  n=$(grep -nE -- "$2" <<<"$1" | tail -n 1 | cut -d: -f1 || true)
+  printf '%s' "${n:-0}"
+}
+
+# Vraca 0 (i ispisuje "Resolved") ako je uspesna linija ($2 = ERE) kasnije od greske ($1 = broj linije).
+# Koristi log_chunk iz triage_agent_log (dinamicki opseg).
+triage_is_resolved() {
+  local hit="$1" fixed
+  fixed=$(triage_last_line "$log_chunk" "$2")
+  if (( fixed > hit )); then
+    ok "Resolved: $3 (error at log line #${hit}, later success at line #${fixed})"
+    printf "\n"
+    return 0
+  fi
+  return 1
+}
+
 triage_agent_log() {
   TRIAGE_ISSUES=0
   hdr "Instana Agent Log Triage"
@@ -768,12 +789,28 @@ triage_agent_log() {
   local log_chunk
   log_chunk=$(tail -n 300 "$AGENT_LOG_FILE" 2>/dev/null || true)
 
-  # 1. Agent Key Auth (403 / 401)
-  if [[ "$log_chunk" == *'Forbidden (403)'* || "$log_chunk" == *'Unauthorized (401)'* ]]; then
-    TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
-    err "[!] Agent Key Authentication Failed (403 Forbidden / 401 Unauthorized)"
-    printf "    Cause: Backend rejected the configured agent key.\n"
-    printf "    Fix:   Update the agent key in %s (option 4 in menu) or check UI → Settings → Agents.\n\n" "$BACKEND_CFG_FILE"
+  local hit
+
+  # 1a. Agent Key Auth (403); resolved if a later "Connected using HTTP/2" / "accepted" line exists
+  if [[ "$log_chunk" == *'Forbidden (403)'* ]]; then
+    hit=$(triage_last_line "$log_chunk" 'Forbidden \(403\)')
+    if ! triage_is_resolved "$hit" 'Connected using HTTP/2 to|Backend accepted the connection' "Agent Key Authentication Failed (403 Forbidden)"; then
+      TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+      err "[!] Agent Key Authentication Failed (403 Forbidden)"
+      printf "    Cause: Backend rejected the configured agent key.\n"
+      printf "    Fix:   Update the agent key in %s (option 4 in menu) or check UI → Settings → Agents.\n\n" "$BACKEND_CFG_FILE"
+    fi
+  fi
+
+  # 1b. Download key (401); resolved if a sensor was activated later
+  if [[ "$log_chunk" == *'Unauthorized (401)'* ]]; then
+    hit=$(triage_last_line "$log_chunk" 'Unauthorized \(401\)')
+    if ! triage_is_resolved "$hit" 'Activated Sensor for|Activated .* Sensor' "Sensor package download failed (401 Unauthorized)"; then
+      TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+      err "[!] Sensor Package Download Failed (401 Unauthorized)"
+      printf "    Cause: Download key is invalid or not allowed to fetch sensors from artifact-public.instana.io.\n"
+      printf "    Fix:   Check the Agent Download Key in UI → Settings → Agents → Install Agents.\n\n"
+    fi
   fi
 
   # 2. IBM MQ OAM Authority (Reason 2035 / AMQ8077W / MQJE001)
@@ -805,6 +842,37 @@ triage_agent_log() {
     err "[!] MariaDB Sensor: Missing SLAVE MONITOR Privilege"
     printf "    Cause: MariaDB requires SLAVE MONITOR privilege for replication monitoring.\n"
     printf "    Fix:   Run in MariaDB: GRANT SLAVE MONITOR ON *.* TO '<user>'@'localhost'; FLUSH PRIVILEGES;\n\n"
+  fi
+
+  # 4b. SQL Server: no credentials (integrated authentication does not work on Linux)
+  if [[ "$log_chunk" == *'This driver is not configured for integrated authentication'* ]]; then
+    hit=$(triage_last_line "$log_chunk" 'Cannot connect to MS SQL Server\. This driver is not configured for integrated authentication')
+    if ! triage_is_resolved "$hit" 'Successfully connected to MS SQL instance' "SQL Server sensor had no user/password"; then
+      TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+      err "[!] SQL Server Sensor: No User/Password (integrated authentication)"
+      printf "    Cause: No com.instana.plugin.mssql block with user/password, so the sensor tries Windows Authentication (not available on Linux).\n"
+      printf "    Fix:   Add to configuration.yaml (instance name is DEFAULT on Linux):\n"
+      printf "           com.instana.plugin.mssql:\n"
+      printf "             local:\n"
+      printf "               - instance: 'DEFAULT'\n"
+      printf "                 user: '<user>'\n"
+      printf "                 password: '<password>'\n"
+      printf "                 port: '1433'\n"
+      printf "           The user needs VIEW SERVER STATE and VIEW DATABASE STATE. The agent reloads the file itself; no restart needed.\n\n"
+    fi
+  fi
+
+  # 4c. SQL Server: sensor removed (instance name mismatch)
+  if [[ "$log_chunk" == *'Sensor removed due to invalid or missing configuration'* ]] \
+     && grep -qE 'Mssql[[:space:]]*[|].*Sensor removed due to invalid or missing configuration' <<<"$log_chunk"; then
+    hit=$(triage_last_line "$log_chunk" 'Mssql[[:space:]]*[|].*Sensor removed due to invalid or missing configuration')
+    if ! triage_is_resolved "$hit" 'Successfully connected to MS SQL instance' "SQL Server sensor was removed"; then
+      TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
+      err "[!] SQL Server Sensor: Removed Due To Invalid Configuration"
+      printf "    Cause: instance in com.instana.plugin.mssql.local does not match the name the sensor discovered.\n"
+      printf "           On Linux it is DEFAULT, not MSSQLSERVER (confirmed on a live agent, sensor 1.1.55).\n"
+      printf "    Fix:   Set instance: 'DEFAULT' on Linux (MSSQLSERVER or the instance name on Windows); wait a few seconds, no restart needed.\n\n"
+    fi
   fi
 
   # 5. Redis NOAUTH
