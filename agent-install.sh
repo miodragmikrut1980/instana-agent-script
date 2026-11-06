@@ -789,12 +789,15 @@ triage_agent_log() {
   local log_chunk
   log_chunk=$(tail -n 300 "$AGENT_LOG_FILE" 2>/dev/null || true)
 
-  local hit
+  local hit last_backend
 
-  # 1a. Agent Key Auth (403); resolved if a later "Connected using HTTP/2" / "accepted" line exists
-  if [[ "$log_chunk" == *'Forbidden (403)'* ]]; then
+  # 1a. Agent Key Auth (403); resolved if a later "Connected using HTTP/2" / "accepted" line exists.
+  # Agent posle 403 ne ponavlja konekciju, pa 403 moze izaci iz prozora od 300 linija:
+  # poslednji backend status gleda se u celom logu (kao opcija 8).
+  last_backend=$(grep -E 'Connected using HTTP/2|Forbidden \(403\)' "$AGENT_LOG_FILE" 2>/dev/null | tail -n 1 || true)
+  if [[ "$log_chunk" == *'Forbidden (403)'* || "$last_backend" == *'Forbidden (403)'* ]]; then
     hit=$(triage_last_line "$log_chunk" 'Forbidden \(403\)')
-    if ! triage_is_resolved "$hit" 'Connected using HTTP/2 to|Backend accepted the connection' "Agent Key Authentication Failed (403 Forbidden)"; then
+    if [[ "$last_backend" == *'Forbidden (403)'* ]] || ! triage_is_resolved "$hit" 'Connected using HTTP/2 to|Backend accepted the connection' "Agent Key Authentication Failed (403 Forbidden)"; then
       TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
       err "[!] Agent Key Authentication Failed (403 Forbidden)"
       printf "    Cause: Backend rejected the configured agent key.\n"
