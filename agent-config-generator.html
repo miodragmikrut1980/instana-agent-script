@@ -1385,7 +1385,7 @@ function generateYAML() {
   const tagTeam = val("TAG_TEAM");
   const sq = v => `'${String(v).replace(/'/g,"''")}'`;
 
-  if(zone && radio("TARGET") !== "kubernetes" && radio("TARGET") !== "operator"){
+  if(zone && !["kubernetes", "operator", "openshift", "openshift-helm"].includes(radio("TARGET"))){
     c("com.instana.plugin.generic.hardware:");
     c("  enabled: true");
     c(`  availability-zone: ${sq(zone)}`);
@@ -2007,8 +2007,9 @@ function generateCmd() {
       "# ── Red Hat OpenShift (Operator / OLM) ───────────────────────",
       "# Requires OpenShift 4.x CLI (oc) logged in as cluster-admin.",
       "",
-      "# 1. Create project namespace:",
+      "# 1. Create project namespace and give the agent service account the privileged SCC:",
       "oc new-project instana-agent",
+      "oc adm policy add-scc-to-user privileged -z instana-agent -n instana-agent",
       "",
       "# 2. Install Operator from OperatorHub or direct release:",
       "oc apply -f https://github.com/instana/instana-agent-operator/releases/latest/download/instana-agent-operator.yaml",
