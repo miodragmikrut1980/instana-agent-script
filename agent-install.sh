@@ -840,7 +840,7 @@ triage_agent_log() {
   fi
 
   # 4. MariaDB SLAVE MONITOR
-  if [[ "$log_chunk" == *"need SLAVE MONITOR privilege"* ]]; then
+  if [[ "$log_chunk" == *"SLAVE MONITOR privilege"* ]]; then
     TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
     err "[!] MariaDB Sensor: Missing SLAVE MONITOR Privilege"
     printf "    Cause: MariaDB requires SLAVE MONITOR privilege for replication monitoring.\n"

@@ -286,7 +286,7 @@ const SIGNATURES = [
     cat: "db",
     severity: "warn",
     title: "MariaDB: Nedostaje SLAVE MONITOR privilegija",
-    patterns: [/need SLAVE MONITOR privilege/i, /WARN 1227.*SLAVE MONITOR/i],
+    patterns: [/SLAVE MONITOR privilege/i, /WARN 1227.*SLAVE MONITOR/i],
     cause: "MariaDB 10.5+ zahteva SLAVE MONITOR privilegiju za prikupljanje replikacionih metrika.",
     fix: "U MariaDB-u pokrenite:\nGRANT SLAVE MONITOR ON *.* TO '<user>'@'localhost';\nFLUSH PRIVILEGES;\nZatim restartujte agenta (sudo systemctl restart instana-agent).",
     doc: "https://www.ibm.com/docs/en/instana-observability/current?topic=technologies-monitoring-mariadb"
