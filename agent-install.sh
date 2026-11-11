@@ -806,8 +806,8 @@ triage_agent_log() {
   fi
 
   # 1b. Download key (401); resolved if a sensor was activated later
-  if [[ "$log_chunk" == *'Unauthorized (401)'* ]]; then
-    hit=$(triage_last_line "$log_chunk" 'Unauthorized \(401\)')
+  if grep -qE 'Unauthorized \(401\)|artifact-public\.instana\.io.*401' <<<"$log_chunk"; then
+    hit=$(triage_last_line "$log_chunk" 'Unauthorized \(401\)|artifact-public\.instana\.io.*401')
     if ! triage_is_resolved "$hit" 'Activated Sensor for|Activated .* Sensor' "Sensor package download failed (401 Unauthorized)"; then
       TRIAGE_ISSUES=$((TRIAGE_ISSUES + 1))
       err "[!] Sensor Package Download Failed (401 Unauthorized)"
