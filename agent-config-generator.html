@@ -936,6 +936,8 @@ REFRESH SECURITY
         <button class="panel-tab" id="tab-cmd">Install command</button>
         <button class="panel-tab" id="tab-reply">Ticket reply</button>
         <button class="panel-tab" id="tab-test">Connectivity test</button>
+        <button class="panel-tab" id="tab-uninstall">Uninstall</button>
+        <button class="panel-tab" id="tab-versions">Versions</button>
         <button class="panel-tab" id="tab-lab">Repro lab</button>
       </div>
     </div>
@@ -943,6 +945,8 @@ REFRESH SECURITY
     <pre class="code-out" id="preview-cmd" aria-live="polite" hidden></pre>
     <pre class="code-out" id="preview-reply" aria-live="polite" hidden></pre>
     <pre class="code-out" id="preview-test" aria-live="polite" hidden></pre>
+    <pre class="code-out" id="preview-uninstall" aria-live="polite" hidden></pre>
+    <pre class="code-out" id="preview-versions" aria-live="polite" hidden></pre>
     <pre class="code-out" id="preview-lab" aria-live="polite" hidden></pre>
   </div>
   <div class="status" id="status"></div>
@@ -953,6 +957,8 @@ REFRESH SECURITY
     <button id="btnCopyReply" title="Copies formatted reply template for Salesforce / Jira ticket">Copy Ticket reply</button>
     <button id="btnDownloadJson" title="Download JSON configuration file for use with agent-install.sh --config">Download JSON</button>
     <button id="btnCopyTest" title="Copies a curl test to run on target machine">Connectivity test</button>
+    <button id="btnCopyUninstall" title="Copies the commands that remove the agent for the selected target">Uninstall</button>
+    <button id="btnCopyVersions" title="Copies the commands that show the agent and sensor versions">Versions</button>
     <button id="btnCopyLab" title="Copies Docker repro lab setup script for test VM">Repro lab script</button>
     <button id="btnCopyHeredoc" title="Copies shell heredoc with config">Copy paste-in ⚠</button>
   </div>
@@ -2402,6 +2408,181 @@ function generateTest(){
   return L.join("\n");
 }
 
+// ---------- Uninstall ----------
+// Komande su iz Instana dokumentacije (Uninstalling the host agent on Linux / UNIX / Windows, ... on Docker,
+// ... on Kubernetes, ... on Red Hat OpenShift). Za macOS, tar.gz i Windows ZIP dokumentacija nema koraka.
+function generateUninstall(){
+  const target = radio("TARGET");
+  const NO_DOC = (what) => [
+    `# ── Uninstall: ${what} ──`,
+    "# The Instana documentation has no uninstall steps for this installation method,",
+    "# so no command is generated here.",
+  ].join("\n");
+  const linuxHead = [
+    "# ── Uninstall: Linux host agent ──────────────────────────────",
+    "# Run as root (sudo) on the target machine.",
+    "",
+    "# 0. Show what would be removed (plan only, changes nothing):",
+    "sudo ./agent-install.sh --uninstall --dry-run",
+    "",
+    "# 1. Remove it with the installer script (asks you to type yes; add --yes to skip the question):",
+    "sudo ./agent-install.sh --uninstall",
+    "",
+    "# Or by hand, according to the distribution:",
+    "",
+  ];
+
+  if(target==="linux" || target==="linux-pkg" || target==="linux-ec2" || target==="linux-gce" ||
+     target==="airgapped" || target==="cloud-aws" || target==="cloud-azure" || target==="cloud-gcp"){
+    return linuxHead.concat([
+      "# Debian / Ubuntu:",
+      "dpkg -l | grep instana-agent       # exact package name",
+      "sudo apt-get purge <package_name>",
+      "",
+      "# Red Hat derivatives:",
+      "yum list installed | grep instana-agent",
+      "sudo yum remove <package_name>",
+      "",
+      "# SUSE and Red Hat derivatives: files created by the agent are not part of the package, remove them:",
+      "sudo rm -rf /opt/instana/agent",
+    ]).join("\n");
+  }
+  if(target==="docker"){
+    return [
+      "# ── Uninstall: Docker agent ──────────────────────────────────",
+      "# If you installed tracers, uninstall them first.",
+      "",
+      "# 1. Remove the agent container:",
+      "sudo docker rm -f instana-agent",
+      "",
+      "# 2. If required, remove the image:",
+      "sudo docker image rm icr.io/instana/agent",
+    ].join("\n");
+  }
+  if(target==="kubernetes"){
+    return [
+      "# ── Uninstall: Kubernetes (Helm chart) ───────────────────────",
+      "# Delete the agent custom resource BEFORE helm uninstall, otherwise the CR stays in the cluster.",
+      "NAMESPACE=instana-agent",
+      "kubectl delete agents.instana.io instana-agent -n ${NAMESPACE} --wait",
+      "helm uninstall instana-agent -n ${NAMESPACE}",
+      "kubectl delete crd agents.instana.io",
+      "kubectl delete namespace ${NAMESPACE}",
+      "",
+      "# If you ran helm uninstall first and the CR is stuck, remove everything like this:",
+      "kubectl patch agents.instana.io instana-agent -p '{\"metadata\":{\"finalizers\":null}}' --type=merge -n ${NAMESPACE}",
+      "kubectl delete crd/agents.instana.io clusterrole/leader-election-role clusterrole/instana-agent-clusterrole clusterrolebinding/leader-election-rolebinding clusterrolebinding/instana-agent-clusterrolebinding",
+      "helm uninstall instana-agent -n ${NAMESPACE} || true",
+      "kubectl delete ns ${NAMESPACE} --wait || true",
+    ].join("\n");
+  }
+  if(target==="operator"){
+    return [
+      "# ── Uninstall: Kubernetes Operator ───────────────────────────",
+      "# 1. Remove the agent by deleting the custom resource:",
+      "kubectl delete -f instana-agent.customresource.yaml",
+      "",
+      "# 2. Remove the operator:",
+      "kubectl delete -f https://github.com/instana/instana-agent-operator/releases/latest/download/instana-agent-operator.yaml",
+    ].join("\n");
+  }
+  if(target==="openshift"){
+    return [
+      "# ── Uninstall: Red Hat OpenShift (Operator) ──────────────────",
+      "# 1. Remove the agent by deleting the custom resource:",
+      "oc delete -f instana-agent.customresource.yaml",
+      "",
+      "# 2. Remove the operator:",
+      "oc delete -f https://github.com/instana/instana-agent-operator/releases/latest/download/instana-agent-operator.yaml",
+    ].join("\n");
+  }
+  if(target==="openshift-helm"){
+    return [
+      "# ── Uninstall: Red Hat OpenShift (Helm chart) ────────────────",
+      "# Delete the agent custom resource BEFORE helm uninstall, otherwise the CR stays in the cluster.",
+      "NAMESPACE=instana-agent",
+      "oc delete agents.instana.io instana-agent -n ${NAMESPACE} --wait",
+      "helm uninstall instana-agent -n ${NAMESPACE}",
+      "oc delete crd agents.instana.io",
+      "oc delete namespace ${NAMESPACE}",
+      "",
+      "# If you ran helm uninstall first and the CR is stuck, remove everything like this:",
+      "oc patch agents.instana.io instana-agent -p '{\"metadata\":{\"finalizers\":null}}' --type=merge -n ${NAMESPACE}",
+      "oc delete crd/agents.instana.io clusterrole/leader-election-role clusterrole/instana-agent-clusterrole clusterrolebinding/leader-election-rolebinding clusterrolebinding/instana-agent-clusterrolebinding",
+      "helm uninstall instana-agent -n ${NAMESPACE} || true",
+      "oc delete ns ${NAMESPACE} --wait || true",
+    ].join("\n");
+  }
+  if(target==="win-silent" || target==="win-gui"){
+    return [
+      "REM ── Uninstall: Windows host agent ───────────────────────────",
+      "REM 1. Stop the agent:",
+      "<instana-agent-install-dir>\\bin\\stop.bat",
+      "",
+      "REM 2. Uninstall any tracer components first.",
+      "",
+      "REM 3a. Command line (scripted): run it in the folder with instana-agent-windows-64bit.exe:",
+      ".\\instana-agent-windows-64bit.exe -uninstall -quiet",
+      "REM     It may leave some folders or registry entries behind; remove them by hand.",
+      "",
+      "REM 3b. Or in the GUI: Settings > Apps & features > Instana agent > Uninstall.",
+    ].join("\n");
+  }
+  if(target==="linux-tar") return NO_DOC("Linux archive (tar.gz)");
+  if(target==="macos")     return NO_DOC("macOS");
+  if(target==="win-zip")   return NO_DOC("Windows ZIP");
+  return "# Select a platform from the catalog.";
+}
+
+// ---------- Versions ----------
+// curl localhost:42699/ je iz dokumentacije (Host agent versioning); --versions je u agent-install.sh.
+// Provereno na VM-u (Debian 13, host agent): vraca {"version":"1.2.65","sensors-version":"2026.11.11.1100"}.
+function generateVersions(){
+  const target = radio("TARGET");
+  const hostTargets = ["linux","linux-pkg","linux-ec2","linux-gce","airgapped","cloud-aws","cloud-azure","cloud-gcp"];
+  if(target==="linux-tar" || target==="macos"){
+    return [
+      "# ── Agent and sensor versions (archive install) ──────────────",
+      "# Run on the machine where the agent runs.",
+      "# agent-install.sh --versions expects /opt/instana/agent, so only the local agent API is used:",
+      "curl -s localhost:42699/; echo",
+      "",
+      "# The Instana UI shows the sensors version as YYYY.MM.DD-HHMM (Agents view).",
+    ].join("\n");
+  }
+  if(hostTargets.includes(target)){
+    return [
+      "# ── Agent and sensor versions (host agent) ───────────────────",
+      "# Run on the machine where the agent runs.",
+      "",
+      "# Agent version and sensors version (local agent API):",
+      "curl -s localhost:42699/; echo",
+      "",
+      "# Same, plus the version of every sensor and component the agent has loaded",
+      "# (read from agent.log*; only those loaded since the log was rotated):",
+      "sudo ./agent-install.sh --versions",
+      "",
+      "# The Instana UI shows the sensors version as YYYY.MM.DD-HHMM (Agents view).",
+    ].join("\n");
+  }
+  if(target==="docker"){
+    return [
+      "# ── Agent and sensor versions (Docker agent) ─────────────────",
+      "# Not verified for containers. The documented way to read the versions is the local agent API,",
+      "# so try it from inside the container (curl may not exist in the image):",
+      "sudo docker exec instana-agent curl -s localhost:42699/",
+      "",
+      "# The Instana UI shows the sensors version as YYYY.MM.DD-HHMM (Agents view).",
+    ].join("\n");
+  }
+  return [
+    "# ── Agent and sensor versions ────────────────────────────────",
+    "# No command generated for this installation method.",
+    "# The Instana UI shows the agent and sensors version in the Agents view",
+    "# (sensors version format: YYYY.MM.DD-HHMM).",
+  ].join("\n");
+}
+
 // ---------- Repro lab script ----------
 function generateLabScript(){
   const sensors = checked("sensor");
@@ -2838,12 +3019,14 @@ const tabTitles = {
   cmd: "Install command",
   reply: "Support Ticket Reply Template",
   test: "Connectivity test",
+  uninstall: "Uninstall the agent",
+  versions: "Agent and sensor versions",
   lab: "Repro lab setup script"
 };
 function showTab(name){
   activeTab=name;
   if($("panel-title") && tabTitles[name]) $("panel-title").textContent = tabTitles[name];
-  ["yaml","cmd","reply","test","lab"].forEach(t=>{
+  ["yaml","cmd","reply","test","uninstall","versions","lab"].forEach(t=>{
     if($("tab-"+t)) $("tab-"+t).classList.toggle("active", t===name);
     if($("preview-"+t)) $("preview-"+t).hidden = t!==name;
   });
@@ -2852,17 +3035,22 @@ $("tab-yaml").onclick=()=>showTab("yaml");
 $("tab-cmd").onclick=()=>showTab("cmd");
 $("tab-reply").onclick=()=>showTab("reply");
 $("tab-test").onclick=()=>showTab("test");
+$("tab-uninstall").onclick=()=>showTab("uninstall");
+$("tab-versions").onclick=()=>showTab("versions");
 $("tab-lab").onclick=()=>showTab("lab");
 
 // ---------- Main update ----------
-let _yaml="", _cmd="", _reply="", _test="", _lab="";
+let _yaml="", _cmd="", _reply="", _test="", _lab="", _uninstall="", _versions="";
 function update(){
   layout();
   _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest(); _lab=generateLabScript(); _reply=generateReplyTemplate();
+  _uninstall=generateUninstall(); _versions=generateVersions();
   $("preview-yaml").innerHTML=highlightYAML(_yaml);
   $("preview-cmd").innerHTML=highlightCmd(_cmd);
   $("preview-reply").innerHTML=highlightCmd(_reply);
   $("preview-test").innerHTML=highlightCmd(_test);
+  $("preview-uninstall").innerHTML=highlightCmd(_uninstall);
+  $("preview-versions").innerHTML=highlightCmd(_versions);
   $("preview-lab").innerHTML=highlightCmd(_lab);
   const errs=validate();
   const sensors=checked("sensor");
@@ -2893,6 +3081,8 @@ $("btnCopyYaml").onclick=()=>copyText(_yaml,"YAML");
 $("btnCopyCmd").onclick=()=>copyText(_cmd,"Install command");
 $("btnCopyReply").onclick=()=>copyText(_reply,"Ticket reply");
 $("btnCopyTest").onclick=()=>copyText(_test,"Connectivity test");
+$("btnCopyUninstall").onclick=()=>copyText(_uninstall,"Uninstall commands");
+$("btnCopyVersions").onclick=()=>copyText(_versions,"Versions commands");
 $("btnCopyLab").onclick=()=>copyText(_lab,"Repro lab script");
 $("btnCopyHeredoc").onclick=()=>copyText(
   `(umask 077; cat > ~/configuration.yaml <<'INSTANA_EOF'\n${_yaml}\nINSTANA_EOF\n)\necho "Saved to ~/configuration.yaml"\n`,

@@ -8,6 +8,7 @@
 #   ./agent-install.sh                      — interaktivni wizard
 #   ./agent-install.sh --dry-run            — plan bez izmena
 #   ./agent-install.sh --uninstall          — ukloni agenta (--dry-run = samo plan; --yes preskace pitanje)
+#   ./agent-install.sh --versions           — verzija agenta, sensors-version i verzije senzora (iz agent.log)
 #   ./agent-install.sh --config FILE        — ucitaj parametre iz JSON fajla
 #   ./agent-install.sh --profile NAME       — ucitaj predefinisani profil
 #   ./agent-install.sh --status             — prikazi status agenta (exit 1 ako nije instaliran ili ne radi)
@@ -84,6 +85,7 @@ while [[ $# -gt 0 ]]; do
     --profile)       PROFILE_NAME="$2"; shift 2 ;;
     --status)        MODE="status"; shift ;;
     --connectivity)  MODE="connectivity"; shift ;;
+    --versions)      MODE="versions"; shift ;;
     --triage)        MODE="triage"; shift ;;
     --edit)          MODE="edit"; shift ;;
     --support-bundle) MODE="bundle"; shift ;;
@@ -109,6 +111,7 @@ show_help() {
   printf "  %-22s %s\n" "--connectivity"     "Test backend and repositories, no menu (exit 1 on any failure or 403)"
   printf "  %-22s %s\n" "--triage"           "Scan agent.log for known error signatures and print fixes (exit 1 on issues)"
   printf "  %-22s %s\n" "--edit"             "Edit configuration.yaml interactively"
+  printf "  %-22s %s\n" "--versions"         "Show agent version, sensors version and the versions of loaded sensors (exit 1 if the agent does not answer)"
   printf "  %-22s %s\n" "--uninstall"        "Remove the agent package, /opt/instana/agent and the repository files (--dry-run = plan only)"
   printf "  %-22s %s\n" "--yes"              "With --uninstall: skip the confirmation question"
   printf "  %-22s %s\n" "--support-bundle"   "Generate a ZIP bundle for support (masked keys)"
@@ -1105,10 +1108,10 @@ show_status() {
     echo -e "Start with: ${BLD}sudo systemctl start ${AGENT_SERVICE}${RST}"
   fi
 
-  # Version
-  if [[ -f /opt/instana/agent/bin/instana-agent ]]; then
-    local ver; ver=$(/opt/instana/agent/bin/instana-agent --version 2>/dev/null | head -1 || echo "unknown")
-    log "Version: ${ver}"
+  # Version (lokalni API agenta, port 42699; vidi Host agent versioning u dokumentaciji)
+  local ver_json; ver_json=$(curl -s --max-time 5 http://localhost:42699/ 2>/dev/null || true)
+  if [[ "$ver_json" == *'"version"'* ]]; then
+    log "Version: $(printf '%s' "$ver_json" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p') (sensors $(printf '%s' "$ver_json" | sed -n 's/.*"sensors-version":"\([^"]*\)".*/\1/p'))"
   fi
 
   # Config
@@ -1738,12 +1741,41 @@ uninstall_agent() {
   ok "Agent removed. Check with: ./agent-install.sh --status"
 }
 
+# --versions: verzija agenta i sensors-version iz lokalnog API-ja agenta (port 42699, prema dokumentaciji
+# "Host agent versioning"), a verzije senzora i komponenti iz agent.log* (samo oni koji su se ucitali u logu).
+# Vraca 1 ako agent ne odgovara.
+show_versions() {
+  hdr "Instana Agent Versions"
+  local json; json=$(curl -s --max-time 5 http://localhost:42699/ 2>/dev/null || true)
+  if [[ "$json" != *'"version"'* ]]; then
+    err "Agent does not answer on http://localhost:42699/ — is it installed and running? (./agent-install.sh --status)"
+    return 1
+  fi
+  ok "Agent version:   $(printf '%s' "$json" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')"
+  ok "Sensors version: $(printf '%s' "$json" | sed -n 's/.*"sensors-version":"\([^"]*\)".*/\1/p')"
+
+  local logs=("${AGENT_LOG_FILE}"*)
+  if [[ ! -f "${logs[0]}" ]]; then
+    warn "No agent.log found at ${AGENT_LOG_FILE} — cannot list sensor versions."
+    return 0
+  fi
+  log "Sensors and components found in agent.log* (only those loaded since the log was rotated):"
+  # Ako se ista komponenta pojavi u vise verzija (npr. posle update-a), prikazi najvisu.
+  { grep -ohE 'com\.instana\.(sensor|agent)-[a-z0-9-]+ - [0-9][0-9.]*' "${logs[@]}" 2>/dev/null || true; } \
+    | sed 's/^com\.instana\.//; s/ - / /' | sort -u -V \
+    | awk '{ v[$1]=$2 } END { for (n in v) printf "  %-34s %s\n", n, v[n] }' | sort
+  return 0
+}
+
 # --------------------------------------------------------------------------- #
 #  Main dispatch                                                               #
 # --------------------------------------------------------------------------- #
 case "$MODE" in
   help)
     show_help ;;
+  versions)
+    show_versions
+    exit "$?" ;;
   uninstall)
     uninstall_agent ;;
   status)

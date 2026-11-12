@@ -7,7 +7,7 @@ Scope v1: Linux host agent + Docker. Kubernetes/cloud = v2.
 
 FILES
 ─────
-agent-config-generator.html   Browser konfigurator (radi offline, bez servera)
+agent-config-generator.html   Browser konfigurator (radi offline, bez servera; tabovi Uninstall i Versions)
 agent-triage.html             Browser log dijagnosticar & Triage analizator
 agent-install.sh               Interaktivni Linux installer + manager (--triage)
 profiles/                      Predefinisani profili za ceste scenarije
@@ -134,6 +134,9 @@ jq se instalira automatski kad se koristi --config ili --profile.
   ./agent-install.sh --uninstall --dry-run
 #   pa brisanje (pita da se ukuca "yes"; --yes preskace pitanje):
   sudo ./agent-install.sh --uninstall
+
+# Verzije: agent, sensors-version (lokalni API agenta) i verzije ucitanih senzora (iz agent.log*):
+  sudo ./agent-install.sh --versions
 
 Sta installer radi, redom: pokrene setup.instana.io/agent sa -a/-t/-m/-e,
 zatim kopira configuration.yaml (ako ima zone, tagova ili senzora), upise proxy u
