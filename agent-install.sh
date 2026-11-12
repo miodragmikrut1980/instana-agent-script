@@ -1717,7 +1717,7 @@ uninstall_agent() {
     fi
   fi
 
-  systemctl disable --now "$AGENT_SERVICE" >/dev/null 2>&1 || true
+  run_with_progress "Stopping ${AGENT_SERVICE}..." systemctl disable --now "$AGENT_SERVICE" 2>/dev/null || true
   if [[ -n "$pkgs" ]]; then
     case "$pkg_mgr" in
       apt)    run_with_progress "Removing package(s): ${pkgs}(this can take a minute)..." apt-get purge -y -qq $pkgs ;;
