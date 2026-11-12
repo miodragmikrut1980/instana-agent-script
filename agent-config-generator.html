@@ -2,679 +2,570 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Instana Agent Config Generator</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230F62FE%22/%3E%3Cpath%20d%3D%22M9.5%2014.2C9.6%209.6%2011%206.5%2013.4%206.5c1%200%201.6.7%202.6.7s1.6-.7%202.6-.7c2.4%200%203.8%203.1%203.9%207.7z%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%229.5%22%20y%3D%2212%22%20width%3D%2213%22%20height%3D%222.2%22%20fill%3D%22%23161616%22/%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2215%22%20rx%3D%2212.5%22%20ry%3D%222.3%22%20fill%3D%22%23fff%22/%3E%3Cpath%20d%3D%22M10%2026.5c1.2-3.6%203.4-5.3%206-5.3s4.8%201.7%206%205.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22/%3E%3Crect%20x%3D%229.6%22%20y%3D%2218%22%20width%3D%225.6%22%20height%3D%223.2%22%20rx%3D%221.4%22%20fill%3D%22%23161616%22/%3E%3Crect%20x%3D%2216.8%22%20y%3D%2218%22%20width%3D%225.6%22%20height%3D%223.2%22%20rx%3D%221.4%22%20fill%3D%22%23161616%22/%3E%3Cpath%20d%3D%22M15.2%2019h1.6%22%20stroke%3D%22%23161616%22%20stroke-width%3D%221.2%22/%3E%3C/svg%3E">
+<meta name="theme-color" content="#161616">
 <style>
 :root{
-  --paper:#EDF1F4; --sheet:#FFFFFF; --ink:#16212B; --muted:#5A6B7A; --line:#CBD5DE;
-  --accent:#0F6E74; --accent-soft:#DCEEEF; --warn:#8A5300; --warn-soft:#FBF0DC;
-  --err:#B3261E; --err-soft:#FBE4E2; --ok:#2E7D4F; --code-bg:#13202A; --code-ink:#D6E2EA;
-  --code-key:#8FD3D8; --code-str:#F2C98B; --code-dim:#6E8494;
-  --ui:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root{--paper:#0F171D; --sheet:#17222B; --ink:#E3EAF0; --muted:#93A4B2; --line:#2B3A46;
-    --accent:#4FB3B8; --accent-soft:#16363A; --warn:#E3A84A; --warn-soft:#33270F;
-    --err:#F08A80; --err-soft:#3A1A18; --ok:#6CC28F; --code-bg:#0A1116;}
+  --bg:#F2F4F8; --surface:#FFFFFF; --ink:#161616; --muted:#525252; --line:#E0E0E0; --line-strong:#8D8D8D;
+  --accent:#0F62FE; --accent-hover:#0043CE; --accent-soft:#EDF5FF; --accent-tint:#E8F0FE;
+  --ok:#198038; --ok-soft:#DEFBE6; --warn:#8E6A00; --warn-soft:#FCF4D6; --err:#DA1E28; --err-soft:#FFF1F1;
+  --code-bg:#161616; --code-ink:#F4F4F4; --code-dim:#A8A8A8; --code-num:#6F6F6F; --code-key:#78A9FF; --code-str:#FFD8A8;
+  --ui:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.5 var(--ui)}
-header{padding:18px 24px 12px;max-width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--line);background:var(--paper)}
-header h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.01em}
-header p{margin:2px 0 0;color:var(--muted);font-size:13px;max-width:65ch}
-.header-bar{display:flex;align-items:center;gap:10px}
-.header-hint{font-size:12px;color:var(--muted)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--ui)}
+button{font:inherit;cursor:pointer;color:inherit}
+button:disabled{opacity:.45;cursor:not-allowed}
+a{color:var(--accent)}a:hover{color:var(--accent-hover)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.92em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.wrap{max-width:1440px;margin:0 auto;padding:16px 24px 32px;display:grid;
-  grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
-@media (max-width:1080px){.wrap{grid-template-columns:minmax(0,1fr);padding:12px 16px 32px}}
+/* Top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 24px;background:#161616;color:#F4F4F4}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-name{font-size:16px;font-weight:600;display:block}
+.brand-sub{font-size:12px;color:#C6C6C6;display:block}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.top-btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid #6F6F6F;border-radius:6px;background:transparent;color:#F4F4F4;font-size:14px;text-decoration:none}
+.top-btn:hover{background:#393939;color:#F4F4F4}
+.top-btn.link{border-color:transparent}
 
-/* Main Tab Navigation */
-.main-tabs{display:flex;gap:4px;margin-bottom:12px;background:var(--sheet);padding:4px;border-radius:8px;border:1px solid var(--line);flex-wrap:wrap}
-.main-tab{border:none;background:transparent;padding:7px 13px;border-radius:6px;font:600 13px var(--ui);color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .12s}
-.main-tab:hover{color:var(--ink);background:var(--paper)}
-.main-tab.active{background:var(--accent);color:#fff}
-.tab-badge{font-size:11px;padding:1px 6px;border-radius:10px;background:var(--paper);color:var(--ink);font-weight:700}
-.main-tab.active .tab-badge{background:rgba(255,255,255,0.25);color:#fff}
+/* Layout */
+.wrap{display:flex;flex-wrap:wrap;gap:20px;padding:20px 24px 40px;align-items:flex-start;max-width:1680px;margin:0 auto}
+.rail{flex:1 1 236px;max-width:280px;display:flex;flex-direction:column;gap:4px;position:sticky;top:16px}
+.panel-main{flex:999 1 520px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column}
+.out{flex:1 1 440px;max-width:640px;min-width:0;display:flex;flex-direction:column;gap:12px;position:sticky;top:16px}
+@media (max-width:1100px){.rail{display:none}.out{position:static;max-width:none}}
 
-/* Tab Panes */
-.tab-pane{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px 18px 20px;display:none}
-.tab-pane.active{display:block}
-.pane-title{margin:0 0 2px;font-size:16px;font-weight:600}
-.pane-lead{margin:0 0 14px;color:var(--muted);font-size:13px}
+/* Rail */
+.rail-h{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:0 12px 6px}
+.step-btn{display:flex;align-items:center;gap:12px;width:100%;min-width:200px;min-height:56px;padding:8px 12px;border:0;border-radius:8px;background:transparent;text-align:left}
+.step-btn:hover{background:#E8E8E8}
+.step-btn[aria-current="step"]{background:var(--surface);box-shadow:inset 3px 0 0 var(--accent),0 0 0 1px var(--line)}
+.step-dot{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--line);color:var(--ink)}
+.step-btn[aria-current="step"] .step-dot{background:var(--accent);color:#fff}
+.step-btn.done .step-dot{background:var(--ok);color:#fff}
+.step-btn.err .step-dot{background:var(--err);color:#fff}
+.step-dot svg{display:none}
+.step-btn.done:not([aria-current="step"]) .step-dot svg{display:block}
+.step-btn.done:not([aria-current="step"]) .step-dot .n{display:none}
+.step-txt{display:flex;flex-direction:column;min-width:0}
+.step-title{font-size:14px;font-weight:600}
+.step-sum{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.step-btn.err .step-sum{color:var(--err)}
 
-.card-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
-.card-section-title{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--ink);text-transform:uppercase;letter-spacing:.03em}
+/* Steps */
+.step-pane{display:none;padding:22px 28px 24px;flex:1}
+.step-pane.active{display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-size:12px;font-weight:600;color:var(--accent)}
+.step-pane h1{margin:2px 0 0;font-size:24px;font-weight:600;letter-spacing:-.01em}
+.lead{margin:4px 0 0;font-size:14px;color:var(--muted);max-width:64ch}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 28px;border-top:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:6px;border:1px solid var(--line-strong);background:var(--surface);font-size:14px;font-weight:500}
+.btn:hover:not(:disabled){background:#F4F4F4}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.primary:hover{background:var(--accent-hover)}
+.divider{height:1px;background:var(--line)}
 
-/* Form controls */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px 14px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 14px}
-@media (max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}}
+/* Fields */
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.lbl{font-size:13px;font-weight:600;color:var(--ink)}
+.lbl small,.opt-note{font-weight:400;color:var(--muted);font-size:12px}
+.help{font-size:12px;line-height:1.45;color:var(--muted)}
+.help.bad{color:var(--err)} .help.warn{color:var(--warn)} .help.good{color:var(--ok)}
+input[type=text],input[type=password],input[type=search],input[type=number],select{
+  height:40px;padding:0 12px;border:1px solid var(--line-strong);border-radius:6px;font:14px var(--ui);color:var(--ink);background:var(--surface);width:100%}
+input.code{font-family:var(--mono);font-size:13px}
+input::placeholder{color:#6F6F6F}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);outline:none}
+input[aria-invalid="true"]{border-color:var(--err);background:var(--err-soft)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 16px}
+.grid.tight{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.span-2{grid-column:span 2}
+@media (max-width:640px){.span-2{grid-column:auto}}
+.secret-row{display:flex;gap:6px}
+.secret-row button{flex:none;height:40px;padding:0 12px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);font-size:13px}
+.secret-row button:hover{background:#F4F4F4}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{padding:0;margin-bottom:8px}
+.note{font-size:13px;padding:10px 12px;border-radius:6px;background:var(--accent-soft)}
 
-.field{display:flex;flex-direction:column;gap:4px;min-width:0}
-.field.wide{grid-column:1/-1}
-label.lbl{font-size:12.5px;font-weight:600}
-span.lbl{font-size:12.5px;font-weight:600;display:block;margin-bottom:4px}
-.help{font-size:11.5px;color:var(--muted);line-height:1.4}
-input[type=text],input[type=password],input[type=number],select{
-  font:13.5px var(--ui);color:var(--ink);background:var(--paper);border:1px solid var(--line);
-  border-radius:6px;padding:7px 10px;width:100%}
-input.code{font-family:var(--mono);font-size:12.5px}
-input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
-.field.bad input,.field.bad select{border-color:var(--err);background:var(--err-soft)}
-.msg{font-size:12px;min-height:0}
-.field.bad .msg{color:var(--err)}
-
-.seg{display:flex;flex-wrap:wrap;gap:6px}
+/* Segmented */
+.seg{display:inline-flex;flex-wrap:wrap;padding:3px;border-radius:8px;background:#F4F4F4;gap:2px;align-self:flex-start}
 .seg label{position:relative;cursor:pointer}
 .seg input{position:absolute;opacity:0;pointer-events:none}
-.seg span{display:block;padding:6px 12px;border:1px solid var(--line);border-radius:6px;
-  background:var(--paper);font-size:13px;transition:background .1s,border-color .1s}
-.seg input:checked+span{border-color:var(--accent);background:var(--accent-soft);
-  color:var(--ink);box-shadow:inset 0 0 0 1px var(--accent)}
-.seg input:disabled+span{opacity:.45;cursor:not-allowed}
-.seg small{display:block;font-size:10.5px;color:var(--muted)}
+.seg span{display:block;height:36px;line-height:36px;padding:0 16px;border-radius:6px;font-size:14px;font-weight:500}
+.seg label:has(input:checked) span{background:var(--surface);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.seg label:has(input:focus-visible) span{outline:2px solid var(--accent);outline-offset:1px}
 
-/* Platform Catalog UI */
-.catalog-search-bar{display:flex;gap:8px;margin-bottom:10px;align-items:center}
-.catalog-search-wrap{position:relative;flex:1}
-.catalog-search-wrap input{padding-left:32px;font-size:13px}
-.catalog-search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:13px}
-.catalog-filter-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
-.filter-pill{font:600 11.5px var(--ui);border:1px solid var(--line);border-radius:20px;
-  background:var(--paper);color:var(--muted);padding:3px 10px;cursor:pointer;transition:all .12s}
-.filter-pill:hover{color:var(--ink);border-color:var(--muted)}
-.filter-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* Option cards */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.opt{position:relative;display:flex;flex-direction:column;gap:2px;min-height:56px;padding:10px 14px;border:1px solid #C6C6C6;border-radius:8px;background:var(--surface);cursor:pointer}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt:hover{border-color:var(--line-strong)}
+.opt:has(input:checked){background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.opt-t{font-size:14px;font-weight:600}
 
-.platform-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:14px;max-height:380px;overflow-y:auto;padding:2px 4px 4px 2px}
-.platform-card{position:relative;cursor:pointer;border:1px solid var(--line);border-radius:8px;
-  background:var(--paper);padding:10px 12px;transition:all .15s ease;display:flex;flex-direction:column;gap:5px;user-select:none}
-.platform-card:hover{border-color:var(--accent);background:var(--sheet);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,0.06)}
-.platform-card input{position:absolute;opacity:0;pointer-events:none}
-.platform-card.selected{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent),0 2px 8px rgba(15,110,116,0.12)}
-.platform-card-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.platform-icon-title{display:flex;align-items:center;gap:7px;font-weight:600;font-size:13px;color:var(--ink)}
-.platform-icon{font-size:16px;line-height:1;flex:none}
-.platform-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 6px;border-radius:4px;background:var(--sheet);color:var(--muted);border:1px solid var(--line)}
-.platform-card.selected .platform-tag{background:var(--sheet);color:var(--accent);border-color:var(--accent)}
-.platform-desc{font-size:11.5px;color:var(--muted);line-height:1.35;margin:0}
-.platform-check{display:none;position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:bold;place-items:center}
-.platform-card.selected .platform-check{display:grid}
+/* Platform picker */
+.search{position:relative}
+.search svg{position:absolute;left:12px;top:12px;pointer-events:none}
+.search input{padding-left:36px}
+.picker{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.fams{flex:1 1 200px;max-width:240px;display:flex;flex-direction:column;gap:4px}
+.fam{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 12px;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;text-align:left}
+.fam:hover{background:#F4F4F4}
+.fam[aria-selected="true"]{background:var(--accent-tint);font-weight:600}
+.fam.has-target:not([aria-selected="true"]){box-shadow:inset 3px 0 0 #A6C8FF}
+.fam span{flex:1}
+.fam .cnt{flex:none;font-size:12px;color:var(--muted)}
+.variants{flex:999 1 300px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.variant{position:relative;display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px solid #C6C6C6;border-radius:8px;background:var(--surface);cursor:pointer}
+.variant:hover{border-color:var(--line-strong)}
+.variant input{position:absolute;opacity:0;pointer-events:none}
+.variant:has(input:checked){background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.variant:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.v-radio{flex:none;margin-top:2px;width:18px;height:18px;border-radius:50%;border:2px solid #6F6F6F;display:grid;place-items:center}
+.variant:has(input:checked) .v-radio{border-color:var(--accent)}
+.variant:has(input:checked) .v-radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.v-body{display:flex;flex-direction:column;gap:2px;min-width:0}
+.v-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.v-name{font-size:15px;font-weight:600}
+.v-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-tint);color:var(--accent-hover)}
+.v-fam{font-size:12px;color:var(--muted);display:none}
+.searching .v-fam{display:inline}
+.v-desc{font-size:13px;line-height:1.45;color:var(--muted)}
+.empty{margin:0;padding:20px;border:1px dashed #C6C6C6;border-radius:8px;font-size:14px;color:var(--muted)}
 
-.note{font-size:12.5px;padding:8px 11px;border-radius:6px;background:var(--accent-soft);margin-top:8px}
-.note.warn{background:var(--warn-soft);color:var(--ink)}
-
-/* Sensor grid */
-.sensor-categories{display:flex;flex-direction:column;gap:10px;margin-top:2px}
-.sensor-cat h3{margin:0 0 5px;font-size:11px;font-weight:600;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.04em}
-.sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:5px 6px}
-.sensor-chip{position:relative;cursor:pointer;display:flex;align-items:stretch}
-.sensor-chip input{position:absolute;opacity:0;pointer-events:none}
-.sensor-chip span{display:flex;align-items:center;justify-content:space-between;gap:4px;
-  flex:1;padding:5px 7px 5px 9px;border:1px solid var(--line);border-radius:6px;
-  background:var(--paper);font-size:12.5px;transition:background .1s,border-color .1s;user-select:none}
-.sensor-chip input:checked+span{border-color:var(--accent);background:var(--accent-soft);
-  box-shadow:inset 0 0 0 1px var(--accent)}
-
-/* Info button inside chip */
-.sensor-info{display:inline-flex;align-items:center;justify-content:center;
-  width:15px;height:15px;border-radius:50%;background:transparent;
-  border:1px solid var(--muted);color:var(--muted);font-size:9.5px;font-weight:700;
-  font-style:normal;line-height:1;cursor:pointer;flex:none;transition:all .15s;
-  pointer-events:all;position:relative;z-index:2}
-.sensor-info:hover{background:var(--accent);border-color:var(--accent);color:#fff}
-
-/* Sensor detail panels */
-.sensor-panels{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.sensor-panel{background:var(--paper);border:1px solid var(--line);border-radius:8px;
-  padding:10px 12px;display:none}
-.sensor-panel.visible{display:block}
-.sensor-panel-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.sensor-panel h4{margin:0;font-size:13px;font-weight:600}
-.sensor-panel-actions{display:flex;gap:5px}
-.btn-mini{font:600 11px var(--ui);border:1px solid var(--line);border-radius:4px;
-  background:var(--sheet);color:var(--ink);padding:2px 7px;cursor:pointer}
-.btn-mini:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
-.setup-snippet{display:none;margin-top:8px;padding:8px 10px;background:var(--code-bg);
-  color:var(--code-ink);border-radius:6px;font:11.5px/1.45 var(--mono);overflow-x:auto;white-space:pre-wrap;position:relative}
+/* Sensors */
+.sensor-cat h3{margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip-wrap{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);overflow:hidden}
+.chip-wrap:has(input:checked){background:var(--accent);border-color:var(--accent);color:#fff}
+.chip{position:relative;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 6px 0 14px;font-size:13px;font-weight:500;cursor:pointer;user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip-wrap:has(input:checked) .chip{font-weight:600}
+.chip-wrap:has(input:checked) .chip span::before{content:"✓ "}
+.chip-wrap:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.sensor-info{display:grid;place-items:center;width:32px;height:36px;border:0;background:transparent;color:inherit;opacity:.75}
+.sensor-info:hover{opacity:1}
+.sensor-panels{display:flex;flex-direction:column;gap:12px}
+.sensor-panel{display:none;border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.sensor-panel.visible{display:flex;flex-direction:column;gap:12px}
+.sensor-panel-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.sensor-panel h4{margin:0;font-size:15px;font-weight:600}
+.sensor-panel h4 span{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.sensor-panel-actions{display:flex;gap:6px}
+.btn-mini{height:32px;padding:0 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);font-size:12px;font-weight:600}
+.btn-mini:hover{background:var(--accent-soft);border-color:var(--accent)}
+.setup-snippet{display:none;padding:12px;border-radius:6px;background:var(--code-bg);color:var(--code-ink);font:12px/1.55 var(--mono);white-space:pre-wrap;overflow-x:auto}
 .setup-snippet.open{display:block}
-.setup-snippet-title{font:600 10.5px var(--ui);text-transform:uppercase;letter-spacing:.04em;
-  color:var(--code-key);margin-bottom:4px;display:block}
-.sensor-panel .grid{gap:6px 10px}
+.setup-snippet-title{display:block;font:600 11px var(--ui);text-transform:uppercase;letter-spacing:.04em;color:var(--code-key);margin-bottom:4px}
+.extra-list{margin:0;padding:12px 14px;border:1px dashed #C6C6C6;border-radius:8px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.extra-list b{color:var(--ink);font-weight:600}
+.qmgr-list{display:flex;flex-direction:column;gap:6px}
+.qmgr-row{display:grid;grid-template-columns:1fr 1fr 90px 36px;gap:6px;align-items:end;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.qmgr-row input{height:36px;font-size:12px}
+.qmgr-row .field .lbl{font-size:12px}
+.del-btn{width:36px;height:36px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--err);font-size:16px;display:grid;place-items:center}
+.add-btn{align-self:flex-start;height:36px;padding:0 12px;border:1px dashed var(--line-strong);border-radius:6px;background:transparent;font-size:13px;font-weight:600;color:var(--accent)}
+details summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent)}
 
-/* QManager rows */
-.qmgr-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-.qmgr-row{display:grid;grid-template-columns:1fr 1fr 80px 26px;gap:5px;align-items:end}
-.qmgr-row input{padding:5px 7px;font-size:12px}
-.del-btn{width:26px;height:30px;border:1px solid var(--line);border-radius:5px;background:var(--sheet);
-  color:var(--err);font-size:15px;cursor:pointer;display:grid;place-items:center;flex:none}
-.add-btn{margin-top:5px;font-size:12px;padding:4px 8px}
+/* Output */
+.status{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:10px;border:1px solid var(--ok);background:var(--ok-soft)}
+.status.warn{border-color:var(--warn);background:var(--warn-soft)}
+.status.err{border-color:var(--err);background:var(--err-soft)}
+.status-head{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--ok)}
+.status.warn .status-dot{background:var(--warn)} .status.err .status-dot{background:var(--err)}
+.checks{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.checks li{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.45}
+.ck{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;background:var(--ok)}
+.ck.warn{background:var(--warn)} .ck.err{background:var(--err)}
+.checks li span:nth-child(2){flex:1}
+.fix{border:0;background:transparent;padding:0;color:var(--accent);font-size:13px;font-weight:600;text-decoration:underline}
 
-/* Output panel */
-main,aside{min-width:0}
-aside{position:sticky;top:14px}
-@media (max-width:1080px){aside{position:static}}
-.panel{background:var(--code-bg);color:var(--code-ink);border-radius:10px;overflow:hidden;margin-bottom:10px}
-.panel-head{padding:10px 14px 8px;display:flex;justify-content:space-between;align-items:center;
-  gap:8px;border-bottom:1px solid #22323E}
-.panel-head h2{margin:0;font-size:13px;font-weight:600;color:#fff}
-.panel-tabs{display:flex;gap:2px}
-.panel-tab{font:600 11.5px var(--ui);border:1px solid #2A3E4E;border-radius:5px;
-  background:transparent;color:var(--code-dim);padding:3px 8px;cursor:pointer}
-.panel-tab.active{background:#1E3040;color:#fff;border-color:#3A5060}
-pre.code-out{margin:0;padding:10px 14px;font:12px/1.5 var(--mono);max-height:52vh;
-  overflow:auto;white-space:pre}
-pre.code-out .k{color:var(--code-key)}
-pre.code-out .s{color:var(--code-str)}
-pre.code-out .c{color:var(--code-dim)}
-.status{background:var(--sheet);border:1px solid var(--line);border-radius:8px;
-  padding:10px 14px;margin-bottom:10px;font-size:12.5px}
-.status .bad{color:var(--err)} .status .good{color:var(--ok);font-weight:600}
+.code-panel{background:var(--code-bg);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.out-tabs{display:flex;gap:2px;padding:8px 8px 0;overflow-x:auto;border-bottom:1px solid #393939}
+.out-tab{flex:none;height:38px;padding:0 12px;border:0;border-radius:6px 6px 0 0;background:transparent;color:var(--code-dim);font-size:13px;font-weight:500}
+.out-tab:hover{color:var(--code-ink)}
+.out-tab[aria-selected="true"]{background:#262626;color:var(--code-ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--code-key)}
+.out-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid #262626}
+.out-file{display:block;font:500 13px var(--mono);color:var(--code-ink)}
+.out-where{display:block;font-size:12px;color:var(--code-dim)}
+.out-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dark-btn{height:32px;padding:0 10px;border:1px solid #525252;border-radius:6px;background:transparent;color:#E0E0E0;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+.dark-btn:hover{background:#262626}
+.dark-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;font-size:13px}
+.dark-btn.primary:hover{background:var(--accent-hover)}
+.track{width:26px;height:14px;border-radius:999px;padding:2px;display:flex;background:#525252}
+.track::after{content:"";width:10px;height:10px;border-radius:50%;background:#fff}
+.dark-btn[aria-checked="true"] .track{background:var(--code-key);justify-content:flex-end}
+pre.code-out{margin:0;padding:10px 0;font:12.5px/1.6 var(--mono);color:var(--code-ink);max-height:62vh;overflow:auto;white-space:pre;counter-reset:ln;tab-size:2}
+pre.code-out .ln{display:block;min-height:1.6em;padding-right:16px}
+pre.code-out .ln::before{counter-increment:ln;content:counter(ln);display:inline-block;width:40px;padding-right:12px;text-align:right;color:var(--code-num);user-select:none}
+pre.code-out .k{color:var(--code-key)} pre.code-out .s{color:var(--code-str)} pre.code-out .c{color:var(--code-dim)}
+.out-hint{padding:10px 14px;border-top:1px solid #262626;font-size:12px;color:var(--code-dim)}
 
-.actions{display:flex;flex-wrap:wrap;gap:6px}
-button,.btn-nav{font:600 12.5px var(--ui);border-radius:6px;border:1px solid var(--line);
-  background:var(--sheet);color:var(--ink);padding:7px 11px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
-.btn-nav:hover{background:var(--paper)}
-button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-button:disabled{opacity:.5;cursor:not-allowed}
-.secret-row{display:flex;gap:6px}
-.secret-row button{flex:none;padding:5px 8px;font-size:12px}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
-  background:var(--ink);color:var(--paper);padding:7px 13px;border-radius:6px;
-  font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:200}
+
+/* Compact progress (tablet + phone) */
+.mprog{display:none}
+@media (max-width:1100px){
+  .mprog{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:14px 28px 0}
+  .mprog button{height:24px;border:0;background:transparent;padding:0;position:relative}
+  .mprog button::before{content:"";position:absolute;left:0;right:0;top:10px;height:4px;border-radius:2px;background:var(--line)}
+  .mprog button.done::before{background:var(--ok)}
+  .mprog button.err::before{background:var(--err)}
+  .mprog button[aria-current="step"]::before{background:var(--accent)}
+}
+.nl-short,.btn-out{display:none}
+
+/* Phone */
+@media (max-width:760px){
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  .topbar{flex-wrap:nowrap;padding:10px 12px;gap:8px}
+  .brand{gap:10px;min-width:0}
+  .brand svg{width:24px;height:24px;flex:none}
+  .brand-name{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand-sub{display:none}
+  .top-actions{flex-wrap:nowrap;gap:4px}
+  .top-btn.link{display:none}
+  .top-btn{width:44px;height:44px;padding:0;justify-content:center;border-color:transparent}
+  .top-btn .t{display:none}
+  .wrap{padding:12px 12px 24px;gap:12px}
+  .panel-main{border-radius:12px}
+  .mprog{padding:14px 16px 0}
+  .step-pane{padding:12px 16px 20px}
+  .step-pane.active{gap:16px}
+  .step-pane h1{font-size:21px}
+  .lead{font-size:13px}
+  input[type=text],input[type=password],input[type=search],input[type=number],select,input.code{font-size:16px;height:44px}
+  .secret-row button{height:44px}
+  .grid,.grid.tight{grid-template-columns:1fr}
+  .fams{max-width:none;flex-basis:100%;flex-direction:row;flex-wrap:wrap;gap:6px}
+  .fam{width:auto;min-height:40px;padding:0 12px;border:1px solid #C6C6C6;border-radius:999px;font-size:13px;gap:6px}
+  .fam svg{width:16px;height:16px}
+  .fam[aria-selected="true"]{border-color:var(--accent)}
+  .fam.has-target:not([aria-selected="true"]){box-shadow:none}
+  .fam .cnt{display:none}
+  .fam span{flex:none}
+  .variant{padding:12px 14px;gap:12px}
+  .opts{grid-template-columns:1fr 1fr}
+  .opt{padding:10px 12px}
+  .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-self:stretch}
+  .seg span{text-align:center;padding:0 8px;font-size:13px;height:40px;line-height:40px}
+  .chip{height:40px}
+  .sensor-info{height:40px;width:36px}
+  .sensor-panel{padding:12px}
+  .qmgr-row{grid-template-columns:1fr 1fr 44px}
+  .qmgr-row > .field:nth-child(3){grid-column:1}
+  .foot{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.06);gap:8px}
+  .foot .btn{height:48px}
+  #btnBack{width:48px;padding:0;justify-content:center}
+  #btnBack .t{display:none}
+  .btn-out{display:inline-flex}
+  #btnNext{flex:1;justify-content:center}
+  .nl-long{display:none}.nl-short{display:inline}
+  .status{padding:12px 14px}
+  .out-bar{flex-direction:column;align-items:stretch}
+  .out-actions{display:grid;grid-template-columns:auto 1fr 1fr}
+  .out-actions .dark-btn{height:40px;justify-content:center}
+  #btnPasteIn{grid-column:1 / -1}
+  pre.code-out{font-size:12px;max-height:none}
+  pre.code-out .ln::before{width:28px;padding-right:8px}
+  .out-tab{height:40px}
+  .info-overlay{align-items:flex-end;padding:0}
+  .info-modal{border-radius:14px 14px 0 0;max-height:85vh;overflow:auto;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+  .toast{bottom:calc(88px + env(safe-area-inset-bottom));max-width:calc(100% - 24px)}
+}
+
+/* Toast, modal, drop */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#F4F4F4;padding:10px 16px;border-radius:6px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:200}
 .toast.on{opacity:1}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-
-/* Info modal */
-.info-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;
-  display:none;align-items:center;justify-content:center;padding:20px}
+.info-overlay{position:fixed;inset:0;background:rgba(22,22,22,.45);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 .info-overlay.open{display:flex}
-.info-modal{background:var(--sheet);border:1px solid var(--line);border-radius:12px;
-  max-width:480px;width:100%;padding:18px 20px 20px;position:relative;
-  box-shadow:0 8px 32px rgba(0,0,0,.18)}
-.info-modal h3{margin:0 28px 4px 0;font-size:15px;font-weight:600}
-.info-modal .info-sub{font-size:12px;color:var(--muted);margin:0 0 12px}
-.info-modal .info-section{margin-bottom:10px}
-.info-modal .info-section h4{margin:0 0 3px;font-size:11px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
-.info-modal .info-section p{margin:0;font-size:13px;line-height:1.45}
-.info-modal .info-section code{font-family:var(--mono);font-size:11.5px;
-  background:var(--paper);padding:1px 4px;border-radius:3px;border:1px solid var(--line)}
-.info-modal .info-link{display:inline-block;margin-top:12px;font-size:12.5px;
-  color:var(--accent);text-decoration:none;font-weight:600}
-.info-modal .info-link:hover{text-decoration:underline}
-.info-close{position:absolute;top:10px;right:12px;background:none;border:none;
-  font-size:18px;cursor:pointer;color:var(--muted);line-height:1;padding:2px 6px}
+.info-modal{background:var(--surface);border-radius:10px;max-width:500px;width:100%;padding:20px 22px 22px;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.info-modal h3{margin:0 32px 2px 0;font-size:17px;font-weight:600}
+.info-sub{font:12px var(--mono);color:var(--muted);margin:0 0 14px}
+.info-section{margin-bottom:12px}
+.info-section h4{margin:0 0 3px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.info-section p{margin:0;font-size:13px;line-height:1.5}
+.info-section code{background:#F4F4F4;padding:1px 4px;border-radius:3px}
+.info-link{display:inline-block;margin-top:6px;font-size:13px;font-weight:600}
+.info-close{position:absolute;top:10px;right:10px;width:36px;height:36px;border:0;border-radius:6px;background:transparent;font-size:20px;color:var(--muted)}
+.info-close:hover{background:#F4F4F4}
+body.drag-over::after{content:"Drop the .json profile to load it";position:fixed;inset:12px;border:2px dashed var(--accent);border-radius:12px;background:rgba(237,245,255,.92);display:grid;place-items:center;font-size:18px;font-weight:600;color:var(--accent-hover);z-index:300;pointer-events:none}
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>Instana Agent Config Generator</h1>
-    <p>Configure agent deployment, connection, and technologies. Works completely offline.</p>
+<header class="topbar">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" style="flex:none"><rect width="32" height="32" rx="7" fill="#0F62FE"/><path d="M9.5 14.2C9.6 9.6 11 6.5 13.4 6.5c1 0 1.6.7 2.6.7s1.6-.7 2.6-.7c2.4 0 3.8 3.1 3.9 7.7z" fill="#fff"/><rect x="9.5" y="12" width="13" height="2.2" fill="#161616"/><ellipse cx="16" cy="15" rx="12.5" ry="2.3" fill="#fff"/><path d="M10 26.5c1.2-3.6 3.4-5.3 6-5.3s4.8 1.7 6 5.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><rect x="9.6" y="18" width="5.6" height="3.2" rx="1.4" fill="#161616"/><rect x="16.8" y="18" width="5.6" height="3.2" rx="1.4" fill="#161616"/><path d="M15.2 19h1.6" stroke="#161616" stroke-width="1.2"/></svg>
+    <div><span class="brand-name">Instana Agent Config Generator</span><span class="brand-sub">Runs offline. Keys and passwords never leave this page.</span></div>
   </div>
-  <div class="header-bar">
-    <a href="agent-triage.html" class="btn-nav" title="Open Instana Log Triage & Diagnostics">🔍 Log Triage</a>
-    <button type="button" id="btnLoadJson" title="Load a JSON config file exported by agent-install.sh">Load JSON</button>
-    <input type="file" id="jsonFileInput" accept=".json" class="sr" aria-label="JSON config file">
-    <span class="header-hint">or drop .json</span>
+  <div class="top-actions">
+    <a href="agent-triage.html" class="top-btn link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Log triage</a>
+    <button type="button" class="top-btn" id="btnLoadJson" aria-label="Load profile" title="Load a JSON profile exported by this page or agent-install.sh. You can also drop the file anywhere on the page.">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span class="t">Load profile</span></button>
+    <input type="file" id="jsonFileInput" accept=".json" class="sr" aria-label="JSON profile file">
+    <button type="button" class="top-btn" id="btnDownloadJson" aria-label="Save profile" title="Save as instana-agent-config.json for agent-install.sh --config. Includes keys and passwords.">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span class="t">Save profile</span></button>
   </div>
 </header>
 
 <div class="wrap">
-<main id="form">
 
-  <!-- Nav Tabs -->
-  <div class="main-tabs" role="tablist">
-    <button type="button" class="main-tab active" data-tab="tab-pane-setup">🎯 Setup &amp; Target</button>
-    <button type="button" class="main-tab" data-tab="tab-pane-sensors">🔌 Sensors &amp; DBs <span class="tab-badge" id="sensor-badge">0</span></button>
-    <button type="button" class="main-tab" data-tab="tab-pane-proxy">🌐 Proxy &amp; Network</button>
-    <button type="button" class="main-tab" data-tab="tab-pane-advanced">⚙️ Updates &amp; Resources</button>
-  </div>
+<nav class="rail" aria-label="Configuration steps" id="rail">
+  <span class="rail-h">Steps</span>
+</nav>
 
-  <!-- TAB 1: Setup & Target -->
-  <div class="tab-pane active" id="tab-pane-setup">
-    <h2 class="pane-title">Setup &amp; Target</h2>
-    <p class="pane-lead">Target platform, backend endpoint, keys, and host grouping.</p>
+<main class="panel-main" id="form">
+  <div class="mprog" id="mprog" aria-label="Steps"></div>
 
-    <!-- Platform Catalog Section -->
-    <div class="field wide" style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span class="lbl" style="font-size:13px">Instana Agent Installations Catalog</span>
-        <span class="header-hint" id="catalog-count">Showing 18 platforms</span>
+  <!-- STEP 1 -->
+  <section class="step-pane active" data-step="0" aria-labelledby="h-s0">
+    <div><span class="eyebrow">Step 1 of 6</span><h1 id="h-s0">Platform</h1>
+      <p class="lead">Where the agent will run. Search, or pick an environment and then the install method.</p></div>
+    <label class="search">
+      <span class="sr">Search install methods</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#525252" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="platform-search" placeholder="Search: helm, rpm, ec2, air-gapped, windows…" autocomplete="off">
+    </label>
+    <div class="picker" id="picker">
+      <div class="fams" role="tablist" aria-label="Environment" id="fams">
+        <button type="button" class="fam" role="tab" data-fam="host" aria-selected="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v7H4zM4 13h16v7H4zM8 7.5h.01M8 16.5h.01"/></svg><span>Linux host</span><b class="cnt">4</b></button>
+        <button type="button" class="fam" role="tab" data-fam="k8s" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 8v8M8.5 10l7 4M15.5 10l-7 4"/></svg><span>Kubernetes &amp; OpenShift</span><b class="cnt">4</b></button>
+        <button type="button" class="fam" role="tab" data-fam="docker" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18v9H3zM7 9v9M11 9v9M15 9v9M6 9V5h6v4"/></svg><span>Docker</span><b class="cnt">1</b></button>
+        <button type="button" class="fam" role="tab" data-fam="desktop" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18v12H3zM8 20h8M12 16v4"/></svg><span>Windows &amp; macOS</span><b class="cnt">4</b></button>
+        <button type="button" class="fam" role="tab" data-fam="cloud" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.6 4.2 4.2 0 0 0 7 18z"/></svg><span>Cloud VMs &amp; sensors</span><b class="cnt">5</b></button>
       </div>
-
-      <!-- Search & Category Filters -->
-      <div class="catalog-search-bar">
-        <div class="catalog-search-wrap">
-          <span class="catalog-search-icon">🔍</span>
-          <input type="text" id="platform-search" placeholder="Search an agent or collector (e.g. helm, ec2, deb, windows, macos, openshift, docker, air-gapped)..." autocomplete="off">
-        </div>
-      </div>
-
-      <div class="catalog-filter-pills" id="catalog-filters">
-        <button type="button" class="filter-pill active" data-filter="all">All</button>
-        <button type="button" class="filter-pill" data-filter="k8s">Kubernetes &amp; OpenShift</button>
-        <button type="button" class="filter-pill" data-filter="linux">Linux &amp; Unix</button>
-        <button type="button" class="filter-pill" data-filter="win">Windows &amp; macOS</button>
-        <button type="button" class="filter-pill" data-filter="container">Docker</button>
-        <button type="button" class="filter-pill" data-filter="cloud">Cloud &amp; Sensors</button>
-        <button type="button" class="filter-pill" data-filter="offline">Air-gapped</button>
-      </div>
-
-      <!-- Platform Cards Grid -->
-      <div class="platform-grid" id="platform-grid" role="radiogroup" aria-label="Target Platform">
-        
-        <!-- Linux One-liner -->
-        <label class="platform-card selected" data-cat="linux" data-keywords="linux host vm baremetal curl oneliner systemd service automated">
-          <input type="radio" name="TARGET" value="linux" checked>
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🐧</span> Linux (One-liner)</div>
-            <span class="platform-tag">Host</span>
-          </div>
-          <p class="platform-desc">Automated curl script install as systemd service on VM/bare-metal.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Linux Packages -->
-        <label class="platform-card" data-cat="linux" data-keywords="linux packages deb rpm apt yum dnf repository ubuntu debian rhel centos rocky almalinux">
-          <input type="radio" name="TARGET" value="linux-pkg">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">📦</span> Linux (DEB / RPM)</div>
-            <span class="platform-tag">Package</span>
-          </div>
-          <p class="platform-desc">Native package manager repo setup (APT / YUM) for automated fleet patching.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Linux Tarball -->
-        <label class="platform-card" data-cat="linux offline" data-keywords="linux archive tar gz tarball manual nonroot unix custom path">
-          <input type="radio" name="TARGET" value="linux-tar">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🗄️</span> Linux (tar.gz)</div>
-            <span class="platform-tag">Archive</span>
-          </div>
-          <p class="platform-desc">Tarball archive extract &amp; start with bin/start (supports non-root runs).</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Linux EC2 -->
-        <label class="platform-card" data-cat="linux cloud" data-keywords="aws ec2 amazon elastic compute cloudinit user data instance ami">
-          <input type="radio" name="TARGET" value="linux-ec2">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">☁️</span> AWS EC2 (Linux)</div>
-            <span class="platform-tag">Cloud</span>
-          </div>
-          <p class="platform-desc">Cloud-init User Data bootstrap script for automated AWS EC2 instance launch.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Linux GCE -->
-        <label class="platform-card" data-cat="linux cloud" data-keywords="google cloud gcp gce compute engine startup script vm instance">
-          <input type="radio" name="TARGET" value="linux-gce">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🌐</span> Google Cloud (GCE)</div>
-            <span class="platform-tag">Cloud</span>
-          </div>
-          <p class="platform-desc">GCE startup-script metadata for automated Compute Engine VM provisioning.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Docker -->
-        <label class="platform-card" data-cat="container" data-keywords="docker container containerized privileged host network icr">
-          <input type="radio" name="TARGET" value="docker">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🐳</span> Docker</div>
-            <span class="platform-tag">Container</span>
-          </div>
-          <p class="platform-desc">Single container with host network and privileged access (icr.io image).</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Kubernetes Helm -->
-        <label class="platform-card" data-cat="k8s" data-keywords="kubernetes k8s helm chart values daemonset aks eks gke tanzu">
-          <input type="radio" name="TARGET" value="kubernetes">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">☸️</span> Kubernetes (Helm)</div>
-            <span class="platform-tag">K8s</span>
-          </div>
-          <p class="platform-desc">Official Helm 3 chart deployment with values.yaml &amp; cluster.name.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Kubernetes Operator -->
-        <label class="platform-card" data-cat="k8s" data-keywords="kubernetes k8s operator custom resource cr crd instanaagent">
-          <input type="radio" name="TARGET" value="operator">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">⚙️</span> Kubernetes Operator</div>
-            <span class="platform-tag">K8s</span>
-          </div>
-          <p class="platform-desc">Instana Agent Operator with InstanaAgent CustomResource manifest.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- OpenShift Operator -->
-        <label class="platform-card" data-cat="k8s" data-keywords="redhat openshift ocp operator olm operatorhub scc scc-privileged customresource">
-          <input type="radio" name="TARGET" value="openshift">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🔴</span> OpenShift (Operator)</div>
-            <span class="platform-tag">OpenShift</span>
-          </div>
-          <p class="platform-desc">OperatorHub / OLM deployment with SecurityContextConstraints (SCC).</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- OpenShift Helm -->
-        <label class="platform-card" data-cat="k8s" data-keywords="redhat openshift ocp helm chart scc values">
-          <input type="radio" name="TARGET" value="openshift-helm">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">⛵</span> OpenShift (Helm)</div>
-            <span class="platform-tag">OpenShift</span>
-          </div>
-          <p class="platform-desc">Helm 3 chart configured with openshift=true for OpenShift clusters.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Windows Silent -->
-        <label class="platform-card" data-cat="win" data-keywords="windows unattended silent msi installer exe service cli automated 64bit">
-          <input type="radio" name="TARGET" value="win-silent">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🪟</span> Windows (Unattended)</div>
-            <span class="platform-tag">Windows</span>
-          </div>
-          <p class="platform-desc">Silent /quiet CLI installer command with automatic service startup.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Windows GUI -->
-        <label class="platform-card" data-cat="win" data-keywords="windows interactive gui msi wizard setup desktop server">
-          <input type="radio" name="TARGET" value="win-gui">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🖥️</span> Windows (Interactive)</div>
-            <span class="platform-tag">Windows</span>
-          </div>
-          <p class="platform-desc">Interactive MSI Setup Wizard with endpoint &amp; key parameter guidance.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Windows ZIP -->
-        <label class="platform-card" data-cat="win offline" data-keywords="windows archive zip portable start.bat status.bat script">
-          <input type="radio" name="TARGET" value="win-zip">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">📁</span> Windows (ZIP)</div>
-            <span class="platform-tag">Windows</span>
-          </div>
-          <p class="platform-desc">Portable ZIP archive with bin\start.bat and bin\status.bat scripts.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- macOS -->
-        <label class="platform-card" data-cat="win" data-keywords="macos mac apple silicon intel darwin homebrew gtar libsigar dylib">
-          <input type="radio" name="TARGET" value="macos">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🍏</span> macOS (64-bit)</div>
-            <span class="platform-tag">macOS</span>
-          </div>
-          <p class="platform-desc">Archive extract with gtar &amp; Apple Silicon (M-series) libsigar approval flow.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Air-gapped / Offline -->
-        <label class="platform-card" data-cat="offline" data-keywords="airgapped air-gapped offline static isolated mirror disconnected local repo">
-          <input type="radio" name="TARGET" value="airgapped">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🔒</span> Air-gapped (Static)</div>
-            <span class="platform-tag">Offline</span>
-          </div>
-          <p class="platform-desc">Self-contained static package without external internet repository access.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- AWS Cloud Sensor -->
-        <label class="platform-card" data-cat="cloud" data-keywords="aws cloud cloudwatch iam role lambda rds s3 ecs fargate sensor agentless">
-          <input type="radio" name="TARGET" value="cloud-aws">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🟧</span> AWS Cloud Sensor</div>
-            <span class="platform-tag">Cloud</span>
-          </div>
-          <p class="platform-desc">Agent configured in AWS mode (-m aws) or with IAM Role for AWS APIs.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- Azure Cloud Sensor -->
-        <label class="platform-card" data-cat="cloud" data-keywords="azure microsoft cloud monitor service principal tenant subscription sensor">
-          <input type="radio" name="TARGET" value="cloud-azure">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🟦</span> Azure Cloud Sensor</div>
-            <span class="platform-tag">Cloud</span>
-          </div>
-          <p class="platform-desc">Azure Monitor API sensor with Service Principal authentication.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
-        <!-- GCP Cloud Sensor -->
-        <label class="platform-card" data-cat="cloud" data-keywords="gcp google cloud platform monitoring service account json key credentials">
-          <input type="radio" name="TARGET" value="cloud-gcp">
-          <div class="platform-card-head">
-            <div class="platform-icon-title"><span class="platform-icon">🟩</span> GCP Cloud Sensor</div>
-            <span class="platform-tag">Cloud</span>
-          </div>
-          <p class="platform-desc">Google Cloud Monitoring sensor with Service Account JSON credentials.</p>
-          <div class="platform-check">✓</div>
-        </label>
-
+      <div class="variants" role="radiogroup" aria-label="Install method" id="platform-grid">
+        <label class="variant" data-fam="host" data-keywords="linux host vm baremetal curl oneliner one-liner systemd service automated script"><input type="radio" name="TARGET" value="linux" checked><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">One-line installer</span><span class="v-tag">Recommended</span><span class="v-fam">Linux host</span></span><span class="v-desc">Script installs the agent as a systemd service on a VM or bare metal.</span></span></label>
+        <label class="variant" data-fam="host" data-keywords="linux packages deb rpm apt yum dnf repository ubuntu debian rhel centos rocky almalinux"><input type="radio" name="TARGET" value="linux-pkg"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">DEB / RPM repository</span><span class="v-fam">Linux host</span></span><span class="v-desc">Adds the APT or YUM repository so the fleet patches with the OS.</span></span></label>
+        <label class="variant" data-fam="host" data-keywords="linux archive tar gz tarball manual nonroot non-root unix custom path"><input type="radio" name="TARGET" value="linux-tar"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">tar.gz archive</span><span class="v-tag">Non-root</span><span class="v-fam">Linux host</span></span><span class="v-desc">Extract anywhere and run bin/start. Works without root.</span></span></label>
+        <label class="variant" data-fam="host" data-keywords="airgapped air-gapped offline static isolated mirror disconnected local repo"><input type="radio" name="TARGET" value="airgapped"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Air-gapped static package</span><span class="v-tag">Offline</span><span class="v-fam">Linux host</span></span><span class="v-desc">Self-contained package for hosts that cannot reach the internet.</span></span></label>
+        <label class="variant" data-fam="k8s" data-keywords="kubernetes k8s helm chart values daemonset aks eks gke tanzu"><input type="radio" name="TARGET" value="kubernetes"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Helm chart</span><span class="v-tag">Recommended</span><span class="v-fam">Kubernetes</span></span><span class="v-desc">Official Helm 3 chart with values.yaml and cluster.name.</span></span></label>
+        <label class="variant" data-fam="k8s" data-keywords="kubernetes k8s operator custom resource cr crd instanaagent"><input type="radio" name="TARGET" value="operator"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Kubernetes Operator</span><span class="v-fam">Kubernetes</span></span><span class="v-desc">InstanaAgent custom resource, managed by the operator.</span></span></label>
+        <label class="variant" data-fam="k8s" data-keywords="redhat openshift ocp operator olm operatorhub scc privileged customresource"><input type="radio" name="TARGET" value="openshift"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">OpenShift Operator</span><span class="v-fam">OpenShift</span></span><span class="v-desc">OperatorHub / OLM install with the privileged SCC.</span></span></label>
+        <label class="variant" data-fam="k8s" data-keywords="redhat openshift ocp helm chart scc values"><input type="radio" name="TARGET" value="openshift-helm"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">OpenShift Helm</span><span class="v-fam">OpenShift</span></span><span class="v-desc">Helm 3 chart with openshift=true and SCC setup.</span></span></label>
+        <label class="variant" data-fam="docker" data-keywords="docker container containerized privileged host network icr"><input type="radio" name="TARGET" value="docker"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Docker container</span><span class="v-fam">Docker</span></span><span class="v-desc">Privileged container on the host network, icr.io image.</span></span></label>
+        <label class="variant" data-fam="desktop" data-keywords="windows unattended silent msi installer exe service cli automated 64bit"><input type="radio" name="TARGET" value="win-silent"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Windows unattended</span><span class="v-tag">Recommended</span><span class="v-fam">Windows</span></span><span class="v-desc">Silent /quiet install; the service starts automatically.</span></span></label>
+        <label class="variant" data-fam="desktop" data-keywords="windows interactive gui msi wizard setup desktop server"><input type="radio" name="TARGET" value="win-gui"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Windows setup wizard</span><span class="v-fam">Windows</span></span><span class="v-desc">Interactive installer, with the values to type on each screen.</span></span></label>
+        <label class="variant" data-fam="desktop" data-keywords="windows archive zip portable start.bat status.bat script"><input type="radio" name="TARGET" value="win-zip"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Windows ZIP</span><span class="v-fam">Windows</span></span><span class="v-desc">Portable archive started with bin\start.bat.</span></span></label>
+        <label class="variant" data-fam="desktop" data-keywords="macos mac apple silicon intel darwin homebrew gtar libsigar dylib"><input type="radio" name="TARGET" value="macos"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">macOS</span><span class="v-tag">Dev &amp; test</span><span class="v-fam">macOS</span></span><span class="v-desc">Archive for Intel and Apple silicon, with the libsigar approval step.</span></span></label>
+        <label class="variant" data-fam="cloud" data-keywords="aws ec2 amazon elastic compute cloudinit cloud-init user data instance ami"><input type="radio" name="TARGET" value="linux-ec2"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">AWS EC2 user data</span><span class="v-fam">Cloud VM</span></span><span class="v-desc">cloud-init script that installs the agent when the instance launches.</span></span></label>
+        <label class="variant" data-fam="cloud" data-keywords="google cloud gcp gce compute engine startup script vm instance"><input type="radio" name="TARGET" value="linux-gce"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">GCE startup script</span><span class="v-fam">Cloud VM</span></span><span class="v-desc">Startup-script metadata for Compute Engine VMs.</span></span></label>
+        <label class="variant" data-fam="cloud" data-keywords="aws cloud cloudwatch iam role lambda rds s3 ecs fargate sensor agentless"><input type="radio" name="TARGET" value="cloud-aws"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">AWS sensor</span><span class="v-fam">Cloud sensor</span></span><span class="v-desc">Agent in AWS mode (-m aws) reads CloudWatch through an IAM role.</span></span></label>
+        <label class="variant" data-fam="cloud" data-keywords="azure microsoft cloud monitor service principal tenant subscription sensor"><input type="radio" name="TARGET" value="cloud-azure"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">Azure sensor</span><span class="v-fam">Cloud sensor</span></span><span class="v-desc">Azure Monitor API with a service principal.</span></span></label>
+        <label class="variant" data-fam="cloud" data-keywords="gcp google cloud platform monitoring service account json key credentials"><input type="radio" name="TARGET" value="cloud-gcp"><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">GCP sensor</span><span class="v-fam">Cloud sensor</span></span><span class="v-desc">Cloud Monitoring API with a service account JSON key.</span></span></label>
+        <p class="empty" id="no-match" hidden>No install method matches. Try a platform (linux, windows), a format (rpm, helm) or a cloud (aws, gcp).</p>
       </div>
     </div>
+  </section>
 
-    <!-- Cluster name (Kubernetes / OpenShift only) -->
-    <div class="field wide" id="cluster-field" hidden style="margin-bottom:12px">
-      <label class="lbl" for="CLUSTER_NAME">Cluster name <small>(Kubernetes / OpenShift)</small></label>
-      <input type="text" class="code" id="CLUSTER_NAME" placeholder="my-cluster">
-      <span class="help">Used as <code>cluster.name</code> in Helm values or InstanaAgent CR.</span>
-    </div>
-
-    <!-- Backend -->
-    <div class="field wide" style="margin-bottom:12px">
-      <span class="lbl">Instana backend</span>
-      <div class="seg" style="margin-bottom:8px" role="radiogroup" aria-label="Backend type">
+  <!-- STEP 2 -->
+  <section class="step-pane" data-step="1" aria-labelledby="h-s1">
+    <div><span class="eyebrow">Step 2 of 6</span><h1 id="h-s1">Backend &amp; keys</h1>
+      <p class="lead">The Instana endpoint the agent reports to, and the key it authenticates with.</p></div>
+    <fieldset>
+      <legend class="lbl">Where is your Instana backend?</legend>
+      <div class="seg" role="radiogroup" aria-label="Backend type">
         <label><input type="radio" name="BACKEND_TYPE" value="saas" checked><span>SaaS</span></label>
         <label><input type="radio" name="BACKEND_TYPE" value="selfhosted"><span>Self-hosted</span></label>
       </div>
-      <div id="saas-regions">
-        <select id="SAAS_REGION">
-          <option value="ingress-red-saas.instana.io:443">AWS US - Oregon (red) — ingress-red-saas.instana.io</option>
-          <option value="ingress-pumpkin-saas.instana.io:443">AWS US - Ohio (pumpkin) — ingress-pumpkin-saas.instana.io</option>
-          <option value="ingress-orange-saas.instana.io:443">GCP US - Oregon (orange) — ingress-orange-saas.instana.io</option>
-          <option value="ingress-coral-saas.instana.io:443">GCP US - South Carolina (coral) — ingress-coral-saas.instana.io</option>
-          <option value="ingress-blue-saas.instana.io:443">AWS Europe - Dublin (blue) — ingress-blue-saas.instana.io</option>
-          <option value="ingress-emerald-saas.instana.io:443">AWS Europe - Frankfurt (emerald) — ingress-emerald-saas.instana.io</option>
-          <option value="ingress-green-saas.instana.io:443">GCP Europe - Belgium (green) — ingress-green-saas.instana.io</option>
-          <option value="ingress-mizu-saas.instana.io:443">AWS APAC - Tokyo (mizu) — ingress-mizu-saas.instana.io</option>
-          <option value="ingress-teal-saas.instana.io:443">AWS APAC - Mumbai (teal) — ingress-teal-saas.instana.io</option>
-          <option value="ingress-yellow-saas.instana.io:443">AWS LATAM - Sao Paulo (yellow) — ingress-yellow-saas.instana.io</option>
-        </select>
+    </fieldset>
+    <div class="field" id="saas-regions">
+      <label class="lbl" for="SAAS_REGION">SaaS region</label>
+      <select id="SAAS_REGION">
+        <option value="ingress-red-saas.instana.io:443">AWS US · Oregon (red)</option>
+        <option value="ingress-pumpkin-saas.instana.io:443">AWS US · Ohio (pumpkin)</option>
+        <option value="ingress-orange-saas.instana.io:443">GCP US · Oregon (orange)</option>
+        <option value="ingress-coral-saas.instana.io:443">GCP US · South Carolina (coral)</option>
+        <option value="ingress-blue-saas.instana.io:443">AWS Europe · Dublin (blue)</option>
+        <option value="ingress-emerald-saas.instana.io:443">AWS Europe · Frankfurt (emerald)</option>
+        <option value="ingress-green-saas.instana.io:443">GCP Europe · Belgium (green)</option>
+        <option value="ingress-mizu-saas.instana.io:443">AWS APAC · Tokyo (mizu)</option>
+        <option value="ingress-teal-saas.instana.io:443">AWS APAC · Mumbai (teal)</option>
+        <option value="ingress-yellow-saas.instana.io:443">AWS LATAM · São Paulo (yellow)</option>
+      </select>
+      <span class="help">Endpoint: <code id="endpoint-show"></code></span>
+    </div>
+    <div class="grid tight" id="selfhosted-fields" hidden>
+      <div class="field span-2">
+        <label class="lbl" for="HOST">Backend host</label>
+        <input type="text" class="code" id="HOST" placeholder="instana.example.com">
+        <span class="help" id="host-msg"></span>
       </div>
-      <div id="selfhosted-fields" hidden style="display:grid;grid-template-columns:1fr 100px;gap:8px">
-        <div class="field">
-          <input type="text" class="code" id="HOST" placeholder="instana.example.com">
-          <span class="msg" id="host-msg"></span>
-        </div>
-        <div class="field">
-          <input type="text" class="code" id="PORT" value="443" placeholder="443">
-        </div>
+      <div class="field">
+        <label class="lbl" for="PORT">Port</label>
+        <input type="text" class="code" id="PORT" value="443" placeholder="443">
       </div>
     </div>
-
-    <!-- Keys -->
-    <div class="grid-2" style="margin-bottom:12px">
+    <div class="divider"></div>
+    <div class="grid">
       <div class="field">
         <label class="lbl" for="AGENT_KEY_Q">Agent key</label>
         <div class="secret-row">
-          <input type="password" class="code" id="AGENT_KEY_Q" autocomplete="off" placeholder="Leave empty for prompt">
-          <button type="button" data-show="AGENT_KEY_Q">Show</button>
+          <input type="password" class="code" id="AGENT_KEY_Q" autocomplete="off" placeholder="Paste the agent key">
+          <button type="button" data-show="AGENT_KEY_Q" aria-label="Show or hide the agent key">Show</button>
         </div>
-        <span class="help" id="AGENT_KEY_HELP">Prompted during install if empty.</span>
+        <span class="help" id="AGENT_KEY_HELP">Leave empty and the installer asks for it.</span>
       </div>
       <div class="field">
-        <label class="lbl" for="DOWNLOAD_KEY">Download key <small>(Docker / K8s)</small></label>
+        <label class="lbl" for="DOWNLOAD_KEY">Download key <small>optional</small></label>
         <div class="secret-row">
-          <input type="password" class="code" id="DOWNLOAD_KEY" autocomplete="off" placeholder="Optional (defaults to agent key)">
-          <button type="button" data-show="DOWNLOAD_KEY">Show</button>
+          <input type="password" class="code" id="DOWNLOAD_KEY" autocomplete="off" placeholder="Same as agent key">
+          <button type="button" data-show="DOWNLOAD_KEY" aria-label="Show or hide the download key">Show</button>
         </div>
-        <span class="help">Used if separate download key is configured.</span>
+        <span class="help">Only for Docker, Kubernetes and Windows when the tenant uses a separate download key.</span>
+      </div>
+    </div>
+    <div class="field" id="cluster-field" hidden style="max-width:420px">
+      <label class="lbl" for="CLUSTER_NAME">Cluster name</label>
+      <input type="text" class="code" id="CLUSTER_NAME" placeholder="prod-eu-1">
+      <span class="help" id="cluster-msg">Shown as cluster.name in Instana.</span>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step-pane" data-step="2" aria-labelledby="h-s2">
+    <div><span class="eyebrow">Step 3 of 6</span><h1 id="h-s2">Zone &amp; tags</h1>
+      <p class="lead">Optional. Groups this host on the infrastructure map and makes it easy to find.</p></div>
+    <div class="grid">
+      <div class="field"><label class="lbl" for="ZONE">Zone</label>
+        <input type="text" class="code" id="ZONE" placeholder="production-eu-west">
+        <span class="help">Host agents: written to configuration.yaml. Kubernetes and Docker: passed to the install command.</span></div>
+      <div class="field"><label class="lbl" for="TAG_ENV">Tag: environment</label>
+        <input type="text" class="code" id="TAG_ENV" placeholder="production"></div>
+      <div class="field"><label class="lbl" for="TAG_TEAM">Tag: team</label>
+        <input type="text" class="code" id="TAG_TEAM" placeholder="platform"></div>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step-pane" data-step="3" aria-labelledby="h-s3">
+    <div><span class="eyebrow">Step 4 of 6</span><h1 id="h-s3">Sensors</h1>
+      <p class="lead">Technologies that need credentials or setup. Host, process and JVM metrics work without anything here. Use the info button on each chip for prerequisites.</p></div>
+    <div class="sensor-cat">
+      <h3>Databases</h3>
+      <div class="chips">
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="mysql"><span>MySQL</span></label><button type="button" class="sensor-info" data-info="mysql" aria-label="About the MySQL sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="mariadb"><span>MariaDB</span></label><button type="button" class="sensor-info" data-info="mariadb" aria-label="About the MariaDB sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="postgresql"><span>PostgreSQL</span></label><button type="button" class="sensor-info" data-info="postgresql" aria-label="About the PostgreSQL sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="mongodb"><span>MongoDB</span></label><button type="button" class="sensor-info" data-info="mongodb" aria-label="About the MongoDB sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="redis"><span>Redis</span></label><button type="button" class="sensor-info" data-info="redis" aria-label="About the Redis sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="cassandra"><span>Cassandra</span></label><button type="button" class="sensor-info" data-info="cassandra" aria-label="About the Cassandra sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="db2"><span>IBM Db2</span></label><button type="button" class="sensor-info" data-info="db2" aria-label="About the IBM Db2 sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="mssql"><span>MS SQL Server</span></label><button type="button" class="sensor-info" data-info="mssql" aria-label="About the MS SQL Server sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="oracle"><span>Oracle DB</span></label><button type="button" class="sensor-info" data-info="oracle" aria-label="About the Oracle DB sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="elasticsearch"><span>Elasticsearch</span></label><button type="button" class="sensor-info" data-info="elasticsearch" aria-label="About the Elasticsearch sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="couchbase"><span>Couchbase</span></label><button type="button" class="sensor-info" data-info="couchbase" aria-label="About the Couchbase sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+      </div>
+    </div>
+    <div class="sensor-cat">
+      <h3>Messaging &amp; integration</h3>
+      <div class="chips">
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="ibmmq"><span>IBM MQ</span></label><button type="button" class="sensor-info" data-info="ibmmq" aria-label="About the IBM MQ sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="ibmace"><span>IBM ACE</span></label><button type="button" class="sensor-info" data-info="ibmace" aria-label="About the IBM ACE sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="kafka"><span>Kafka</span></label><button type="button" class="sensor-info" data-info="kafka" aria-label="About the Kafka sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="rabbitmq"><span>RabbitMQ</span></label><button type="button" class="sensor-info" data-info="rabbitmq" aria-label="About the RabbitMQ sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="activemq"><span>ActiveMQ</span></label><button type="button" class="sensor-info" data-info="activemq" aria-label="About the ActiveMQ sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+      </div>
+    </div>
+    <div class="sensor-cat">
+      <h3>Web &amp; app servers</h3>
+      <div class="chips">
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="tomcat"><span>Apache Tomcat</span></label><button type="button" class="sensor-info" data-info="tomcat" aria-label="About the Apache Tomcat sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="jboss"><span>JBoss / WildFly</span></label><button type="button" class="sensor-info" data-info="jboss" aria-label="About the JBoss / WildFly sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="websphere"><span>WebSphere</span></label><button type="button" class="sensor-info" data-info="websphere" aria-label="About the WebSphere sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="weblogic"><span>WebLogic</span></label><button type="button" class="sensor-info" data-info="weblogic" aria-label="About the WebLogic sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="liberty"><span>Liberty</span></label><button type="button" class="sensor-info" data-info="liberty" aria-label="About the Liberty sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="nginx"><span>NGINX</span></label><button type="button" class="sensor-info" data-info="nginx" aria-label="About the NGINX sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="apache"><span>Apache HTTPd</span></label><button type="button" class="sensor-info" data-info="apache" aria-label="About the Apache HTTPd sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        <span class="chip-wrap"><label class="chip"><input type="checkbox" name="sensor" value="haproxy"><span>HAProxy</span></label><button type="button" class="sensor-info" data-info="haproxy" aria-label="About the HAProxy sensor"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
       </div>
     </div>
 
-    <!-- Zone and tags -->
-    <div class="card-section">
-      <h3 class="card-section-title">Zone &amp; Host Tags</h3>
-      <div class="grid-3">
-        <div class="field"><label class="lbl" for="ZONE">Zone name</label>
-          <input type="text" class="code" id="ZONE" placeholder="production-eu-west"></div>
-        <div class="field"><label class="lbl" for="TAG_ENV">Tag: environment</label>
-          <input type="text" class="code" id="TAG_ENV" placeholder="production"></div>
-        <div class="field"><label class="lbl" for="TAG_TEAM">Tag: team</label>
-          <input type="text" class="code" id="TAG_TEAM" placeholder="platform"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 2: Sensors & DBs -->
-  <div class="tab-pane" id="tab-pane-sensors">
-    <h2 class="pane-title">Sensors &amp; Technologies</h2>
-    <p class="pane-lead">Check technologies to configure. Active sensors appear below with defaults and setup commands.</p>
-
-    <div class="sensor-categories">
-      <div class="sensor-cat">
-        <h3>Databases</h3>
-        <div class="sensor-grid">
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mysql"><span>MySQL<i class="sensor-info" data-info="mysql">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mariadb"><span>MariaDB<i class="sensor-info" data-info="mariadb">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="postgresql"><span>PostgreSQL<i class="sensor-info" data-info="postgresql">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mongodb"><span>MongoDB<i class="sensor-info" data-info="mongodb">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="redis"><span>Redis<i class="sensor-info" data-info="redis">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="cassandra"><span>Cassandra<i class="sensor-info" data-info="cassandra">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="db2"><span>IBM Db2<i class="sensor-info" data-info="db2">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="mssql"><span>MS SQL Server<i class="sensor-info" data-info="mssql">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="oracle"><span>Oracle DB<i class="sensor-info" data-info="oracle">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="elasticsearch"><span>Elasticsearch<i class="sensor-info" data-info="elasticsearch">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="couchbase"><span>Couchbase<i class="sensor-info" data-info="couchbase">i</i></span></label>
-        </div>
-      </div>
-      <div class="sensor-cat">
-        <h3>Messaging &amp; Integration</h3>
-        <div class="sensor-grid">
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="ibmmq"><span>IBM MQ<i class="sensor-info" data-info="ibmmq">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="ibmace"><span>IBM ACE<i class="sensor-info" data-info="ibmace">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="kafka"><span>Kafka<i class="sensor-info" data-info="kafka">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="rabbitmq"><span>RabbitMQ<i class="sensor-info" data-info="rabbitmq">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="activemq"><span>ActiveMQ<i class="sensor-info" data-info="activemq">i</i></span></label>
-        </div>
-      </div>
-      <div class="sensor-cat">
-        <h3>App Servers &amp; Web</h3>
-        <div class="sensor-grid">
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="tomcat"><span>Apache Tomcat<i class="sensor-info" data-info="tomcat">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="jboss"><span>JBoss / WildFly<i class="sensor-info" data-info="jboss">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="websphere"><span>WebSphere<i class="sensor-info" data-info="websphere">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="weblogic"><span>WebLogic<i class="sensor-info" data-info="weblogic">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="liberty"><span>Liberty<i class="sensor-info" data-info="liberty">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="nginx"><span>NGINX<i class="sensor-info" data-info="nginx">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="apache"><span>Apache HTTPd<i class="sensor-info" data-info="apache">i</i></span></label>
-          <label class="sensor-chip"><input type="checkbox" name="sensor" value="haproxy"><span>HAProxy<i class="sensor-info" data-info="haproxy">i</i></span></label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Active Sensor Panels -->
     <div class="sensor-panels" id="sensor-panels">
+      <span class="lbl" id="sensor-config-title" hidden>Configure selected</span>
+
       <div class="sensor-panel" id="panel-mysql">
         <div class="sensor-panel-head">
-          <h4>MySQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:3306</span></h4>
+          <h4>MySQL <span>Auto-discovered on localhost:3306. Needs a read-only user.</span></h4>
           <div class="sensor-panel-actions">
-            <button type="button" class="btn-mini" data-preset="mysql">Defaults</button>
-            <button type="button" class="btn-mini" data-toggle-sql="sql-mysql">Setup SQL 📋</button>
+            <button type="button" class="btn-mini" data-preset="mysql">Use defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mysql">Permissions to grant</button>
           </div>
         </div>
-        <div class="grid">
+        <div class="grid tight">
           <div class="field"><label class="lbl" for="mysql_user">User</label><input type="text" class="code" id="mysql_user" placeholder="instana"></div>
           <div class="field"><label class="lbl" for="mysql_pass">Password</label>
             <div class="secret-row"><input type="password" class="code" id="mysql_pass" autocomplete="off"><button type="button" data-show="mysql_pass">Show</button></div></div>
         </div>
-        <div class="setup-snippet" id="sql-mysql">
-          <span class="setup-snippet-title">MySQL Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
+        <div class="setup-snippet" id="sql-mysql"><span class="setup-snippet-title">MySQL setup SQL</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
 GRANT SELECT, PROCESS, REPLICATION CLIENT ON *.* TO 'instana'@'localhost';
-FLUSH PRIVILEGES;
-        </div>
+FLUSH PRIVILEGES;</div>
       </div>
 
       <div class="sensor-panel" id="panel-mariadb">
         <div class="sensor-panel-head">
-          <h4>MariaDB <span style="font-weight:400;color:var(--muted);font-size:12px">— separate sensor, MySQL sensor does not monitor MariaDB</span></h4>
+          <h4>MariaDB <span>Own sensor: the MySQL sensor does not monitor MariaDB.</span></h4>
           <div class="sensor-panel-actions">
-            <button type="button" class="btn-mini" data-preset="mariadb">Defaults</button>
-            <button type="button" class="btn-mini" data-toggle-sql="sql-mariadb">Setup SQL 📋</button>
+            <button type="button" class="btn-mini" data-preset="mariadb">Use defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mariadb">Permissions to grant</button>
           </div>
         </div>
-        <div class="grid">
+        <div class="grid tight">
           <div class="field"><label class="lbl" for="maria_user">User</label><input type="text" class="code" id="maria_user" placeholder="instana"></div>
           <div class="field"><label class="lbl" for="maria_pass">Password</label>
             <div class="secret-row"><input type="password" class="code" id="maria_pass" autocomplete="off"><button type="button" data-show="maria_pass">Show</button></div></div>
         </div>
-        <div class="setup-snippet" id="sql-mariadb">
-          <span class="setup-snippet-title">MariaDB Setup SQL (Documented Permissions):</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
+        <div class="setup-snippet" id="sql-mariadb"><span class="setup-snippet-title">MariaDB setup SQL</span>CREATE USER 'instana'@'localhost' IDENTIFIED BY '&lt;password&gt;';
 GRANT SELECT ON performance_schema.* TO 'instana'@'localhost';
 GRANT SLAVE MONITOR ON *.* TO 'instana'@'localhost';
-FLUSH PRIVILEGES;
-        </div>
+FLUSH PRIVILEGES;</div>
       </div>
 
       <div class="sensor-panel" id="panel-postgresql">
         <div class="sensor-panel-head">
-          <h4>PostgreSQL <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:5432</span></h4>
+          <h4>PostgreSQL <span>Auto-discovered on localhost:5432.</span></h4>
           <div class="sensor-panel-actions">
-            <button type="button" class="btn-mini" data-preset="postgresql">Defaults</button>
-            <button type="button" class="btn-mini" data-toggle-sql="sql-postgresql">Setup SQL 📋</button>
+            <button type="button" class="btn-mini" data-preset="postgresql">Use defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-postgresql">Permissions to grant</button>
           </div>
         </div>
-        <div class="grid">
+        <div class="grid tight">
           <div class="field"><label class="lbl" for="pg_user">User</label><input type="text" class="code" id="pg_user" placeholder="instana"></div>
           <div class="field"><label class="lbl" for="pg_pass">Password</label>
             <div class="secret-row"><input type="password" class="code" id="pg_pass" autocomplete="off"><button type="button" data-show="pg_pass">Show</button></div></div>
-          <div class="field"><label class="lbl" for="pg_db">Database</label><input type="text" class="code" id="pg_db" placeholder="same as user">
-            <span class="help">Optional. Used for authentication only.</span></div>
+          <div class="field"><label class="lbl" for="pg_db">Database <small>optional</small></label><input type="text" class="code" id="pg_db" placeholder="same as user"></div>
         </div>
-        <div class="setup-snippet" id="sql-postgresql">
-          <span class="setup-snippet-title">PostgreSQL Setup SQL (Documented Permissions):</span>CREATE USER instana WITH PASSWORD '&lt;password&gt;';
+        <div class="setup-snippet" id="sql-postgresql"><span class="setup-snippet-title">PostgreSQL setup SQL</span>CREATE USER instana WITH PASSWORD '&lt;password&gt;';
 CREATE DATABASE instana OWNER instana;
 GRANT CONNECT ON DATABASE instana TO instana;
-GRANT pg_monitor TO instana; -- PostgreSQL 10+
-        </div>
+GRANT pg_monitor TO instana; -- PostgreSQL 10+</div>
       </div>
 
       <div class="sensor-panel" id="panel-mongodb">
         <div class="sensor-panel-head">
-          <h4>MongoDB <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:27017</span></h4>
+          <h4>MongoDB <span>Auto-discovered on localhost:27017.</span></h4>
           <div class="sensor-panel-actions">
-            <button type="button" class="btn-mini" data-preset="mongodb">Defaults</button>
-            <button type="button" class="btn-mini" data-toggle-sql="sql-mongodb">Setup Command 📋</button>
+            <button type="button" class="btn-mini" data-preset="mongodb">Use defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mongodb">Permissions to grant</button>
           </div>
         </div>
-        <div class="grid">
+        <div class="grid tight">
           <div class="field"><label class="lbl" for="mongo_user">User</label><input type="text" class="code" id="mongo_user" placeholder="optional"></div>
           <div class="field"><label class="lbl" for="mongo_pass">Password</label>
             <div class="secret-row"><input type="password" class="code" id="mongo_pass" autocomplete="off"><button type="button" data-show="mongo_pass">Show</button></div></div>
-          <div class="field"><label class="lbl" for="mongo_source">Auth database</label>
-            <input type="text" class="code" id="mongo_source" placeholder="admin">
-            <span class="help">Database where user is defined (source)</span></div>
+          <div class="field"><label class="lbl" for="mongo_source">Auth database</label><input type="text" class="code" id="mongo_source" placeholder="admin"></div>
         </div>
-        <div class="setup-snippet" id="sql-mongodb">
-          <span class="setup-snippet-title">MongoDB mongosh Command (Documented Permissions):</span>use admin
+        <div class="setup-snippet" id="sql-mongodb"><span class="setup-snippet-title">mongosh command</span>use admin
 db.createUser({
   user: "instana",
   pwd: "&lt;password&gt;",
@@ -683,75 +574,66 @@ db.createUser({
     { role: "clusterMonitor", db: "admin" },
     { role: "read", db: "local" }
   ]
-})
-        </div>
+})</div>
       </div>
 
       <div class="sensor-panel" id="panel-redis">
         <div class="sensor-panel-head">
-          <h4>Redis <span style="font-weight:400;color:var(--muted);font-size:12px">— auto-discovered on localhost:6379</span></h4>
-          <div class="sensor-panel-actions">
-            <button type="button" class="btn-mini" data-toggle-sql="sql-redis">Setup Note 📋</button>
-          </div>
+          <h4>Redis <span>Auto-discovered on localhost:6379.</span></h4>
+          <div class="sensor-panel-actions"><button type="button" class="btn-mini" data-toggle-sql="sql-redis">Setup note</button></div>
         </div>
-        <div class="grid">
+        <div class="grid tight">
           <div class="field"><label class="lbl" for="redis_pass">Password</label>
-            <div class="secret-row"><input type="password" class="code" id="redis_pass" autocomplete="off" placeholder="leave empty if no auth"><button type="button" data-show="redis_pass">Show</button></div>
-            <span class="help">Leave empty if Redis has no authentication</span></div>
+            <div class="secret-row"><input type="password" class="code" id="redis_pass" autocomplete="off" placeholder="empty if no auth"><button type="button" data-show="redis_pass">Show</button></div></div>
         </div>
-        <div class="setup-snippet" id="sql-redis">
-          <span class="setup-snippet-title">Redis Setup Note:</span># In redis.conf (if password protected):
+        <div class="setup-snippet" id="sql-redis"><span class="setup-snippet-title">Redis setup note</span># In redis.conf (if password protected):
 requirepass "&lt;password&gt;"
 
-# CONFIG command must be accessible to the agent.
-# If CONFIG was renamed with rename-command, specify config-command in configuration.yaml.
-        </div>
+# The CONFIG command must be reachable by the agent.
+# If it was renamed with rename-command, set config-command in configuration.yaml.</div>
       </div>
 
       <div class="sensor-panel" id="panel-elasticsearch">
-        <h4>Elasticsearch</h4>
-        <div class="grid">
+        <div class="sensor-panel-head"><h4>Elasticsearch <span>Auto-discovered on localhost:9200. OpenSearch is not supported.</span></h4></div>
+        <div class="grid tight">
           <div class="field"><label class="lbl" for="es_poll">Poll rate (seconds)</label><input type="text" class="code" id="es_poll" value="1" placeholder="1"></div>
         </div>
       </div>
 
       <div class="sensor-panel" id="panel-mssql">
         <div class="sensor-panel-head">
-          <h4>Microsoft SQL Server</h4>
+          <h4>Microsoft SQL Server <span>Local monitoring with SQL Server authentication.</span></h4>
           <div class="sensor-panel-actions">
-            <button type="button" class="btn-mini" data-preset="mssql">Defaults</button>
-            <button type="button" class="btn-mini" data-toggle-sql="sql-mssql">Setup SQL 📋</button>
+            <button type="button" class="btn-mini" data-preset="mssql">Use defaults</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-mssql">Permissions to grant</button>
           </div>
         </div>
-        <div class="grid">
-          <div class="field"><label class="lbl" for="mssql_instance">Instance</label><input type="text" class="code" id="mssql_instance" value="DEFAULT"><span class="help">Linux: <code>DEFAULT</code> (confirmed on a live agent). Windows: <code>MSSQLSERVER</code> or the named instance. A wrong name removes the sensor ("invalid or missing configuration").</span></div>
+        <div class="grid tight">
+          <div class="field"><label class="lbl" for="mssql_instance">Instance</label><input type="text" class="code" id="mssql_instance" value="DEFAULT">
+            <span class="help">Linux: DEFAULT. Windows: MSSQLSERVER or the named instance. A wrong name removes the sensor.</span></div>
           <div class="field"><label class="lbl" for="mssql_port">Port</label><input type="text" class="code" id="mssql_port" value="1433"></div>
           <div class="field"><label class="lbl" for="mssql_user">User</label><input type="text" class="code" id="mssql_user" placeholder="instana"></div>
           <div class="field"><label class="lbl" for="mssql_pass">Password</label>
             <div class="secret-row"><input type="password" class="code" id="mssql_pass" autocomplete="off"><button type="button" data-show="mssql_pass">Show</button></div></div>
         </div>
-        <div class="setup-snippet" id="sql-mssql">
-          <span class="setup-snippet-title">SQL Server Setup SQL (Documented Permissions):</span>CREATE LOGIN instana WITH PASSWORD = '&lt;password&gt;';
+        <div class="setup-snippet" id="sql-mssql"><span class="setup-snippet-title">SQL Server setup SQL</span>CREATE LOGIN instana WITH PASSWORD = '&lt;password&gt;';
 CREATE USER instana FOR LOGIN instana;
 GRANT VIEW SERVER STATE TO instana;
 GRANT VIEW DATABASE STATE TO instana;
--- For disk volume & auto-growth metrics, add sysadmin membership or db_owner.
-        </div>
+-- For disk volume &amp; auto-growth metrics, add sysadmin membership or db_owner.</div>
       </div>
 
       <div class="sensor-panel" id="panel-ibmmq">
         <div class="sensor-panel-head">
-          <h4>IBM MQ</h4>
+          <h4>IBM MQ <span>One row per queue manager. Host only for a remote queue manager.</span></h4>
           <div class="sensor-panel-actions">
             <button type="button" class="btn-mini" data-preset="ibmmq">Default QM</button>
-            <button type="button" class="btn-mini" data-toggle-sql="sql-ibmmq">OAM Rights 📋</button>
+            <button type="button" class="btn-mini" data-toggle-sql="sql-ibmmq">OAM rights</button>
           </div>
         </div>
-        <p class="help" style="margin-bottom:8px">Add one row per Queue Manager.</p>
         <div id="qmgr-list" class="qmgr-list"></div>
-        <button type="button" class="add-btn" id="add-qmgr">+ Add Queue Manager</button>
-        <div class="setup-snippet" id="sql-ibmmq">
-          <span class="setup-snippet-title">IBM MQ runmqsc Authorization (Documented OAM Authority):</span>SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('&lt;user&gt;') AUTHADD(CONNECT,DSP,INQ)
+        <button type="button" class="add-btn" id="add-qmgr">+ Add queue manager</button>
+        <div class="setup-snippet" id="sql-ibmmq"><span class="setup-snippet-title">runmqsc authorization</span>SET AUTHREC OBJTYPE(QMGR) PRINCIPAL('&lt;user&gt;') AUTHADD(CONNECT,DSP,INQ)
 SET AUTHREC PROFILE('SYSTEM.ADMIN.COMMAND.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,PUT,CHG)
 SET AUTHREC PROFILE('SYSTEM.DEFAULT.MODEL.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,GET)
 SET AUTHREC PROFILE('SYSTEM.ADMIN.STATISTICS.QUEUE') OBJTYPE(QUEUE) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP,INQ,GET,CHG)
@@ -760,22 +642,19 @@ SET AUTHREC PROFILE('**') OBJTYPE(CHANNEL) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP
 SET AUTHREC PROFILE('**') OBJTYPE(CLNTCONN) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP)
 SET AUTHREC PROFILE('**') OBJTYPE(LISTENER) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP)
 SET AUTHREC PROFILE('**') OBJTYPE(TOPIC) PRINCIPAL('&lt;user&gt;') AUTHADD(DSP)
-REFRESH SECURITY
-        </div>
+REFRESH SECURITY</div>
       </div>
 
       <div class="sensor-panel" id="panel-kafka">
-        <h4>Kafka</h4>
-        <div class="grid">
-          <div class="field wide"><label class="lbl" for="kafka_brokers">Bootstrap servers</label>
-            <input type="text" class="code" id="kafka_brokers" placeholder="localhost:9092,broker2:9092">
-            <span class="help">Comma-separated host:port list.</span></div>
-        </div>
+        <div class="sensor-panel-head"><h4>Kafka <span>Auto-discovered on localhost:9092. Set servers only for another host or port.</span></h4></div>
+        <div class="field"><label class="lbl" for="kafka_brokers">Bootstrap servers</label>
+          <input type="text" class="code" id="kafka_brokers" placeholder="localhost:9092,broker2:9092">
+          <span class="help">Comma-separated host:port list.</span></div>
       </div>
 
       <div class="sensor-panel" id="panel-rabbitmq">
-        <h4>RabbitMQ</h4>
-        <div class="grid">
+        <div class="sensor-panel-head"><h4>RabbitMQ <span>Needs the management plugin.</span></h4></div>
+        <div class="grid tight">
           <div class="field"><label class="lbl" for="rmq_host">Host</label><input type="text" class="code" id="rmq_host" value="localhost"></div>
           <div class="field"><label class="lbl" for="rmq_port">Management port</label><input type="text" class="code" id="rmq_port" value="15672"></div>
           <div class="field"><label class="lbl" for="rmq_user">User</label><input type="text" class="code" id="rmq_user" placeholder="guest"></div>
@@ -785,193 +664,146 @@ REFRESH SECURITY
       </div>
 
       <div class="sensor-panel" id="panel-nginx">
-        <h4>NGINX</h4>
-        <div class="grid">
-          <div class="field wide"><label class="lbl" for="nginx_status">Status URL</label>
-            <input type="text" class="code" id="nginx_status" value="http://localhost/nginx_status">
-            <span class="help">Enable <code>stub_status</code> module in nginx.conf.</span></div>
-        </div>
+        <div class="sensor-panel-head"><h4>NGINX <span>Needs the stub_status module, limited to 127.0.0.1.</span></h4></div>
+        <div class="field"><label class="lbl" for="nginx_status">Status URL</label>
+          <input type="text" class="code" id="nginx_status" value="http://localhost/nginx_status"></div>
       </div>
+
+      <div class="extra-list" id="sensor-extra" hidden></div>
     </div>
-  </div>
+    <p class="help" id="no-sensors">Optional. Pick a technology only when it needs credentials or setup.</p>
+  </section>
 
-  <!-- TAB 3: Proxy & Network -->
-  <div class="tab-pane" id="tab-pane-proxy">
-    <h2 class="pane-title">Proxy &amp; Network</h2>
-    <p class="pane-lead">Configure HTTP or SOCKS proxy for outbound connection to Instana backend and repositories.</p>
-
-    <div class="grid-2">
-      <div class="field"><label class="lbl" for="PROXY_TYPE">Proxy type</label>
-        <select id="PROXY_TYPE">
-          <option value="http">http (also for HTTPS proxies)</option>
-          <option value="socks4">socks4</option>
-          <option value="socks5">socks5</option>
-        </select></div>
-      <div class="field"><label class="lbl" for="PROXY_HOST">Proxy host</label>
-        <input type="text" class="code" id="PROXY_HOST" placeholder="proxy.example.com"></div>
-      <div class="field"><label class="lbl" for="PROXY_PORT">Proxy port</label>
-        <input type="text" class="code" id="PROXY_PORT" placeholder="3128"></div>
-      <div class="field"><label class="lbl" for="PROXY_USER">Proxy user</label>
-        <input type="text" class="code" id="PROXY_USER" placeholder="optional"></div>
-      <div class="field wide"><label class="lbl" for="PROXY_PASS">Proxy password</label>
-        <div class="secret-row">
-          <input type="password" class="code" id="PROXY_PASS" autocomplete="off" placeholder="optional">
-          <button type="button" data-show="PROXY_PASS">Show</button>
-        </div>
-      </div>
+  <!-- STEP 5 -->
+  <section class="step-pane" data-step="4" aria-labelledby="h-s4">
+    <div><span class="eyebrow">Step 5 of 6</span><h1 id="h-s4">Network</h1>
+      <p class="lead">How the agent reaches the Instana backend and the package repositories.</p></div>
+    <div class="seg" role="radiogroup" aria-label="Connection">
+      <label><input type="radio" name="PROXY_ON" value="direct" checked><span>Direct</span></label>
+      <label><input type="radio" name="PROXY_ON" value="proxy"><span>Through a proxy</span></label>
     </div>
-
-    <div class="note">
-      <b>💡 How proxy settings are applied:</b> On Linux host agents, proxy credentials go into <code>Backend.cfg</code> and <code>mvn-settings.xml</code>. On Docker and Kubernetes, environment variables (<code>INSTANA_AGENT_PROXY_*</code>) are configured automatically.
+    <div class="grid tight" id="proxy-fields" hidden>
+      <div class="field"><label class="lbl" for="PROXY_TYPE">Type</label>
+        <select id="PROXY_TYPE"><option value="http">HTTP (also HTTPS proxies)</option><option value="socks4">SOCKS4</option><option value="socks5">SOCKS5</option></select></div>
+      <div class="field"><label class="lbl" for="PROXY_HOST">Host</label><input type="text" class="code" id="PROXY_HOST" placeholder="proxy.example.com"></div>
+      <div class="field"><label class="lbl" for="PROXY_PORT">Port</label><input type="text" class="code" id="PROXY_PORT" placeholder="3128"></div>
+      <div class="field"><label class="lbl" for="PROXY_USER">User <small>optional</small></label><input type="text" class="code" id="PROXY_USER"></div>
+      <div class="field"><label class="lbl" for="PROXY_PASS">Password <small>optional</small></label>
+        <div class="secret-row"><input type="password" class="code" id="PROXY_PASS" autocomplete="off"><button type="button" data-show="PROXY_PASS">Show</button></div></div>
     </div>
-  </div>
+    <p class="note" id="proxy-how"></p>
+  </section>
 
-  <!-- TAB 4: Updates & Resources -->
-  <div class="tab-pane" id="tab-pane-advanced">
-    <h2 class="pane-title">Updates &amp; Resources</h2>
-    <p class="pane-lead">Agent operational mode, version pinning, update schedules, and memory/CPU limits.</p>
-
-    <div class="field wide" style="margin-bottom:12px">
-      <span class="lbl">Agent mode</span>
-      <div class="seg" role="radiogroup">
-        <label><input type="radio" name="AGENT_MODE" value="APM" checked><span>APM<small>traces + metrics</small></span></label>
-        <label><input type="radio" name="AGENT_MODE" value="INFRASTRUCTURE"><span>Infrastructure only<small>metrics, no tracing</small></span></label>
-        <label><input type="radio" name="AGENT_MODE" value="AWS"><span>AWS sensor</span></label>
+  <!-- STEP 6 -->
+  <section class="step-pane" data-step="5" aria-labelledby="h-s5">
+    <div><span class="eyebrow">Step 6 of 6</span><h1 id="h-s5">Updates &amp; mode</h1>
+      <p class="lead">What the agent collects, how its sensors are updated, and its resource limits.</p></div>
+    <fieldset>
+      <legend class="lbl">Agent mode</legend>
+      <div class="opts">
+        <label class="opt"><input type="radio" name="AGENT_MODE" value="APM" checked><span class="opt-t">APM</span><span class="opt-note">Traces and metrics</span></label>
+        <label class="opt"><input type="radio" name="AGENT_MODE" value="INFRASTRUCTURE"><span class="opt-t">Infrastructure</span><span class="opt-note">Metrics only, no tracing</span></label>
+        <label class="opt"><input type="radio" name="AGENT_MODE" value="AWS"><span class="opt-t">AWS</span><span class="opt-note">CloudWatch sensors</span></label>
       </div>
+    </fieldset>
+    <fieldset>
+      <legend class="lbl">Update schedule <small>UpdateManager.cfg</small></legend>
+      <div class="opts">
+        <label class="opt"><input type="radio" name="UPDATE_FREQ" value="" checked><span class="opt-t">Default</span><span class="opt-note">Daily at 04:30</span></label>
+        <label class="opt"><input type="radio" name="UPDATE_FREQ" value="DAY"><span class="opt-t">Daily</span><span class="opt-note">At a time you set</span></label>
+        <label class="opt"><input type="radio" name="UPDATE_FREQ" value="MONDAY"><span class="opt-t">Mondays</span><span class="opt-note">Weekly</span></label>
+        <label class="opt"><input type="radio" name="UPDATE_FREQ" value="WEDNESDAY"><span class="opt-t">Wednesdays</span><span class="opt-note">Weekly</span></label>
+        <label class="opt"><input type="radio" name="UPDATE_FREQ" value="NEVER"><span class="opt-t">Freeze</span><span class="opt-note">Use the version pin</span></label>
+      </div>
+      <div class="grid tight" id="update-time-row" hidden style="margin-top:10px">
+        <div class="field"><label class="lbl" for="UPDATE_TIME">Time (HH:MM, UTC)</label><input type="text" class="code" id="UPDATE_TIME" placeholder="04:30" maxlength="5"></div>
+      </div>
+    </fieldset>
+    <div class="grid">
+      <div class="field"><label class="lbl" for="PIN_AGENT_VERSION">Pin sensors version <small>optional</small></label>
+        <input type="text" class="code" id="PIN_AGENT_VERSION" placeholder="2025.11.20.1809">
+        <span class="help">Written to AgentBootstrap.cfg; freezes sensor downloads at this build.</span></div>
     </div>
-
-    <div class="card-section">
-      <h3 class="card-section-title">Update Schedule &amp; Version Pinning</h3>
-      <div class="field wide" style="margin-bottom:10px">
-        <label class="lbl" for="PIN_AGENT_VERSION">Pin sensors version (Freeze)</label>
-        <input type="text" class="code" id="PIN_AGENT_VERSION" placeholder="e.g. 2025.11.20.1809">
-        <span class="help">Written to <code>AgentBootstrap.cfg</code> — freezes sensor downloads at this build tag.</span>
+    <fieldset>
+      <legend class="lbl">Package type</legend>
+      <div class="seg" role="radiogroup" aria-label="Package type">
+        <label><input type="radio" name="UPDATE_MODE" value="dynamic" checked><span>Dynamic</span></label>
+        <label><input type="radio" name="UPDATE_MODE" value="static"><span>Static</span></label>
       </div>
-
-      <div class="field wide">
-        <span class="lbl">Update schedule <small>(UpdateManager.cfg)</small></span>
-        <div class="seg" style="margin-bottom:8px" role="radiogroup" aria-label="Update frequency">
-          <label><input type="radio" name="UPDATE_FREQ" value="" checked><span>Default<small>daily at 04:30</small></span></label>
-          <label><input type="radio" name="UPDATE_FREQ" value="DAY"><span>Daily<small>custom time</small></span></label>
-          <label><input type="radio" name="UPDATE_FREQ" value="MONDAY"><span>Weekly<small>every Monday</small></span></label>
-          <label><input type="radio" name="UPDATE_FREQ" value="WEDNESDAY"><span>Weekly<small>every Wednesday</small></span></label>
-          <label><input type="radio" name="UPDATE_FREQ" value="NEVER"><span>Freeze<small>use version pin</small></span></label>
-        </div>
-        <div id="update-time-row" class="grid" hidden style="margin-top:6px">
-          <div class="field">
-            <label class="lbl" for="UPDATE_TIME">Time (HH:MM, UTC)</label>
-            <input type="text" class="code" id="UPDATE_TIME" placeholder="04:30" maxlength="5">
-          </div>
-        </div>
+      <span class="help" style="display:block;margin-top:6px">Dynamic updates itself; static is a fixed package you upgrade by hand.</span>
+      <div class="grid tight" id="static-version" hidden style="margin-top:10px">
+        <div class="field"><label class="lbl" for="AGENT_VERSION">Static version</label><input type="text" class="code" id="AGENT_VERSION" placeholder="1.267.0"></div>
       </div>
-
-      <div class="field wide" style="margin-top:10px">
-        <span class="lbl">Update mode</span>
-        <div class="seg" role="radiogroup">
-          <label><input type="radio" name="UPDATE_MODE" value="dynamic" checked><span>Dynamic<small>auto-updates</small></span></label>
-          <label><input type="radio" name="UPDATE_MODE" value="static"><span>Static<small>fixed package</small></span></label>
-        </div>
-        <div id="static-version" class="grid" style="margin-top:8px" hidden>
-          <div class="field">
-            <label class="lbl" for="AGENT_VERSION">Static version</label>
-            <input type="text" class="code" id="AGENT_VERSION" placeholder="1.267.0">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Resources -->
-    <div class="card-section">
-      <h3 class="card-section-title">Resource Limits (Memory &amp; CPU)</h3>
-      <div class="field wide" style="margin-bottom:8px">
+    </fieldset>
+    <details>
+      <summary>Memory and CPU limits</summary>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
         <div class="seg" role="radiogroup" aria-label="Resource target">
           <label><input type="radio" name="RES_TARGET" value="linux" checked><span>Linux host</span></label>
           <label><input type="radio" name="RES_TARGET" value="docker"><span>Docker</span></label>
-          <label><input type="radio" name="RES_TARGET" value="kubernetes"><span>Kubernetes / OpenShift</span></label>
+          <label><input type="radio" name="RES_TARGET" value="kubernetes"><span>Kubernetes</span></label>
         </div>
-      </div>
-
-      <div id="res-linux" class="grid-2">
-        <div class="field">
-          <label class="lbl" for="RES_MEM_LINUX">Max memory (AGENT_MAX_MEM)</label>
-          <input type="text" class="code" id="RES_MEM_LINUX" placeholder="e.g. 1024M">
-          <span class="help">Sets systemd drop-in <code>Environment=AGENT_MAX_MEM=1024M</code>. Default: 544 MiB.</span>
+        <span class="help">Follows the platform from step 1; change it only if needed.</span>
+        <div id="res-linux" class="grid tight">
+          <div class="field"><label class="lbl" for="RES_MEM_LINUX">AGENT_MAX_MEM</label><input type="text" class="code" id="RES_MEM_LINUX" placeholder="1024M (default 544 MiB)"></div>
+          <div class="field"><label class="lbl" for="RES_JAVA_OPTS">Extra JAVA_OPTS</label><input type="text" class="code" id="RES_JAVA_OPTS" placeholder="-Xmx768m -Xms256m"></div>
         </div>
-        <div class="field">
-          <label class="lbl" for="RES_JAVA_OPTS">Extra JVM opts (JAVA_OPTS)</label>
-          <input type="text" class="code" id="RES_JAVA_OPTS" placeholder="e.g. -Xmx768m -Xms256m">
+        <div id="res-docker" class="grid tight" hidden>
+          <div class="field"><label class="lbl" for="RES_MEM_DOCKER">Memory limit</label><input type="text" class="code" id="RES_MEM_DOCKER" placeholder="1g"></div>
+          <div class="field"><label class="lbl" for="RES_CPU_DOCKER">CPU limit</label><input type="text" class="code" id="RES_CPU_DOCKER" placeholder="0.5"></div>
         </div>
-      </div>
-
-      <div id="res-docker" class="grid-2" hidden>
-        <div class="field">
-          <label class="lbl" for="RES_MEM_DOCKER">Memory limit</label>
-          <input type="text" class="code" id="RES_MEM_DOCKER" placeholder="e.g. 1g">
-        </div>
-        <div class="field">
-          <label class="lbl" for="RES_CPU_DOCKER">CPU limit</label>
-          <input type="text" class="code" id="RES_CPU_DOCKER" placeholder="e.g. 0.5">
-        </div>
-      </div>
-
-      <div id="res-kubernetes" hidden>
-        <div class="grid-2">
+        <div id="res-kubernetes" class="grid tight" hidden>
           <div class="field"><label class="lbl" for="RES_MEM_REQ">Memory request</label><input type="text" class="code" id="RES_MEM_REQ" placeholder="768Mi"></div>
           <div class="field"><label class="lbl" for="RES_MEM_LIM">Memory limit</label><input type="text" class="code" id="RES_MEM_LIM" placeholder="768Mi"></div>
           <div class="field"><label class="lbl" for="RES_CPU_REQ">CPU request</label><input type="text" class="code" id="RES_CPU_REQ" placeholder="0.5"></div>
           <div class="field"><label class="lbl" for="RES_CPU_LIM">CPU limit</label><input type="text" class="code" id="RES_CPU_LIM" placeholder="leave empty"></div>
         </div>
       </div>
-    </div>
-  </div>
+    </details>
+  </section>
 
+  <div class="foot">
+    <button type="button" class="btn" id="btnBack" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span class="t">Back</span></button>
+    <button type="button" class="btn btn-out" id="btnJumpOut"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3"/></svg>Output</button>
+    <button type="button" class="btn primary" id="btnNext"><span class="nl-long" id="next-label">Continue</span><span class="nl-short" id="next-short">Next</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </div>
 </main>
 
-<aside>
-  <div class="panel">
-    <div class="panel-head">
-      <h2 id="panel-title">configuration.yaml</h2>
-      <div class="panel-tabs">
-        <button class="panel-tab active" id="tab-yaml">YAML</button>
-        <button class="panel-tab" id="tab-cmd">Install command</button>
-        <button class="panel-tab" id="tab-reply">Ticket reply</button>
-        <button class="panel-tab" id="tab-test">Connectivity test</button>
-        <button class="panel-tab" id="tab-uninstall">Uninstall</button>
-        <button class="panel-tab" id="tab-versions">Versions</button>
-        <button class="panel-tab" id="tab-lab">Repro lab</button>
+<aside class="out" aria-label="Generated output" id="out">
+  <div class="status" id="status" aria-live="polite">
+    <div class="status-head"><span class="status-dot"></span><span id="status-title">Ready</span></div>
+    <ul class="checks" id="checks"></ul>
+  </div>
+  <div class="code-panel">
+    <div class="out-tabs" role="tablist" aria-label="Output">
+      <button type="button" class="out-tab" role="tab" data-out="cmd" aria-selected="true">Install</button>
+      <button type="button" class="out-tab" role="tab" data-out="yaml" aria-selected="false">YAML</button>
+      <button type="button" class="out-tab" role="tab" data-out="test" aria-selected="false">Connectivity</button>
+      <button type="button" class="out-tab" role="tab" data-out="versions" aria-selected="false">Versions</button>
+      <button type="button" class="out-tab" role="tab" data-out="reply" aria-selected="false">Ticket reply</button>
+      <button type="button" class="out-tab" role="tab" data-out="lab" aria-selected="false">Repro lab</button>
+      <button type="button" class="out-tab" role="tab" data-out="uninstall" aria-selected="false">Uninstall</button>
+    </div>
+    <div class="out-bar">
+      <div><span class="out-file" id="out-file"></span><span class="out-where" id="out-where"></span></div>
+      <div class="out-actions">
+        <button type="button" class="dark-btn" role="switch" aria-checked="true" id="btnMask" title="Hides keys and passwords on screen. Ticket reply is also copied hidden.">
+          <span class="track" aria-hidden="true"></span>Hide secrets</button>
+        <button type="button" class="dark-btn" id="btnPasteIn" hidden title="Copies a shell heredoc that writes ~/configuration.yaml (contains secrets)">Copy as paste-in</button>
+        <button type="button" class="dark-btn" id="btnDownload">Download</button>
+        <button type="button" class="dark-btn primary" id="btnCopy">Copy</button>
       </div>
     </div>
-    <pre class="code-out" id="preview-yaml" aria-live="polite"></pre>
-    <pre class="code-out" id="preview-cmd" aria-live="polite" hidden></pre>
-    <pre class="code-out" id="preview-reply" aria-live="polite" hidden></pre>
-    <pre class="code-out" id="preview-test" aria-live="polite" hidden></pre>
-    <pre class="code-out" id="preview-uninstall" aria-live="polite" hidden></pre>
-    <pre class="code-out" id="preview-versions" aria-live="polite" hidden></pre>
-    <pre class="code-out" id="preview-lab" aria-live="polite" hidden></pre>
+    <pre class="code-out" id="preview" aria-live="polite" tabindex="0"></pre>
+    <div class="out-hint" id="out-hint"></div>
   </div>
-  <div class="status" id="status"></div>
-  <div class="actions">
-    <button class="primary" id="btnDownloadYaml">Download YAML</button>
-    <button id="btnCopyYaml">Copy YAML</button>
-    <button id="btnCopyCmd">Copy command</button>
-    <button id="btnCopyReply" title="Copies formatted reply template for Salesforce / Jira ticket">Copy Ticket reply</button>
-    <button id="btnDownloadJson" title="Download JSON configuration file for use with agent-install.sh --config">Download JSON</button>
-    <button id="btnCopyTest" title="Copies a curl test to run on target machine">Connectivity test</button>
-    <button id="btnCopyUninstall" title="Copies the commands that remove the agent for the selected target">Uninstall</button>
-    <button id="btnCopyVersions" title="Copies the commands that show the agent and sensor versions">Versions</button>
-    <button id="btnCopyLab" title="Copies Docker repro lab setup script for test VM">Repro lab script</button>
-    <button id="btnCopyHeredoc" title="Copies shell heredoc with config">Copy paste-in ⚠</button>
-  </div>
-  <p style="font-size:11.5px;color:var(--muted);margin:6px 0 0">
-    <b>⚠ Security:</b> YAML and paste-in contain agent key in plaintext. Do not paste into shared logs.
-  </p>
 </aside>
 </div>
 
-<!-- Info modal -->
 <div class="info-overlay" id="info-overlay">
-  <div class="info-modal" id="info-modal" role="dialog" aria-modal="true">
-    <button class="info-close" id="info-close" aria-label="Close">×</button>
+  <div class="info-modal" id="info-modal" role="dialog" aria-modal="true" aria-labelledby="info-title">
+    <button type="button" class="info-close" id="info-close" aria-label="Close">×</button>
     <h3 id="info-title"></h3>
     <p class="info-sub" id="info-sub"></p>
     <div id="info-body"></div>
@@ -985,20 +817,18 @@ REFRESH SECURITY
 (() => {
 const $ = id => document.getElementById(id);
 const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value || "";
-const mssqlDefaultInstance = () => radio("TARGET").startsWith("win-") ? "MSSQLSERVER" : "DEFAULT";
-const val = id => $(id) ? $(id).value.trim() : "";
+const proxyOn = () => radio("PROXY_ON") === "proxy";
+const val = id => {
+  if (/^PROXY_/.test(id) && !proxyOn()) return "";
+  return $(id) ? $(id).value.trim() : "";
+};
 const checked = n => [...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value);
-
-// ---------- Main tabs ----------
-document.querySelectorAll(".main-tab").forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll(".main-tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-    tab.classList.add("active");
-    const targetPane = $(tab.dataset.tab);
-    if(targetPane) targetPane.classList.add("active");
-  };
-});
+const mssqlDefaultInstance = () => radio("TARGET").startsWith("win-") ? "MSSQLSERVER" : "DEFAULT";
+let _yaml="", _cmd="", _reply="", _test="", _lab="", _uninstall="", _versions="";
+let curStep = 0, curFam = "host", outTab = "cmd", mask = true;
+const visited = new Set([0]);
+const K8S = ["kubernetes","operator","openshift","openshift-helm"];
+const FAM_OF = {linux:"host","linux-pkg":"host","linux-tar":"host",airgapped:"host",kubernetes:"k8s",operator:"k8s",openshift:"k8s","openshift-helm":"k8s",docker:"docker","win-silent":"desktop","win-gui":"desktop","win-zip":"desktop",macos:"desktop","linux-ec2":"cloud","linux-gce":"cloud","cloud-aws":"cloud","cloud-azure":"cloud","cloud-gcp":"cloud"};
 
 // ---------- Sensor info database ----------
 const SENSOR_INFO = {
@@ -1283,91 +1113,6 @@ $("qmgr-list").addEventListener("click", e => {
 });
 renderQmgrs();
 
-// ---------- Platform Catalog Filter & Search ----------
-function filterPlatformCatalog() {
-  const searchInput = $("platform-search");
-  const q = searchInput ? searchInput.value.toLowerCase().trim() : "";
-  const activePill = document.querySelector(".filter-pill.active");
-  const filterCat = activePill ? activePill.dataset.filter : "all";
-  
-  let visibleCount = 0;
-  const cards = document.querySelectorAll(".platform-card");
-  cards.forEach(card => {
-    const cardCats = (card.dataset.cat || "").split(/\s+/);
-    const catMatch = filterCat === "all" || cardCats.includes(filterCat);
-    const textContent = (card.textContent || "").toLowerCase();
-    const keywords = (card.dataset.keywords || "").toLowerCase();
-    const searchMatch = !q || textContent.includes(q) || keywords.includes(q);
-    
-    const visible = catMatch && searchMatch;
-    card.hidden = !visible;
-    if(visible) visibleCount++;
-  });
-  
-  const countEl = $("catalog-count");
-  if(countEl){
-    countEl.textContent = q || filterCat !== "all"
-      ? `Showing ${visibleCount} of ${cards.length} platforms`
-      : `Showing ${cards.length} platforms`;
-  }
-}
-
-if($("platform-search")){
-  $("platform-search").addEventListener("input", filterPlatformCatalog);
-}
-
-document.querySelectorAll(".filter-pill").forEach(pill => {
-  pill.addEventListener("click", () => {
-    document.querySelectorAll(".filter-pill").forEach(p => p.classList.remove("active"));
-    pill.classList.add("active");
-    filterPlatformCatalog();
-  });
-});
-
-document.addEventListener("click", e => {
-  const card = e.target.closest(".platform-card");
-  if(!card) return;
-  const radioInput = card.querySelector('input[type="radio"][name="TARGET"]');
-  if(radioInput && !radioInput.checked){
-    radioInput.checked = true;
-    document.querySelectorAll(".platform-card").forEach(c => c.classList.toggle("selected", c === card));
-    update();
-  }
-});
-
-// ---------- Layout ----------
-function layout() {
-  const bt = radio("BACKEND_TYPE");
-  const tgt = radio("TARGET");
-  $("saas-regions").hidden = bt !== "saas";
-  $("selfhosted-fields").hidden = bt !== "selfhosted";
-  
-  // Cluster field shown for all Kubernetes / OpenShift targets
-  const isK8sOrOcp = ["kubernetes", "operator", "openshift", "openshift-helm"].includes(tgt);
-  $("cluster-field").hidden = !isK8sOrOcp;
-  
-  $("static-version").hidden = radio("UPDATE_MODE") !== "static";
-  const freq = radio("UPDATE_FREQ");
-  $("update-time-row").hidden = (freq === "" || freq === "NEVER");
-  
-  const rt = radio("RES_TARGET");
-  $("res-linux").hidden      = rt !== "linux";
-  $("res-docker").hidden     = rt !== "docker";
-  $("res-kubernetes").hidden = (rt !== "kubernetes" && rt !== "operator");
-
-  const selSensors = checked("sensor");
-  $("sensor-badge").textContent = selSensors.length;
-  document.querySelectorAll('input[name="sensor"]').forEach(cb => {
-    const p = $("panel-" + cb.value);
-    if(p) p.classList.toggle("visible", cb.checked);
-  });
-
-  // Highlight selected platform card
-  document.querySelectorAll(".platform-card").forEach(c => {
-    const inp = c.querySelector('input[type="radio"][name="TARGET"]');
-    c.classList.toggle("selected", !!(inp && inp.checked));
-  });
-}
 
 // ---------- YAML generation ----------
 function q(v){
@@ -2984,110 +2729,6 @@ function generateReplyTemplate(){
   return L.join("\n");
 }
 
-// ---------- Syntax highlighting ----------
-function highlightYAML(yaml){
-  return yaml.split("\n").map(line=>{
-    if(/^\s*#/.test(line)) return `<span class="c">${esc(line)}</span>`;
-    const m=line.match(/^(\s*)([^:]+):(.*)/);
-    if(!m) return esc(line);
-    return `${esc(m[1])}<span class="k">${esc(m[2])}:</span>${m[3]?` <span class="s">${esc(m[3])}</span>`:""}`;
-  }).join("\n");
-}
-function highlightCmd(cmd){
-  return cmd.split("\n").map(l=>/^\s*#/.test(l)?`<span class="c">${esc(l)}</span>`:esc(l)).join("\n");
-}
-
-// ---------- Validation ----------
-function validate(){
-  const errs=[];
-  const hostField = $("HOST");
-  if(radio("BACKEND_TYPE")==="selfhosted"){
-    if(!val("HOST")){
-      errs.push("Backend host is required");
-      if(hostField){ hostField.style.borderColor="var(--err)"; hostField.style.background="var(--err-soft)"; }
-    } else if(hostField){ hostField.style.borderColor=""; hostField.style.background=""; }
-    const p=val("PORT");
-    if(p&&(!/^\d+$/.test(p)||+p<1||+p>65535)) errs.push("Port must be 1–65535");
-  } else if(hostField){ hostField.style.borderColor=""; hostField.style.background=""; }
-  return errs;
-}
-
-// ---------- Tabs in output preview ----------
-let activeTab="yaml";
-const tabTitles = {
-  yaml: "configuration.yaml",
-  cmd: "Install command",
-  reply: "Support Ticket Reply Template",
-  test: "Connectivity test",
-  uninstall: "Uninstall the agent",
-  versions: "Agent and sensor versions",
-  lab: "Repro lab setup script"
-};
-function showTab(name){
-  activeTab=name;
-  if($("panel-title") && tabTitles[name]) $("panel-title").textContent = tabTitles[name];
-  ["yaml","cmd","reply","test","uninstall","versions","lab"].forEach(t=>{
-    if($("tab-"+t)) $("tab-"+t).classList.toggle("active", t===name);
-    if($("preview-"+t)) $("preview-"+t).hidden = t!==name;
-  });
-}
-$("tab-yaml").onclick=()=>showTab("yaml");
-$("tab-cmd").onclick=()=>showTab("cmd");
-$("tab-reply").onclick=()=>showTab("reply");
-$("tab-test").onclick=()=>showTab("test");
-$("tab-uninstall").onclick=()=>showTab("uninstall");
-$("tab-versions").onclick=()=>showTab("versions");
-$("tab-lab").onclick=()=>showTab("lab");
-
-// ---------- Main update ----------
-let _yaml="", _cmd="", _reply="", _test="", _lab="", _uninstall="", _versions="";
-function update(){
-  layout();
-  _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest(); _lab=generateLabScript(); _reply=generateReplyTemplate();
-  _uninstall=generateUninstall(); _versions=generateVersions();
-  $("preview-yaml").innerHTML=highlightYAML(_yaml);
-  $("preview-cmd").innerHTML=highlightCmd(_cmd);
-  $("preview-reply").innerHTML=highlightCmd(_reply);
-  $("preview-test").innerHTML=highlightCmd(_test);
-  $("preview-uninstall").innerHTML=highlightCmd(_uninstall);
-  $("preview-versions").innerHTML=highlightCmd(_versions);
-  $("preview-lab").innerHTML=highlightCmd(_lab);
-  const errs=validate();
-  const sensors=checked("sensor");
-  if(errs.length){
-    $("status").innerHTML=`<span class="bad"><b>${errs.length} issue${errs.length>1?"s":""}</b>: ${errs.map(esc).join("; ")}</span>`;
-  } else {
-    const note=sensors.length?` · ${sensors.length} sensor${sensors.length>1?"s":""} active`:"";
-    $("status").innerHTML=`<span class="good">Ready.${note}</span>`;
-  }
-}
-
-// ---------- Toast & Copy ----------
-function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("on"),2200);}
-async function copyText(text,label){
-  try{await navigator.clipboard.writeText(text);}
-  catch{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}
-  toast(`${label} copied`);
-}
-
-// ---------- Buttons & Presets ----------
-$("btnDownloadYaml").onclick=()=>{
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([_yaml],{type:"text/yaml"}));
-  a.download="configuration.yaml"; a.click(); URL.revokeObjectURL(a.href);
-  toast("Saved configuration.yaml");
-};
-$("btnCopyYaml").onclick=()=>copyText(_yaml,"YAML");
-$("btnCopyCmd").onclick=()=>copyText(_cmd,"Install command");
-$("btnCopyReply").onclick=()=>copyText(_reply,"Ticket reply");
-$("btnCopyTest").onclick=()=>copyText(_test,"Connectivity test");
-$("btnCopyUninstall").onclick=()=>copyText(_uninstall,"Uninstall commands");
-$("btnCopyVersions").onclick=()=>copyText(_versions,"Versions commands");
-$("btnCopyLab").onclick=()=>copyText(_lab,"Repro lab script");
-$("btnCopyHeredoc").onclick=()=>copyText(
-  `(umask 077; cat > ~/configuration.yaml <<'INSTANA_EOF'\n${_yaml}\nINSTANA_EOF\n)\necho "Saved to ~/configuration.yaml"\n`,
-  "Paste-in command"
-);
 
 function exportJsonConfig() {
   const p = {}, s = {}, sensors = {};
@@ -3133,13 +2774,302 @@ function exportJsonConfig() {
   return JSON.stringify({ parameters: p, secrets: s, sensors: sensors }, null, 2);
 }
 
+
+
+// ---------- Steps ----------
+const STEPS = ["Platform","Backend & keys","Zone & tags","Sensors","Network","Updates & mode"];
+(function buildRail(){
+  const rail = $("rail");
+  STEPS.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "step-btn"; b.dataset.step = i;
+    b.innerHTML = `<span class="step-dot"><span class="n">${i+1}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span><span class="step-txt"><span class="step-title">${esc(t)}</span><span class="step-sum" id="sum-${i}"></span></span>`;
+    b.onclick = () => goStep(i);
+    rail.appendChild(b);
+  });
+  const mp = $("mprog");
+  STEPS.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.step = i; b.setAttribute("aria-label", `Step ${i+1}: ${t}`);
+    b.onclick = () => goStep(i, true);
+    mp.appendChild(b);
+  });
+})();
+$("btnJumpOut").onclick = () => $("out").scrollIntoView({behavior:"smooth", block:"start"});
+
+function goStep(i, focus){
+  curStep = i; visited.add(i);
+  document.querySelectorAll(".step-pane").forEach(p => p.classList.toggle("active", +p.dataset.step === i));
+  $("btnBack").disabled = i === 0;
+  $("next-label").textContent = i < STEPS.length - 1 ? "Continue to " + STEPS[i+1] : "Finish";
+  $("next-short").textContent = i < STEPS.length - 1 ? "Next" : "Finish";
+  update();
+  const main = $("form");
+  if (main.getBoundingClientRect().top < 0) main.scrollIntoView({behavior:"smooth", block:"start"});
+  if (focus) { const h = $("h-s" + i); if (h) { h.tabIndex = -1; h.focus({preventScroll:true}); } }
+}
+$("btnBack").onclick = () => { if (curStep > 0) goStep(curStep - 1, true); };
+$("btnNext").onclick = () => {
+  if (curStep < STEPS.length - 1) { goStep(curStep + 1, true); return; }
+  visited.add(curStep); showOut("cmd"); update();
+  $("out").scrollIntoView({behavior:"smooth", block:"start"});
+  toast("Install command is ready");
+};
+
+// ---------- Platform picker ----------
+function filterPlatforms(){
+  const q = ($("platform-search").value || "").toLowerCase().trim();
+  $("picker").classList.toggle("searching", !!q);
+  $("fams").hidden = !!q;
+  let n = 0;
+  document.querySelectorAll(".variant").forEach(row => {
+    const hay = (row.textContent + " " + (row.dataset.keywords || "")).toLowerCase();
+    const show = q ? q.split(/\s+/).every(w => hay.includes(w)) : row.dataset.fam === curFam;
+    row.hidden = !show; if (show) n++;
+  });
+  $("no-match").hidden = n > 0;
+  const tgt = radio("TARGET");
+  document.querySelectorAll(".fam").forEach(f => {
+    f.setAttribute("aria-selected", f.dataset.fam === curFam ? "true" : "false");
+    f.classList.toggle("has-target", FAM_OF[tgt] === f.dataset.fam);
+  });
+}
+$("platform-search").addEventListener("input", filterPlatforms);
+document.querySelectorAll(".fam").forEach(f => f.onclick = () => { curFam = f.dataset.fam; filterPlatforms(); });
+document.querySelectorAll('input[name="TARGET"]').forEach(r => r.addEventListener("change", () => {
+  curFam = FAM_OF[r.value] || curFam;
+  const rt = K8S.includes(r.value) ? "kubernetes" : r.value === "docker" ? "docker" : "linux";
+  const rIn = document.querySelector(`input[name="RES_TARGET"][value="${rt}"]`); if (rIn) rIn.checked = true;
+  filterPlatforms();
+}));
+
+// ---------- Layout ----------
+function layout(){
+  const tgt = radio("TARGET");
+  const saas = radio("BACKEND_TYPE") === "saas";
+  $("saas-regions").hidden = !saas;
+  $("selfhosted-fields").hidden = saas;
+  $("cluster-field").hidden = !K8S.includes(tgt);
+  $("static-version").hidden = radio("UPDATE_MODE") !== "static";
+  const freq = radio("UPDATE_FREQ");
+  $("update-time-row").hidden = (freq === "" || freq === "NEVER");
+  const rt = radio("RES_TARGET");
+  $("res-linux").hidden = rt !== "linux";
+  $("res-docker").hidden = rt !== "docker";
+  $("res-kubernetes").hidden = rt !== "kubernetes";
+  $("proxy-fields").hidden = !proxyOn();
+  $("proxy-how").textContent = (K8S.includes(tgt) || tgt === "docker")
+    ? "On Docker and Kubernetes the proxy is passed as INSTANA_AGENT_PROXY_* settings in the install command."
+    : "On host agents the proxy goes into Backend.cfg (and mvn-settings.xml); the install command writes it for you.";
+
+  const sel = checked("sensor");
+  let anyPanel = false; const extra = [];
+  document.querySelectorAll('input[name="sensor"]').forEach(cb => {
+    const p = $("panel-" + cb.value);
+    if (p) { p.classList.toggle("visible", cb.checked); if (cb.checked) anyPanel = true; }
+    else if (cb.checked) extra.push(cb.value);
+  });
+  $("sensor-config-title").hidden = !sel.length;
+  $("sensor-config-title").textContent = "Configure selected (" + sel.length + ")";
+  $("no-sensors").hidden = sel.length > 0;
+  const ex = $("sensor-extra");
+  ex.hidden = !extra.length;
+  ex.innerHTML = extra.map(k => {
+    const d = SENSOR_INFO[k] || {title:k};
+    return `<span><b>${esc(d.title)}</b>: ${esc(d.autodiscovery || "No settings in this tool.")}</span>`;
+  }).join("") + (extra.length ? '<span>Their YAML stub or comment is added to configuration.yaml.</span>' : "");
+}
+
+// ---------- Rail + checks ----------
+function variantName(t){
+  const r = document.querySelector(`input[name="TARGET"][value="${t}"]`);
+  const n = r && r.closest(".variant").querySelector(".v-name");
+  return n ? n.textContent : t;
+}
+function endpointStr(){
+  if (radio("BACKEND_TYPE") === "saas") return val("SAAS_REGION");
+  return (val("HOST") || "<backend-host>") + ":" + (val("PORT") || "443");
+}
+function problems(){
+  const tgt = radio("TARGET");
+  const raw = val("AGENT_KEY_Q").replace(/\s+/g, "");
+  const p = { err: [], warn: [] };
+  if (radio("BACKEND_TYPE") === "selfhosted") {
+    if (!val("HOST")) p.err.push(["Self-hosted backend has no host.", 1, "HOST"]);
+    const pt = val("PORT");
+    if (pt && (!/^\d+$/.test(pt) || +pt < 1 || +pt > 65535)) p.err.push(["Backend port must be 1–65535.", 1, "PORT"]);
+  }
+  if (raw && !/^[A-Za-z0-9_-]+$/.test(raw)) p.err.push(["Agent key has invalid characters (letters, digits, - and _ only).", 1, "AGENT_KEY_Q"]);
+  else if (!raw) p.warn.push(["No agent key: the output shows <YOUR_AGENT_KEY> to replace.", 1, "AGENT_KEY_Q"]);
+  else if (raw.length < 16 || raw.length > 40) p.warn.push(["Agent key length is " + raw.length + "; keys are usually 22 characters.", 1, "AGENT_KEY_Q"]);
+  if (K8S.includes(tgt) && !val("CLUSTER_NAME")) p.err.push(["Kubernetes and OpenShift need a cluster name.", 1, "CLUSTER_NAME"]);
+  if (proxyOn() && !val("PROXY_HOST")) p.warn.push(["Proxy is on but has no host, so it is ignored.", 4, "PROXY_HOST"]);
+  const sel = checked("sensor");
+  const PW = {mysql:["mysql_pass","MySQL"], mariadb:["maria_pass","MariaDB"], postgresql:["pg_pass","PostgreSQL"], rabbitmq:["rmq_pass","RabbitMQ"], mssql:["mssql_pass","SQL Server"]};
+  const empty = sel.filter(s => PW[s] && !val(PW[s][0])).map(s => PW[s][1]);
+  if (empty.length) p.warn.push([empty.join(", ") + ": no password, the YAML uses a placeholder.", 3, PW[sel.find(s => PW[s] && !val(PW[s][0]))][0]]);
+  if (sel.includes("ibmmq") && !qmgrRows.some(r => r.name)) p.warn.push(["IBM MQ has no queue manager name; QM1 is used.", 3, null]);
+  return p;
+}
+function renderRail(p){
+  const tgt = radio("TARGET");
+  const saas = radio("BACKEND_TYPE") === "saas";
+  const regionTxt = saas ? ($("SAAS_REGION").selectedOptions[0] || {}).textContent || "" : (val("HOST") || "Host missing");
+  const nSens = checked("sensor").length;
+  const freqTxt = {"":"daily updates", DAY:"daily updates", MONDAY:"Monday updates", WEDNESDAY:"Wednesday updates", NEVER:"frozen"}[radio("UPDATE_FREQ")];
+  const modeTxt = {APM:"APM", INFRASTRUCTURE:"Infrastructure", AWS:"AWS"}[radio("AGENT_MODE")] || "APM";
+  const sums = [
+    variantName(tgt),
+    regionTxt,
+    val("ZONE") || (val("TAG_ENV") || val("TAG_TEAM") ? "Tags set" : "Optional"),
+    nSens ? nSens + " selected" : "None",
+    proxyOn() && val("PROXY_HOST") ? "Proxy " + val("PROXY_HOST") : "Direct",
+    modeTxt + " · " + freqTxt,
+  ];
+  const errSteps = new Set(p.err.map(e => e[1]));
+  document.querySelectorAll(".step-btn").forEach(b => {
+    const i = +b.dataset.step;
+    const err = errSteps.has(i) && visited.has(i) && i !== curStep;
+    $("sum-" + i).textContent = err ? "Needs a fix" : sums[i];
+    b.classList.toggle("err", err);
+    b.classList.toggle("done", !err && visited.has(i) && i !== curStep);
+    if (i === curStep) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+  });
+  document.querySelectorAll("#mprog button").forEach(b => {
+    const i = +b.dataset.step;
+    const err = errSteps.has(i) && visited.has(i) && i !== curStep;
+    b.classList.toggle("err", err);
+    b.classList.toggle("done", !err && visited.has(i) && i !== curStep);
+    if (i === curStep) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+  });
+}
+function renderChecks(p){
+  const tgt = radio("TARGET");
+  const items = [["ok", variantName(tgt) + " → " + endpointStr(), null]]
+    .concat(p.err.map(e => ["err", e[0], e])).concat(p.warn.map(w => ["warn", w[0], w]));
+  const nE = p.err.length, nW = p.warn.length;
+  $("status").className = "status" + (nE ? " err" : nW ? " warn" : "");
+  $("status-title").textContent = nE ? `${nE} issue${nE>1?"s":""} to fix before deploying` : nW ? `Ready, with ${nW} note${nW>1?"s":""}` : "Ready to deploy";
+  $("checks").innerHTML = items.map((it, i) =>
+    `<li><span class="ck ${it[0]}" aria-hidden="true">${it[0]==="ok"?"✓":"!"}</span><span>${esc(it[1])}</span>${it[2]?`<button type="button" class="fix" data-fix="${i}">Fix</button>`:""}</li>`).join("");
+  $("checks").querySelectorAll("[data-fix]").forEach(b => b.onclick = () => {
+    const it = items[+b.dataset.fix][2];
+    goStep(it[1]);
+    if (it[2] && $(it[2])) setTimeout(() => $(it[2]).focus(), 50);
+  });
+  // field-level messages
+  const hostBad = p.err.some(e => e[2] === "HOST");
+  $("HOST").setAttribute("aria-invalid", hostBad && visited.has(1) ? "true" : "false");
+  $("host-msg").textContent = hostBad ? "Required for a self-hosted backend." : "";
+  $("host-msg").className = "help" + (hostBad ? " bad" : "");
+  const raw = val("AGENT_KEY_Q").replace(/\s+/g, "");
+  const kh = $("AGENT_KEY_HELP");
+  const keyErr = p.err.some(e => e[2] === "AGENT_KEY_Q");
+  $("AGENT_KEY_Q").setAttribute("aria-invalid", keyErr ? "true" : "false");
+  kh.className = "help" + (keyErr ? " bad" : raw && (raw.length < 16 || raw.length > 40) ? " warn" : raw ? " good" : "");
+  if (raw && !keyErr && raw.length >= 16 && raw.length <= 40) kh.textContent = "Looks valid.";
+  else if (!raw) kh.textContent = "Leave empty and the installer asks for it.";
+  const clBad = p.err.some(e => e[2] === "CLUSTER_NAME");
+  $("CLUSTER_NAME").setAttribute("aria-invalid", clBad && visited.has(1) ? "true" : "false");
+  $("cluster-msg").textContent = clBad ? "Required: shown as cluster.name in Instana." : "Shown as cluster.name in Instana.";
+  $("cluster-msg").className = "help" + (clBad && visited.has(1) ? " bad" : "");
+  $("endpoint-show").textContent = endpointStr();
+}
+
+// ---------- Output ----------
+function secrets(){
+  const ids = ["AGENT_KEY_Q","DOWNLOAD_KEY","PROXY_PASS","mysql_pass","maria_pass","pg_pass","mongo_pass","redis_pass","mssql_pass","rmq_pass"];
+  const s = ids.map(id => ($(id) ? $(id).value.trim() : "")).map((v, i) => i < 2 ? v.replace(/\s+/g, "") : v);
+  qmgrRows.forEach(r => s.push(r.password || ""));
+  return [...new Set(s.filter(v => v.length >= 3))].sort((a, b) => b.length - a.length);
+}
+function maskText(t){
+  secrets().forEach(sv => {
+    const m = sv.length > 8 ? sv.slice(0, 3) + "••••••" + sv.slice(-3) : "••••••";
+    t = t.split(sv).join(m);
+  });
+  return t;
+}
+function renderCode(text, yaml){
+  return text.split("\n").map(line => {
+    let h;
+    if (/^\s*(#|REM\b|@ECHO|--)/.test(line)) h = `<span class="c">${esc(line)}</span>`;
+    else if (yaml) {
+      const m = line.match(/^(\s*-?\s*)([^:\s][^:]*):(.*)$/);
+      h = m ? `${esc(m[1])}<span class="k">${esc(m[2])}:</span>${m[3] ? `<span class="s">${esc(m[3])}</span>` : ""}` : esc(line);
+    } else h = esc(line);
+    return `<span class="ln">${h}</span>`;
+  }).join("");
+}
+const OUT = () => ({ yaml:_yaml, cmd:_cmd, reply:_reply, test:_test, uninstall:_uninstall, versions:_versions, lab:_lab });
+function outMeta(){
+  const t = radio("TARGET");
+  const win = t === "win-silent" || t === "win-zip";
+  const k8s = K8S.includes(t);
+  const ext = win ? ".cmd" : t === "win-gui" ? ".txt" : ".sh";
+  return {
+    cmd: { file: "install" + ext, where: k8s ? "Run where kubectl / oc / helm point at the cluster" : t.startsWith("win") ? "Run as Administrator on the Windows host" : t === "docker" ? "Run on the Docker host" : t === "macos" ? "Run as a regular user on the Mac" : "Run as root on the target host",
+      hint: "Copy includes the real agent key, even while secrets are hidden on screen." },
+    yaml: { file: "configuration.yaml", where: k8s ? "Embedded in values.yaml / the custom resource by the install command" : "/opt/instana/agent/etc/instana/configuration.yaml",
+      hint: "Zone, tags, update notes and sensors. “Copy as paste-in” writes it to ~/configuration.yaml with umask 077." },
+    test: { file: "connectivity-test.sh", where: "Run on the target host, before or after installing", hint: "Checks TLS reach to the backend and the Instana repositories, through the proxy when one is set." },
+    versions: { file: "versions.sh", where: "Run on the host where the agent runs", hint: "The Instana UI shows the sensors version as YYYY.MM.DD-HHMM in the Agents view." },
+    reply: { file: "ticket-reply.md", where: "Paste into Salesforce or Jira", hint: mask ? "Secrets are hidden, so the copied reply is safe to paste." : "Secrets are visible: turn on “Hide secrets” before pasting into a ticket." },
+    lab: { file: "repro-lab.sh", where: "Run on a clean test VM with Docker", hint: "Test containers with the monitoring users and permissions of the selected sensors." },
+    uninstall: { file: "uninstall" + (t.startsWith("win") ? ".cmd" : ".sh"), where: "Removes the agent for the selected platform", hint: "On Linux, --dry-run lists what would be removed and changes nothing." },
+  };
+}
+function showOut(name){
+  outTab = name;
+  document.querySelectorAll(".out-tab").forEach(t => t.setAttribute("aria-selected", t.dataset.out === name ? "true" : "false"));
+  renderOut();
+}
+function renderOut(){
+  const raw = OUT()[outTab] || "";
+  $("preview").innerHTML = renderCode(mask ? maskText(raw) : raw, outTab === "yaml");
+  const m = outMeta()[outTab];
+  $("out-file").textContent = m.file; $("out-where").textContent = m.where; $("out-hint").textContent = m.hint;
+  $("btnPasteIn").hidden = outTab !== "yaml";
+  $("btnMask").setAttribute("aria-checked", mask ? "true" : "false");
+}
+document.querySelectorAll(".out-tab").forEach(t => t.onclick = () => showOut(t.dataset.out));
+$("btnMask").onclick = () => { mask = !mask; renderOut(); };
+function outForCopy(){ const raw = OUT()[outTab] || ""; return outTab === "reply" && mask ? maskText(raw) : raw; }
+$("btnCopy").onclick = () => copyText(outForCopy(), outMeta()[outTab].file);
+$("btnDownload").onclick = () => {
+  const m = outMeta()[outTab];
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([outForCopy()], {type: "text/plain"}));
+  a.download = m.file; a.click(); URL.revokeObjectURL(a.href);
+  toast("Saved " + m.file);
+};
+$("btnPasteIn").onclick = () => copyText(
+  `(umask 077; cat > ~/configuration.yaml <<'INSTANA_EOF'\n${_yaml}\nINSTANA_EOF\n)\necho "Saved to ~/configuration.yaml"\n`, "Paste-in command");
+
 $("btnDownloadJson").onclick = () => {
   const json = exportJsonConfig();
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
   a.download = "instana-agent-config.json"; a.click(); URL.revokeObjectURL(a.href);
-  toast("Saved instana-agent-config.json");
+  toast("Saved instana-agent-config.json (contains keys and passwords)");
 };
+
+// ---------- Toast & Copy ----------
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("on"),2400);}
+async function copyText(text,label){
+  try{await navigator.clipboard.writeText(text);}
+  catch{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}
+  toast(`${label} copied`);
+}
+
+// ---------- Main update ----------
+function update(){
+  layout();
+  _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest(); _lab=generateLabScript();
+  _reply=generateReplyTemplate(); _uninstall=generateUninstall(); _versions=generateVersions();
+  const p = problems();
+  renderRail(p); renderChecks(p); renderOut();
+}
 
 // ---------- Show/hide passwords, Presets & SQL Snippets ----------
 document.addEventListener("click", e => {
@@ -3224,6 +3154,7 @@ function applyJsonConfig(json) {
 
   if (cfg.PROXY_HOST) {
     $("PROXY_HOST").value = cfg.PROXY_HOST;
+    { const pOn = document.querySelector('input[name="PROXY_ON"][value="proxy"]'); if (pOn) pOn.checked = true; }
     if (["http","socks4","socks5"].includes(cfg.PROXY_TYPE)) $("PROXY_TYPE").value = cfg.PROXY_TYPE;
     if (cfg.PROXY_PORT) $("PROXY_PORT").value = cfg.PROXY_PORT;
     if (cfg.PROXY_USER) $("PROXY_USER").value = cfg.PROXY_USER;
@@ -3299,9 +3230,12 @@ document.addEventListener("drop", e => {
   r.readAsText(f);
 });
 
-$("form").addEventListener("input",update);
-$("form").addEventListener("change",update);
-update();
+
+$("form").addEventListener("input", update);
+$("form").addEventListener("change", update);
+$("PROXY_HOST") && $("PROXY_HOST").addEventListener("input", update);
+filterPlatforms();
+goStep(0);
 })();
 </script>
 </body>
