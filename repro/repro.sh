@@ -249,7 +249,7 @@ for v in $VERIFY; do
 done
 printf ' %s. teardown   within %sh of start\n' "$step" "${TTL:-?}"
 [[ "$HAS_BACKEND" -eq 1 ]] && printf '                 backend: ./install.sh --destroy\n'
-[[ "$AGENT_COUNT" -gt 0 ]] && printf '                 agents: no uninstall option in agent-install.sh yet; delete the VM\n'
+[[ "$AGENT_COUNT" -gt 0 ]] && printf '                 agents: sudo ./agent-install.sh --uninstall on each agent host, or delete the VM\n'
 
 if [[ "$ERRORS" -ne 0 ]]; then
   printf '\nResult: %s error(s), %s warning(s)\n\n' "$ERRORS" "$WARNINGS"
@@ -321,6 +321,23 @@ record() {  # agent step PASS|FAIL
   printf '  %-4s  %-10s %s\n' "$3" "$1" "$2"
 }
 
+# Pokrece korak (funkcija koja pise u log) i na terminalu pokazuje sta se radi i koliko traje,
+# da se ne cini da je skripta zablokirana. Van terminala nista ne dodaje. Vraca izlazni kod koraka.
+run_step() {  # "opis" funkcija [argumenti...]
+  local msg="$1"; shift
+  if [[ ! -t 1 ]]; then "$@"; return; fi
+  local start=$SECONDS i=0 frames='|/-\' pid
+  "$@" &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    printf '\r  %s %s ... %ss' "${frames:i%4:1}" "$msg" "$((SECONDS - start))"
+    i=$((i + 1))
+    sleep 0.2
+  done
+  printf '\r\033[K'
+  wait "$pid"
+}
+
 # Per-agent context, set by prepare_agent.
 CUR_PROV=""; CUR_TARGET=""; CUR_WD=""; CUR_CFG=""; CUR_CFGNAME=""
 CUR_RC_INSTALL=""; CUR_RC_STATUS=""; CUR_RC_CONN=""
@@ -378,16 +395,16 @@ while [[ "$i" -lt "$AGENT_COUNT" ]]; do
   printf 'Agent %s (%s)\n' "$n" "${AG_PROV[$i]}"
   prepare_agent "$i"
 
-  if step_prepare_dir "$LOGDIR/$n-prepare.log"; then
+  if run_step "Preparing working directory" step_prepare_dir "$LOGDIR/$n-prepare.log"; then
     record "$n" "prepare" "PASS"
-    if step_install "$LOGDIR/$n-install.log"; then
+    if run_step "Installing agent (up to 2 min)" step_install "$LOGDIR/$n-install.log"; then
       record "$n" "install" "PASS"
       for v in $VERIFY; do
         case "$v" in
           agent-status)
-            if step_verify status "$LOGDIR/$n-status.log"; then record "$n" "status" "PASS"; else record "$n" "status" "FAIL"; fi ;;
+            if run_step "Checking agent status" step_verify status "$LOGDIR/$n-status.log"; then record "$n" "status" "PASS"; else record "$n" "status" "FAIL"; fi ;;
           connectivity)
-            if step_verify conn "$LOGDIR/$n-connectivity.log"; then record "$n" "connectivity" "PASS"; else record "$n" "connectivity" "FAIL"; fi ;;
+            if run_step "Checking backend connectivity" step_verify conn "$LOGDIR/$n-connectivity.log"; then record "$n" "connectivity" "PASS"; else record "$n" "connectivity" "FAIL"; fi ;;
         esac
       done
     else
@@ -402,7 +419,7 @@ done
 
 case " $VERIFY " in *" visible-in-ui "*) printf 'Manual check: each agent host should appear in the Instana UI within about a minute.\n' ;; esac
 printf 'Step logs: %s\n' "$LOGDIR"
-printf 'Teardown: delete the VM(s) by %s (agent-install.sh has no uninstall option).\n' "$EXPIRES"
+printf 'Teardown: by %s run sudo ./agent-install.sh --uninstall on each agent host, or delete the VM(s).\n' "$EXPIRES"
 [[ "$HAS_BACKEND" -eq 1 ]] && printf 'Backend was not installed. Run install.sh --config %s yourself if the case needs it.\n' "$BACKEND_CFG"
 
 printf '\nResult: %s step(s) failed, %s warning(s)\n\n' "$FAILED" "$WARNINGS"
