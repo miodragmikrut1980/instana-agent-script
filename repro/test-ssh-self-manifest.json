@@ -1,0 +1,19 @@
+{
+  "schema": "instana-repro-manifest",
+  "schema_version": 1,
+  "case": { "id": "TS-SSHSELF", "summary": "ssh provider test against the same VM (localhost)", "ttl_hours": 2 },
+  "agents": [
+    {
+      "name": "self-ssh",
+      "target": "host",
+      "config": "../profiles/saas-us-west.json",
+      "where": {
+        "provider": "ssh",
+        "user": "miodrag_mikrut",
+        "host": "localhost",
+        "identity_file": "~/.ssh/repro_selftest"
+      }
+    }
+  ],
+  "verify": ["agent-status", "connectivity", "visible-in-ui"]
+}

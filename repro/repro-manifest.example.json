@@ -1,0 +1,26 @@
+{
+  "schema": "instana-repro-manifest",
+  "schema_version": 1,
+  "case": {
+    "id": "TS0000000",
+    "summary": "ibmmq sensor shows no data after upgrade",
+    "ttl_hours": 24
+  },
+  "versions": {
+    "backend": "3.323.470-0",
+    "stanctl": "3.323.470-0",
+    "agent": ""
+  },
+  "backend": {
+    "config": "../skripta/instana-backend-skripta/examples/three-ssh-full.json"
+  },
+  "agents": [
+    {
+      "name": "mq-host",
+      "target": "host",
+      "config": "../profiles/ibm-mq.json",
+      "where": { "provider": "ssh", "user": "ubuntu", "host": "10.0.0.20" }
+    }
+  ],
+  "verify": ["agent-status", "connectivity", "visible-in-ui"]
+}
