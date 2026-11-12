@@ -959,18 +959,36 @@ install_agent() {
 
   ensure_gpg "$pkg_mgr"
 
-  log "Downloading installer script..."
-  curl -fsSL -o /tmp/setup_instana_agent.sh https://setup.instana.io/agent
+  run_with_progress "Downloading installer script..." curl -fsSL -o /tmp/setup_instana_agent.sh https://setup.instana.io/agent
   chmod +x /tmp/setup_instana_agent.sh
 
   log "Running installer (this may take 1-2 minutes)..."
-  /tmp/setup_instana_agent.sh \
-    -a "${agent_key}" \
-    -t "${update_mode}" \
-    -m "${mode_flag}" \
-    -e "${backend_host}:${backend_port}" \
-    -y \
-    2>&1 | tee -a "$LOG_FILE"
+  # Na terminalu: spinner dok apt radi u tisini; svaka linija setup skripte prvo brise spinner.
+  # Spinner nije u logu (brise ga petlja posle tee-a) i ne postoji van terminala.
+  local sp="" rc=0
+  if [[ -t 1 ]]; then
+    ( s=$SECONDS; while :; do printf '\r  working... %ss' "$((SECONDS - s))"; sleep 1; done ) &
+    sp=$!
+    disown "$sp" 2>/dev/null || true
+    /tmp/setup_instana_agent.sh \
+      -a "${agent_key}" \
+      -t "${update_mode}" \
+      -m "${mode_flag}" \
+      -e "${backend_host}:${backend_port}" \
+      -y \
+      2>&1 | tee -a "$LOG_FILE" | while IFS= read -r l; do printf '\r\033[K%s\n' "$l"; done || rc=$?
+    kill "$sp" 2>/dev/null || true
+    printf '\r\033[K'
+  else
+    /tmp/setup_instana_agent.sh \
+      -a "${agent_key}" \
+      -t "${update_mode}" \
+      -m "${mode_flag}" \
+      -e "${backend_host}:${backend_port}" \
+      -y \
+      2>&1 | tee -a "$LOG_FILE" || rc=$?
+  fi
+  if [[ "$rc" -ne 0 ]]; then return "$rc"; fi
 
   ok "Agent package installed"
 }
@@ -1012,6 +1030,8 @@ check_backend_auth() {
   local start="${1:-0}" i fresh
   log "Waiting for backend handshake (up to 90s)..."
   for ((i = 0; i < 45; i++)); do
+    # Na terminalu pokazuje da skripta radi (osvezava se u mestu, brise se pre sledece poruke)
+    if [[ -t 1 ]]; then printf '\r  waiting... %ss' "$((i * 2))"; fi
     fresh=""
     if [[ -f "$AGENT_LOG_FILE" ]]; then
       fresh=$(tail -n +"$((start + 1))" "$AGENT_LOG_FILE" 2>/dev/null || true)
@@ -1019,6 +1039,7 @@ check_backend_auth() {
     # Bez `printf | grep -q`: grep -q izlazi na prvom poklapanju, printf dobije SIGPIPE i pipefail
     # vrati gresku kad je novi deo loga veliki (to je krilo 403 i prikazivalo "accepted").
     if [[ "$fresh" == *'Connected using HTTP/2'* ]]; then
+      if [[ -t 1 ]]; then printf '\r\033[K'; fi
       sleep 3   # 403 stize ~300 ms posle konekcije
       fresh=$(tail -n +"$((start + 1))" "$AGENT_LOG_FILE" 2>/dev/null || true)
       if [[ "$fresh" == *'Forbidden (403)'* ]]; then
@@ -1031,6 +1052,7 @@ check_backend_auth() {
     fi
     sleep 2
   done
+  if [[ -t 1 ]]; then printf '\r\033[K'; fi
   warn "No backend handshake seen in 90s — check: sudo tail -f ${AGENT_LOG_FILE}"
 }
 
