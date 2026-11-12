@@ -129,6 +129,12 @@ jq se instalira automatski kad se koristi --config ili --profile.
 # Support bundle:
   ./agent-install.sh --support-bundle
 
+# Uklanjanje agenta (paket, /opt/instana/agent, repo + kljuc + pristupni podaci, systemd drop-in):
+#   prvo plan, ne menja nista:
+  ./agent-install.sh --uninstall --dry-run
+#   pa brisanje (pita da se ukuca "yes"; --yes preskace pitanje):
+  sudo ./agent-install.sh --uninstall
+
 Sta installer radi, redom: pokrene setup.instana.io/agent sa -a/-t/-m/-e,
 zatim kopira configuration.yaml (ako ima zone, tagova ili senzora), upise proxy u
 Backend.cfg (ako je zadat) i restartuje servis.

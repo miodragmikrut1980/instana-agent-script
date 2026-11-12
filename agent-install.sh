@@ -7,6 +7,7 @@
 # UPOTREBA:
 #   ./agent-install.sh                      — interaktivni wizard
 #   ./agent-install.sh --dry-run            — plan bez izmena
+#   ./agent-install.sh --uninstall          — ukloni agenta (--dry-run = samo plan; --yes preskace pitanje)
 #   ./agent-install.sh --config FILE        — ucitaj parametre iz JSON fajla
 #   ./agent-install.sh --profile NAME       — ucitaj predefinisani profil
 #   ./agent-install.sh --status             — prikazi status agenta (exit 1 ako nije instaliran ili ne radi)
@@ -72,10 +73,13 @@ DRY_RUN=0
 CONFIG_FILE=""
 PROFILE_NAME=""
 MODE="install"
+ASSUME_YES=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)       DRY_RUN=1; shift ;;
+    --yes)           ASSUME_YES=1; shift ;;
+    --uninstall)     MODE="uninstall"; shift ;;
     --config)        CONFIG_FILE="$2"; shift 2 ;;
     --profile)       PROFILE_NAME="$2"; shift 2 ;;
     --status)        MODE="status"; shift ;;
@@ -105,6 +109,8 @@ show_help() {
   printf "  %-22s %s\n" "--connectivity"     "Test backend and repositories, no menu (exit 1 on any failure or 403)"
   printf "  %-22s %s\n" "--triage"           "Scan agent.log for known error signatures and print fixes (exit 1 on issues)"
   printf "  %-22s %s\n" "--edit"             "Edit configuration.yaml interactively"
+  printf "  %-22s %s\n" "--uninstall"        "Remove the agent package, /opt/instana/agent and the repository files (--dry-run = plan only)"
+  printf "  %-22s %s\n" "--yes"              "With --uninstall: skip the confirmation question"
   printf "  %-22s %s\n" "--support-bundle"   "Generate a ZIP bundle for support (masked keys)"
   printf "  %-22s %s\n" "--help"             "Show this help"
   printf "\n${BLD}EXAMPLES${RST}\n"
@@ -1611,11 +1617,91 @@ validate_port() {
 }
 
 # --------------------------------------------------------------------------- #
+#  Uninstall                                                                   #
+# --------------------------------------------------------------------------- #
+# Uklanja ono sto je installer ostavio: paket, /opt/instana/agent, repo + kljuc + pristupne podatke, systemd drop-in.
+# Ne dira: backup-ove iz radnog foldera, exportovane JSON fajlove, logove installera.
+uninstall_agent() {
+  hdr "Uninstall Instana Agent"
+
+  local pkg_mgr; pkg_mgr=$(detect_pkg_manager)
+  local pkgs=""
+  case "$pkg_mgr" in
+    apt)    pkgs=$(dpkg -l 2>/dev/null | awk '$1 == "ii" && $2 ~ /^instana-agent/ {print $2}' | tr '\n' ' ' || true) ;;
+    yum|dnf|zypper) pkgs=$(rpm -qa 2>/dev/null | grep '^instana-agent' | tr '\n' ' ' || true) ;;
+  esac
+
+  local files=()
+  local f
+  for f in /etc/apt/sources.list.d/instana-agent.list \
+           /usr/share/keyrings/instana-agent.gpg \
+           /etc/apt/auth.conf.d/instana-packages.conf \
+           /etc/yum.repos.d/Instana-Agent.repo \
+           /etc/zypp/repos.d/Instana-Agent.repo; do
+    if [[ -e "$f" ]]; then files+=("$f"); fi
+  done
+  local dropin="/etc/systemd/system/${AGENT_SERVICE}.service.d"
+  local has_opt=0
+  if [[ -d /opt/instana/agent ]]; then has_opt=1; fi
+
+  if [[ -z "$pkgs" && "$has_opt" -eq 0 && ${#files[@]} -eq 0 && ! -d "$dropin" ]]; then
+    ok "Nothing to remove: no agent package, no /opt/instana/agent, no repository files."
+    return 0
+  fi
+
+  printf "Plan:\n"
+  if [[ -n "$pkgs" ]]; then printf "  1. stop and disable %s; remove package(s): %s\n" "$AGENT_SERVICE" "$pkgs"
+  else printf "  1. stop and disable %s (no agent package found)\n" "$AGENT_SERVICE"; fi
+  if [[ "$has_opt" -eq 1 ]]; then printf "  2. delete /opt/instana/agent (configuration, data, logs)\n"; fi
+  for f in "${files[@]}"; do printf "  3. delete %s\n" "$f"; done
+  if [[ -d "$dropin" ]]; then printf "  4. delete %s\n" "$dropin"; fi
+  printf "Not touched: backups and exported JSON in the current folder, installer logs, other packages.\n\n"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo -e "${DIM}[dry-run]${RST} Nothing was changed."
+    return 0
+  fi
+
+  require_root
+  if [[ "$ASSUME_YES" -ne 1 ]]; then
+    local ans=""
+    printf "Type 'yes' to remove the agent: "
+    read -r ans || true
+    if [[ "$ans" != "yes" ]]; then
+      warn "Cancelled, nothing was changed."
+      return 0
+    fi
+  fi
+
+  systemctl disable --now "$AGENT_SERVICE" >/dev/null 2>&1 || true
+  if [[ -n "$pkgs" ]]; then
+    case "$pkg_mgr" in
+      apt)    apt-get purge -y -qq $pkgs >/dev/null ;;
+      yum)    yum remove -y -q $pkgs >/dev/null ;;
+      dnf)    dnf remove -y -q $pkgs >/dev/null ;;
+      zypper) zypper --non-interactive remove $pkgs >/dev/null ;;
+    esac
+    ok "Package removed: ${pkgs}"
+  fi
+  # Dokumentacija: na RPM sistemima deo fajlova ostaje, pa se direktorijum brise rucno; na apt-u isto radimo ako je ostao.
+  if [[ -d /opt/instana/agent ]]; then
+    rm -rf /opt/instana/agent
+    ok "Deleted /opt/instana/agent"
+  fi
+  for f in "${files[@]}"; do rm -f "$f"; ok "Deleted $f"; done
+  if [[ -d "$dropin" ]]; then rm -rf "$dropin"; ok "Deleted $dropin"; fi
+  systemctl daemon-reload >/dev/null 2>&1 || true
+  ok "Agent removed. Check with: ./agent-install.sh --status"
+}
+
+# --------------------------------------------------------------------------- #
 #  Main dispatch                                                               #
 # --------------------------------------------------------------------------- #
 case "$MODE" in
   help)
     show_help ;;
+  uninstall)
+    uninstall_agent ;;
   status)
     show_status
     [[ "$STATUS_OK" -eq 1 ]] || exit 1 ;;
