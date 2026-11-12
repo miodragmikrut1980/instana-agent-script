@@ -949,7 +949,7 @@ install_agent() {
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo -e "${DIM}[dry-run]${RST} Would download installer from https://setup.instana.io/agent"
-    echo -e "${DIM}[dry-run]${RST} Would run: setup_instana_agent.sh -a <key> -t ${update_mode} -m ${mode_flag} -e ${backend_host}:${backend_port}"
+    echo -e "${DIM}[dry-run]${RST} Would run: setup_instana_agent.sh -a <key> -t ${update_mode} -m ${mode_flag} -e ${backend_host}:${backend_port} -y"
     echo -e "${DIM}[dry-run]${RST} Would copy configuration.yaml to ${AGENT_CONFIG_FILE}"
     echo -e "${DIM}[dry-run]${RST} Would enable and start ${AGENT_SERVICE} service"
     return 0
@@ -969,6 +969,7 @@ install_agent() {
     -t "${update_mode}" \
     -m "${mode_flag}" \
     -e "${backend_host}:${backend_port}" \
+    -y \
     2>&1 | tee -a "$LOG_FILE"
 
   ok "Agent package installed"
@@ -1619,6 +1620,27 @@ validate_port() {
 # --------------------------------------------------------------------------- #
 #  Uninstall                                                                   #
 # --------------------------------------------------------------------------- #
+# Pokrece komandu (stdout u /dev/null) i na terminalu prikazuje spinner sa proteklim vremenom,
+# da korisnik zna da skripta radi. Van terminala ispise samo poruku. Izlazni kod komande se cuva.
+run_with_progress() {
+  local msg="$1"; shift
+  log "$msg"
+  if [[ ! -t 1 ]]; then
+    "$@" >/dev/null
+    return
+  fi
+  local start=$SECONDS i=0 frames='|/-\'
+  "$@" >/dev/null &
+  local pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    printf '\r  %s working... %ss' "${frames:i%4:1}" "$((SECONDS - start))"
+    i=$((i + 1))
+    sleep 0.2
+  done
+  printf '\r\033[K'
+  wait "$pid"
+}
+
 # Uklanja ono sto je installer ostavio: paket, /opt/instana/agent, repo + kljuc + pristupne podatke, systemd drop-in.
 # Ne dira: backup-ove iz radnog foldera, exportovane JSON fajlove, logove installera.
 uninstall_agent() {
@@ -1676,10 +1698,10 @@ uninstall_agent() {
   systemctl disable --now "$AGENT_SERVICE" >/dev/null 2>&1 || true
   if [[ -n "$pkgs" ]]; then
     case "$pkg_mgr" in
-      apt)    apt-get purge -y -qq $pkgs >/dev/null ;;
-      yum)    yum remove -y -q $pkgs >/dev/null ;;
-      dnf)    dnf remove -y -q $pkgs >/dev/null ;;
-      zypper) zypper --non-interactive remove $pkgs >/dev/null ;;
+      apt)    run_with_progress "Removing package(s): ${pkgs}(this can take a minute)..." apt-get purge -y -qq $pkgs ;;
+      yum)    run_with_progress "Removing package(s): ${pkgs}(this can take a minute)..." yum remove -y -q $pkgs ;;
+      dnf)    run_with_progress "Removing package(s): ${pkgs}(this can take a minute)..." dnf remove -y -q $pkgs ;;
+      zypper) run_with_progress "Removing package(s): ${pkgs}(this can take a minute)..." zypper --non-interactive remove $pkgs ;;
     esac
     ok "Package removed: ${pkgs}"
   fi
