@@ -40,7 +40,7 @@ code{font-family:var(--mono);font-size:.92em}
 .rail{flex:1 1 236px;max-width:280px;display:flex;flex-direction:column;gap:4px;position:sticky;top:16px}
 .panel-main{flex:999 1 520px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column}
 .out{flex:1 1 440px;max-width:640px;min-width:0;display:flex;flex-direction:column;gap:12px;position:sticky;top:16px}
-@media (max-width:1100px){.rail{display:none}.out{position:static;max-width:none}}
+@media (max-width:1279px){.rail{display:none}.out{position:static;max-width:none}}
 
 /* Rail */
 .rail-h{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:0 12px 6px}
@@ -117,20 +117,20 @@ legend{padding:0;margin-bottom:8px}
 .search svg{position:absolute;left:12px;top:12px;pointer-events:none}
 .search input{padding-left:36px}
 .picker{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-.fams{flex:1 1 200px;max-width:240px;display:flex;flex-direction:column;gap:4px}
-.fam{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 12px;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;text-align:left}
+.fams{flex:0 0 196px;display:flex;flex-direction:column;gap:4px}
+.fam{display:flex;align-items:center;gap:10px;width:100%;height:48px;white-space:nowrap;padding:0 12px;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;text-align:left}
 .fam:hover{background:#F4F4F4}
 .fam[aria-selected="true"]{background:var(--accent-tint);font-weight:600}
 .fam.has-target:not([aria-selected="true"]){box-shadow:inset 3px 0 0 #A6C8FF}
 .fam span{flex:1}
 .fam .cnt{flex:none;font-size:12px;color:var(--muted)}
 .variants{flex:999 1 300px;min-width:0;display:flex;flex-direction:column;gap:8px}
-.variant{position:relative;display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px solid #C6C6C6;border-radius:8px;background:var(--surface);cursor:pointer}
+.variant{position:relative;display:flex;gap:14px;align-items:center;min-height:84px;padding:14px 16px;border:1px solid #C6C6C6;border-radius:8px;background:var(--surface);cursor:pointer}
 .variant:hover{border-color:var(--line-strong)}
 .variant input{position:absolute;opacity:0;pointer-events:none}
 .variant:has(input:checked){background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .variant:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
-.v-radio{flex:none;margin-top:2px;width:18px;height:18px;border-radius:50%;border:2px solid #6F6F6F;display:grid;place-items:center}
+.v-radio{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid #6F6F6F;display:grid;place-items:center}
 .variant:has(input:checked) .v-radio{border-color:var(--accent)}
 .variant:has(input:checked) .v-radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
 .v-body{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -191,8 +191,8 @@ details summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent
 .fix{border:0;background:transparent;padding:0;color:var(--accent);font-size:13px;font-weight:600;text-decoration:underline}
 
 .code-panel{background:var(--code-bg);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
-.out-tabs{display:flex;gap:2px;padding:8px 8px 0;overflow-x:auto;border-bottom:1px solid #393939}
-.out-tab{flex:none;height:38px;padding:0 12px;border:0;border-radius:6px 6px 0 0;background:transparent;color:var(--code-dim);font-size:13px;font-weight:500}
+.out-tabs{display:flex;gap:0;padding:8px 8px 0;overflow-x:auto;border-bottom:1px solid #393939}
+.out-tab{flex:1 0 auto;height:38px;padding:0 10px;border:0;border-radius:6px 6px 0 0;background:transparent;color:var(--code-dim);font-size:13px;font-weight:500}
 .out-tab:hover{color:var(--code-ink)}
 .out-tab[aria-selected="true"]{background:#262626;color:var(--code-ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--code-key)}
 .out-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid #262626}
@@ -209,13 +209,15 @@ details summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent
 pre.code-out{margin:0;padding:10px 0;font:12.5px/1.6 var(--mono);color:var(--code-ink);max-height:62vh;overflow:auto;white-space:pre;counter-reset:ln;tab-size:2}
 pre.code-out .ln{display:block;min-height:1.6em;padding-right:16px}
 pre.code-out .ln::before{counter-increment:ln;content:counter(ln);display:inline-block;width:40px;padding-right:12px;text-align:right;color:var(--code-num);user-select:none}
+pre.code-out mark.ex{background:rgba(255,216,168,.16);color:#FFD8A8;border-bottom:1px dashed #FFD8A8;border-radius:2px;padding:0 1px}
+.out-hint.ex{color:#FFD8A8}
 pre.code-out .k{color:var(--code-key)} pre.code-out .s{color:var(--code-str)} pre.code-out .c{color:var(--code-dim)}
 .out-hint{padding:10px 14px;border-top:1px solid #262626;font-size:12px;color:var(--code-dim)}
 
 
 /* Compact progress (tablet + phone) */
 .mprog{display:none}
-@media (max-width:1100px){
+@media (max-width:1279px){
   .mprog{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:14px 28px 0}
   .mprog button{height:24px;border:0;background:transparent;padding:0;position:relative}
   .mprog button::before{content:"";position:absolute;left:0;right:0;top:10px;height:4px;border-radius:2px;background:var(--line)}
@@ -273,7 +275,7 @@ pre.code-out .k{color:var(--code-key)} pre.code-out .s{color:var(--code-str)} pr
   .nl-long{display:none}.nl-short{display:inline}
   .status{padding:12px 14px}
   .out-bar{flex-direction:column;align-items:stretch}
-  .out-actions{display:grid;grid-template-columns:auto 1fr 1fr}
+  .out-actions{display:grid;grid-template-columns:1fr 1fr}
   .out-actions .dark-btn{height:40px;justify-content:center}
   #btnPasteIn{grid-column:1 / -1}
   pre.code-out{font-size:12px;max-height:none}
@@ -282,6 +284,28 @@ pre.code-out .k{color:var(--code-key)} pre.code-out .s{color:var(--code-str)} pr
   .info-overlay{align-items:flex-end;padding:0}
   .info-modal{border-radius:14px 14px 0 0;max-height:85vh;overflow:auto;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
   .toast{bottom:calc(88px + env(safe-area-inset-bottom));max-width:calc(100% - 24px)}
+}
+
+
+/* Desktop workspace: three equal-height panels */
+@media (min-width:1280px){
+  html,body{height:100%}
+  body{display:flex;flex-direction:column;overflow:hidden}
+  .topbar{flex:none}
+  .wrap{flex:1;min-height:0;width:100%;max-width:none;display:grid;grid-template-columns:248px minmax(0,1fr) minmax(420px,.82fr);gap:16px;padding:16px;align-items:stretch}
+  .rail,.out{position:static;max-width:none}
+  .rail{min-height:0;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 10px;gap:2px}
+  .rail-h{padding:2px 12px 8px}
+  .step-btn{min-width:0}
+  .step-btn[aria-current="step"]{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+  .step-btn:hover{background:#F4F4F4}
+  .step-btn[aria-current="step"]:hover{background:var(--accent-soft)}
+  .step-sum{max-width:170px}
+  .panel-main{min-height:0;overflow:hidden}
+  .step-pane.active{min-height:0;overflow:auto}
+  .out{min-height:0}
+  .code-panel{flex:1;min-height:0}
+  pre.code-out{flex:1;min-height:0;max-height:none}
 }
 
 /* Toast, modal, drop */
@@ -339,10 +363,10 @@ body.drag-over::after{content:"Drop the .json profile to load it";position:fixed
     <div class="picker" id="picker">
       <div class="fams" role="tablist" aria-label="Environment" id="fams">
         <button type="button" class="fam" role="tab" data-fam="host" aria-selected="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v7H4zM4 13h16v7H4zM8 7.5h.01M8 16.5h.01"/></svg><span>Linux host</span><b class="cnt">4</b></button>
-        <button type="button" class="fam" role="tab" data-fam="k8s" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 8v8M8.5 10l7 4M15.5 10l-7 4"/></svg><span>Kubernetes &amp; OpenShift</span><b class="cnt">4</b></button>
+        <button type="button" class="fam" role="tab" data-fam="k8s" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 8v8M8.5 10l7 4M15.5 10l-7 4"/></svg><span>Kubernetes</span><b class="cnt">4</b></button>
         <button type="button" class="fam" role="tab" data-fam="docker" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18v9H3zM7 9v9M11 9v9M15 9v9M6 9V5h6v4"/></svg><span>Docker</span><b class="cnt">1</b></button>
-        <button type="button" class="fam" role="tab" data-fam="desktop" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18v12H3zM8 20h8M12 16v4"/></svg><span>Windows &amp; macOS</span><b class="cnt">4</b></button>
-        <button type="button" class="fam" role="tab" data-fam="cloud" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.6 4.2 4.2 0 0 0 7 18z"/></svg><span>Cloud VMs &amp; sensors</span><b class="cnt">5</b></button>
+        <button type="button" class="fam" role="tab" data-fam="desktop" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18v12H3zM8 20h8M12 16v4"/></svg><span>Windows &amp; Mac</span><b class="cnt">4</b></button>
+        <button type="button" class="fam" role="tab" data-fam="cloud" aria-selected="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.6 4.2 4.2 0 0 0 7 18z"/></svg><span>Cloud</span><b class="cnt">5</b></button>
       </div>
       <div class="variants" role="radiogroup" aria-label="Install method" id="platform-grid">
         <label class="variant" data-fam="host" data-keywords="linux host vm baremetal curl oneliner one-liner systemd service automated script"><input type="radio" name="TARGET" value="linux" checked><span class="v-radio" aria-hidden="true"></span><span class="v-body"><span class="v-title"><span class="v-name">One-line installer</span><span class="v-tag">Recommended</span><span class="v-fam">Linux host</span></span><span class="v-desc">Script installs the agent as a systemd service on a VM or bare metal.</span></span></label>
@@ -382,6 +406,7 @@ body.drag-over::after{content:"Drop the .json profile to load it";position:fixed
     <div class="field" id="saas-regions">
       <label class="lbl" for="SAAS_REGION">SaaS region</label>
       <select id="SAAS_REGION">
+        <option value="" selected>Select your region…</option>
         <option value="ingress-red-saas.instana.io:443">AWS US · Oregon (red)</option>
         <option value="ingress-pumpkin-saas.instana.io:443">AWS US · Ohio (pumpkin)</option>
         <option value="ingress-orange-saas.instana.io:443">GCP US · Oregon (orange)</option>
@@ -393,7 +418,7 @@ body.drag-over::after{content:"Drop the .json profile to load it";position:fixed
         <option value="ingress-teal-saas.instana.io:443">AWS APAC · Mumbai (teal)</option>
         <option value="ingress-yellow-saas.instana.io:443">AWS LATAM · São Paulo (yellow)</option>
       </select>
-      <span class="help">Endpoint: <code id="endpoint-show"></code></span>
+      <span class="help">Endpoint: <code id="endpoint-show"></code>. Your region is in the Instana UI: More → About Instana.</span>
     </div>
     <div class="grid tight" id="selfhosted-fields" hidden>
       <div class="field span-2">
@@ -779,10 +804,10 @@ REFRESH SECURITY</div>
     <div class="out-tabs" role="tablist" aria-label="Output">
       <button type="button" class="out-tab" role="tab" data-out="cmd" aria-selected="true">Install</button>
       <button type="button" class="out-tab" role="tab" data-out="yaml" aria-selected="false">YAML</button>
-      <button type="button" class="out-tab" role="tab" data-out="test" aria-selected="false">Connectivity</button>
+      <button type="button" class="out-tab" role="tab" data-out="test" aria-selected="false">Test</button>
       <button type="button" class="out-tab" role="tab" data-out="versions" aria-selected="false">Versions</button>
-      <button type="button" class="out-tab" role="tab" data-out="reply" aria-selected="false">Ticket reply</button>
-      <button type="button" class="out-tab" role="tab" data-out="lab" aria-selected="false">Repro lab</button>
+      <button type="button" class="out-tab" role="tab" data-out="reply" aria-selected="false">Reply</button>
+      <button type="button" class="out-tab" role="tab" data-out="lab" aria-selected="false">Lab</button>
       <button type="button" class="out-tab" role="tab" data-out="uninstall" aria-selected="false">Uninstall</button>
     </div>
     <div class="out-bar">
@@ -790,6 +815,8 @@ REFRESH SECURITY</div>
       <div class="out-actions">
         <button type="button" class="dark-btn" role="switch" aria-checked="true" id="btnMask" title="Hides keys and passwords on screen. Ticket reply is also copied hidden.">
           <span class="track" aria-hidden="true"></span>Hide secrets</button>
+        <button type="button" class="dark-btn" role="switch" aria-checked="false" id="btnExample" title="Fill the placeholders with made-up example values to see what a finished command looks like. Your own values stay as they are.">
+          <span class="track" aria-hidden="true"></span>Example</button>
         <button type="button" class="dark-btn" id="btnPasteIn" hidden title="Copies a shell heredoc that writes ~/configuration.yaml (contains secrets)">Copy as paste-in</button>
         <button type="button" class="dark-btn" id="btnDownload">Download</button>
         <button type="button" class="dark-btn primary" id="btnCopy">Copy</button>
@@ -1359,7 +1386,7 @@ function generateCmd() {
   const key = !rawKey ? "<YOUR_AGENT_KEY>" : (keyOk ? rawKey : "<INVALID_AGENT_KEY>");
   let bhost="", bport="";
   if(radio("BACKEND_TYPE")==="saas"){
-    const sv=val("SAAS_REGION"); bhost=sv.split(":")[0]; bport=sv.split(":")[1]||"443";
+    const sv=val("SAAS_REGION")||"<YOUR_BACKEND_HOST>:443"; bhost=sv.split(":")[0]; bport=sv.split(":")[1]||"443";
   } else { bhost=val("HOST")||"<backend-host>"; bport=val("PORT")||"443"; }
 
   const pinVer   = val("PIN_AGENT_VERSION");
@@ -2125,7 +2152,7 @@ function generateCmd() {
 function generateTest(){
   let bhost, bport;
   if(radio("BACKEND_TYPE")==="saas"){
-    const sv=val("SAAS_REGION"); bhost=sv.split(":")[0]; bport=sv.split(":")[1]||"443";
+    const sv=val("SAAS_REGION")||"<YOUR_BACKEND_HOST>:443"; bhost=sv.split(":")[0]; bport=sv.split(":")[1]||"443";
   } else { bhost=val("HOST")||"<backend-host>"; bport=val("PORT")||"443"; }
   const saas = radio("BACKEND_TYPE")==="saas";
   const ph = val("PROXY_HOST"), pp = val("PROXY_PORT"), pu = val("PROXY_USER");
@@ -2565,14 +2592,18 @@ function generateReplyTemplate(){
   ];
 
   if(target === "linux" || target === "linux-pkg" || target === "linux-tar" || target === "linux-ec2" || target === "linux-gce" || target === "airgapped"){
-    L.push("### Step 1: Update Agent Configuration");
-    L.push("Place the configuration below into your host configuration file:");
-    L.push("  Path: /opt/instana/agent/etc/instana/configuration.yaml");
-    L.push("");
-    L.push("```yaml");
-    L.push(_yaml || generateYAML());
-    L.push("```");
-    L.push("");
+    const yamlBody = _yaml || generateYAML();
+    const hasYaml = yamlBody.split("\n").some(l => l.trim() && !l.trim().startsWith("#"));
+    if(hasYaml){
+      L.push("### Step 1: Update Agent Configuration");
+      L.push("Place the configuration below into your host configuration file:");
+      L.push("  Path: /opt/instana/agent/etc/instana/configuration.yaml");
+      L.push("");
+      L.push("```yaml");
+      L.push(yamlBody);
+      L.push("```");
+      L.push("");
+    }
 
     const ph = val("PROXY_HOST");
     if(ph){
@@ -2726,13 +2757,14 @@ function generateReplyTemplate(){
   L.push("");
   L.push("Best regards,");
   L.push("IBM Instana Support");
-  return L.join("\n");
+  let stepNo = 0;  // number the steps that are actually present: 1, 2, 3…
+  return L.join("\n").replace(/^### Step \d+:/gm, () => `### Step ${++stepNo}:`);
 }
 
 
 function exportJsonConfig() {
   const p = {}, s = {}, sensors = {};
-  if(radio("BACKEND_TYPE")==="saas") p.SAAS_REGION = val("SAAS_REGION");
+  if(radio("BACKEND_TYPE")==="saas") { if(val("SAAS_REGION")) p.SAAS_REGION = val("SAAS_REGION"); }
   else { p.HOST = val("HOST"); if(val("PORT")) p.PORT = val("PORT"); }
   if(val("AGENT_KEY_Q")) s.AGENT_KEY = val("AGENT_KEY_Q").replace(/\s+/g,"");
   if(val("ZONE")) p.ZONE = val("ZONE");
@@ -2887,7 +2919,7 @@ function variantName(t){
   return n ? n.textContent : t;
 }
 function endpointStr(){
-  if (radio("BACKEND_TYPE") === "saas") return val("SAAS_REGION");
+  if (radio("BACKEND_TYPE") === "saas") return val("SAAS_REGION") || "<YOUR_BACKEND_HOST>:443";
   return (val("HOST") || "<backend-host>") + ":" + (val("PORT") || "443");
 }
 function problems(){
@@ -2899,6 +2931,7 @@ function problems(){
     const pt = val("PORT");
     if (pt && (!/^\d+$/.test(pt) || +pt < 1 || +pt > 65535)) p.err.push(["Backend port must be 1–65535.", 1, "PORT"]);
   }
+  if (radio("BACKEND_TYPE") === "saas" && !val("SAAS_REGION")) p.warn.push(["No SaaS region: the output shows <YOUR_BACKEND_HOST> to replace.", 1, "SAAS_REGION"]);
   if (raw && !/^[A-Za-z0-9_-]+$/.test(raw)) p.err.push(["Agent key has invalid characters (letters, digits, - and _ only).", 1, "AGENT_KEY_Q"]);
   else if (!raw) p.warn.push(["No agent key: the output shows <YOUR_AGENT_KEY> to replace.", 1, "AGENT_KEY_Q"]);
   else if (raw.length < 16 || raw.length > 40) p.warn.push(["Agent key length is " + raw.length + "; keys are usually 22 characters.", 1, "AGENT_KEY_Q"]);
@@ -2914,7 +2947,7 @@ function problems(){
 function renderRail(p){
   const tgt = radio("TARGET");
   const saas = radio("BACKEND_TYPE") === "saas";
-  const regionTxt = saas ? ($("SAAS_REGION").selectedOptions[0] || {}).textContent || "" : (val("HOST") || "Host missing");
+  const regionTxt = saas ? (val("SAAS_REGION") ? ($("SAAS_REGION").selectedOptions[0] || {}).textContent : "Region not selected") : (val("HOST") || "Host missing");
   const nSens = checked("sensor").length;
   const freqTxt = {"":"daily updates", DAY:"daily updates", MONDAY:"Monday updates", WEDNESDAY:"Wednesday updates", NEVER:"frozen"}[radio("UPDATE_FREQ")];
   const modeTxt = {APM:"APM", INFRASTRUCTURE:"Infrastructure", AWS:"AWS"}[radio("AGENT_MODE")] || "APM";
@@ -2998,6 +3031,7 @@ function renderCode(text, yaml){
       const m = line.match(/^(\s*-?\s*)([^:\s][^:]*):(.*)$/);
       h = m ? `${esc(m[1])}<span class="k">${esc(m[2])}:</span>${m[3] ? `<span class="s">${esc(m[3])}</span>` : ""}` : esc(line);
     } else h = esc(line);
+    h = h.replace(/\uE000/g, '<mark class="ex">').replace(/\uE001/g, "</mark>");
     return `<span class="ln">${h}</span>`;
   }).join("");
 }
@@ -3014,10 +3048,43 @@ function outMeta(){
       hint: "Zone, tags, update notes and sensors. “Copy as paste-in” writes it to ~/configuration.yaml with umask 077." },
     test: { file: "connectivity-test.sh", where: "Run on the target host, before or after installing", hint: "Checks TLS reach to the backend and the Instana repositories, through the proxy when one is set." },
     versions: { file: "versions.sh", where: "Run on the host where the agent runs", hint: "The Instana UI shows the sensors version as YYYY.MM.DD-HHMM in the Agents view." },
-    reply: { file: "ticket-reply.md", where: "Paste into Salesforce or Jira", hint: mask ? "Secrets are hidden, so the copied reply is safe to paste." : "Secrets are visible: turn on “Hide secrets” before pasting into a ticket." },
+    reply: { file: "customer-reply.md", where: "Reply to the customer: paste into the Salesforce or Jira case", hint: mask ? "Secrets are hidden, so the copied reply is safe to paste." : "Secrets are visible: turn on “Hide secrets” before pasting into a ticket." },
     lab: { file: "repro-lab.sh", where: "Run on a clean test VM with Docker", hint: "Test containers with the monitoring users and permissions of the selected sensors." },
     uninstall: { file: "uninstall" + (t.startsWith("win") ? ".cmd" : ".sh"), where: "Removes the agent for the selected platform", hint: "On Linux, --dry-run lists what would be removed and changes nothing." },
   };
+}
+// Example mode: fill placeholders with made-up values (never the user's own data)
+const EXAMPLES = [
+  ["<YOUR_AGENT_KEY>", "aB3dE5fG7hI9jK1lM3nO5p"],
+  ["<INVALID_AGENT_KEY>", "aB3dE5fG7hI9jK1lM3nO5p"],
+  ["<backend-host>", "instana.example.com"],
+  ["<YOUR_BACKEND_HOST>", "ingress-example-saas.instana.io"],
+  ["<YOUR_OPENSHIFT_CLUSTER_NAME>", "ocp-prod-eu-1"],
+  ["<YOUR_CLUSTER_NAME>", "prod-eu-1"],
+  ["<PROJECT_ID>", "acme-prod-123456"],
+  ["<YOUR_AZURE_SUBSCRIPTION_ID>", "3f2b8c1e-7a4d-4e9b-9c21-5d8e6f0a1b2c"],
+  ["<SUBSCRIPTION_ID>", "3f2b8c1e-7a4d-4e9b-9c21-5d8e6f0a1b2c"],
+  ["<YOUR_AZURE_TENANT_ID>", "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d"],
+  ["<YOUR_SERVICE_PRINCIPAL_CLIENT_ID>", "6c1d2e3f-4a5b-4c6d-9e7f-8a9b0c1d2e3f"],
+  ["<YOUR_SERVICE_PRINCIPAL_SECRET>", "Xy8Q~exampleSecret.Value123"],
+  ["<TARGET_ACCOUNT_ID>", "123456789012"],
+  ["<INSTANCE_NAME>", "web-01"],
+  ["<ZONE>", "europe-west1-b"],
+  ["<server>", "default"],
+  ["<node>", "ACENODE"],
+  ["<instana-agent-install-dir>", "C:\\Program Files\\Instana\\instana-agent"],
+  ["<package_name>", "instana-agent-dynamic"],
+  ["<optional>", "production-eu-west"],
+  ["changeme", "Ex4mple-Passw0rd"],
+];
+let example = false;
+function withExamples(t, mark){
+  let n = 0;
+  EXAMPLES.forEach(([k, v]) => {
+    const parts = t.split(k);
+    if (parts.length > 1) { n += parts.length - 1; t = parts.join(mark ? "\uE000" + v + "\uE001" : v); }
+  });
+  return { t, n };
 }
 function showOut(name){
   outTab = name;
@@ -3025,23 +3092,38 @@ function showOut(name){
   renderOut();
 }
 function renderOut(){
-  const raw = OUT()[outTab] || "";
-  $("preview").innerHTML = renderCode(mask ? maskText(raw) : raw, outTab === "yaml");
+  let raw = OUT()[outTab] || "";
+  if (mask) raw = maskText(raw);
+  let filled = 0;
+  if (example) { const r = withExamples(raw, true); raw = r.t; filled = r.n; }
+  $("preview").innerHTML = renderCode(raw, outTab === "yaml");
   const m = outMeta()[outTab];
-  $("out-file").textContent = m.file; $("out-where").textContent = m.where; $("out-hint").textContent = m.hint;
+  $("out-file").textContent = example ? m.file.replace(/(\.\w+)$/, "-example$1") : m.file;
+  $("out-where").textContent = m.where;
+  $("out-hint").textContent = !example ? m.hint
+    : filled ? `${filled} example value${filled > 1 ? "s" : ""} highlighted. They are made up: replace them with real values before running.`
+    : "Nothing to fill in: every value in this output is already set.";
+  $("out-hint").classList.toggle("ex", example);
+  $("btnExample").setAttribute("aria-checked", example ? "true" : "false");
   $("btnPasteIn").hidden = outTab !== "yaml";
   $("btnMask").setAttribute("aria-checked", mask ? "true" : "false");
 }
 document.querySelectorAll(".out-tab").forEach(t => t.onclick = () => showOut(t.dataset.out));
 $("btnMask").onclick = () => { mask = !mask; renderOut(); };
-function outForCopy(){ const raw = OUT()[outTab] || ""; return outTab === "reply" && mask ? maskText(raw) : raw; }
-$("btnCopy").onclick = () => copyText(outForCopy(), outMeta()[outTab].file);
+function outForCopy(){
+  let raw = OUT()[outTab] || "";
+  if (outTab === "reply" && mask) raw = maskText(raw);
+  return example ? withExamples(raw, false).t : raw;
+}
+$("btnExample").onclick = () => { example = !example; renderOut(); };
+$("btnCopy").onclick = () => copyText(outForCopy(), example ? "Example (made-up values)" : outMeta()[outTab].file);
 $("btnDownload").onclick = () => {
   const m = outMeta()[outTab];
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([outForCopy()], {type: "text/plain"}));
-  a.download = m.file; a.click(); URL.revokeObjectURL(a.href);
-  toast("Saved " + m.file);
+  const fname = example ? m.file.replace(/(\.\w+)$/, "-example$1") : m.file;
+  a.download = fname; a.click(); URL.revokeObjectURL(a.href);
+  toast("Saved " + fname);
 };
 $("btnPasteIn").onclick = () => copyText(
   `(umask 077; cat > ~/configuration.yaml <<'INSTANA_EOF'\n${_yaml}\nINSTANA_EOF\n)\necho "Saved to ~/configuration.yaml"\n`, "Paste-in command");
@@ -3062,12 +3144,38 @@ async function copyText(text,label){
   toast(`${label} copied`);
 }
 
+
+// ---------- Output tabs: show only what applies ----------
+const LAB_SENSORS = ["ibmmq","mysql","mariadb","postgresql","mongodb","redis","mssql"];
+function availableTabs(){
+  const t = radio("TARGET");
+  const hasYaml = _yaml.split("\n").some(l => l.trim() && !l.trim().startsWith("#"));
+  return {
+    cmd: true,
+    reply: true,
+    yaml: hasYaml && !K8S.includes(t),                       // K8s: YAML is already inside the install command
+    test: !t.startsWith("win-"),                              // bash check, not runnable on Windows
+    versions: !/No command generated/.test(_versions),
+    lab: checked("sensor").some(x => LAB_SENSORS.includes(x)),
+    uninstall: !/no command is generated here/i.test(_uninstall),
+  };
+}
+function syncTabs(){
+  const av = availableTabs();
+  document.querySelectorAll(".out-tab").forEach(b => { b.hidden = !av[b.dataset.out]; });
+  if (!av[outTab]) {
+    outTab = "cmd";
+    document.querySelectorAll(".out-tab").forEach(b => b.setAttribute("aria-selected", b.dataset.out === "cmd" ? "true" : "false"));
+  }
+}
+
 // ---------- Main update ----------
 function update(){
   layout();
   _yaml=generateYAML(); _cmd=generateCmd(); _test=generateTest(); _lab=generateLabScript();
   _reply=generateReplyTemplate(); _uninstall=generateUninstall(); _versions=generateVersions();
   const p = problems();
+  syncTabs();
   renderRail(p); renderChecks(p); renderOut();
 }
 

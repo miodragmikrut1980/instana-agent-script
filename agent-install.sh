@@ -1821,7 +1821,7 @@ case "$MODE" in
       if [[ -z "${BACKEND_HOST:-}" ]]; then
         ask_choice _bt "Backend type" "SaaS (IBM hosted)" "Self-hosted (your own server)"
         if [[ "$_bt" == "SaaS"* ]]; then
-          local _opts=() _r
+          _opts=()
           for _r in "${SAAS_REGIONS[@]}"; do _opts+=("${_r%%|*}  —  ${_r##*|}"); done
           log "Your region: Instana UI → More → About Instana"
           ask_choice _sr "SaaS region" "${_opts[@]}"
